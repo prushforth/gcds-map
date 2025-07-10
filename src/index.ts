@@ -9,3 +9,4 @@
  */
 
 export type * from './components.d.ts';
+export type * from './gcds-map.d.ts';
