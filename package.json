@@ -30,8 +30,10 @@
   "scripts": {
     "build": "stencil build",
     "start": "stencil build --dev --watch --serve",
-    "test": "stencil test --spec --e2e",
-    "test.watch": "stencil test --spec --e2e --watchAll",
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:spec": "stencil test --spec",
+    "test.watch": "stencil test --spec --watchAll",
     "generate": "stencil generate"
   },
   "devDependencies": {
