@@ -7,13 +7,17 @@
 
 ## Properties
 
-| Property  | Attribute | Description | Type      | Default     |
-| --------- | --------- | ----------- | --------- | ----------- |
-| `checked` | `checked` |             | `boolean` | `true`      |
-| `hidden`  | `hidden`  |             | `boolean` | `false`     |
-| `label`   | `label`   |             | `string`  | `undefined` |
-| `opacity` | `opacity` |             | `number`  | `undefined` |
-| `src`     | `src`     |             | `string`  | `undefined` |
+| Property       | Attribute      | Description | Type      | Default     |
+| -------------- | -------------- | ----------- | --------- | ----------- |
+| `controls`     | `controls`     |             | `boolean` | `true`      |
+| `controlslist` | `controlslist` |             | `string`  | `undefined` |
+| `extent`       | `extent`       |             | `string`  | `undefined` |
+| `height`       | `height`       |             | `string`  | `undefined` |
+| `lat`          | `lat`          |             | `number`  | `undefined` |
+| `lon`          | `lon`          |             | `number`  | `undefined` |
+| `projection`   | `projection`   |             | `string`  | `undefined` |
+| `width`        | `width`        |             | `string`  | `undefined` |
+| `zoom`         | `zoom`         |             | `number`  | `undefined` |
 
 
 ----------------------------------------------

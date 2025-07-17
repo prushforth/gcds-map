@@ -14,9 +14,9 @@
       "require": "./dist/gcds-map/gcds-map.cjs.js"
     },
     "./loader": {
+      "types": "./loader/index.d.ts",
       "import": "./loader/index.js",
-      "require": "./loader/index.cjs",
-      "types": "./loader/index.d.ts"
+      "require": "./loader/index.cjs"
     }
   },
   "repository": {
@@ -31,6 +31,8 @@
     "build": "stencil build",
     "start": "stencil build --dev --watch --serve",
     "test": "playwright test",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build -o ./docs",
     "test:e2e": "playwright test",
     "test:spec": "stencil test --spec",
     "test.watch": "stencil test --spec --watchAll",
@@ -38,20 +40,39 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-typescript": "^7.27.1",
     "@maps4html/mapml": "^0.16.0",
     "@playwright/test": "^1.54.0",
     "@stencil/core": "^4.27.1",
     "@stencil/playwright": "^0.2.1",
+    "@storybook/addon-actions": "^8.0.9",
+    "@storybook/addon-essentials": "^8.0.9",
+    "@storybook/addon-interactions": "^8.0.9",
+    "@storybook/addon-links": "^8.0.9",
+    "@storybook/addon-mdx-gfm": "^8.0.9",
+    "@storybook/addon-webpack5-compiler-babel": "^3.0.3",
+    "@storybook/blocks": "^8.0.9",
+    "@storybook/html": "^8.0.9",
+    "@storybook/html-webpack5": "^8.0.9",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.16.2",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "jest": "^29.7.0",
     "jest-cli": "^29.7.0",
     "puppeteer": "^24.3.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
-    "serve": "^14.2.4"
+    "serve": "^14.2.4",
+    "ts-loader": "^9.5.2"
   },
   "license": "MIT",
   "dependencies": {
+    "@stencil/core": "4.35.1",
+    "@storybook/addon-a11y": "^8.0.9",
+    "@storybook/addons": "^7.6.17",
+    "@storybook/test": "^8.0.9",
+    "@storybook/theming": "^8.0.9",
     "axe-core": "^4.10.3",
     "prettier": "^3.6.2",
     "prismjs": "^1.30.0"

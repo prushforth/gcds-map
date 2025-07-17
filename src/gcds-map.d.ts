@@ -11,3 +11,13 @@ export interface MapLayerElement extends HTMLElement {
   checked: boolean;
 }
 
+// Global HTML element types for mapml-viewer
+declare global {
+  interface HTMLElementTagNameMap {
+    'mapml-viewer': MapMLViewerElement;
+    'map-layer': MapLayerElement;
+  }
+  
+  interface HTMLMapmlViewerElement extends MapMLViewerElement {}
+}
+
