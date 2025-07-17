@@ -1,10 +1,8 @@
-import type { MapMLViewerElement } from '../../../gcds-map';
-
 const LAYER_OPTIONS = [
-  ['./dist/gcds/gcds-map/assets/mapml/en/cbmtile/toporama', 'Toporama'],
-  ['./dist/gcds/gcds-map/assets/mapml/en/cbmtile/cbmt', 'Canada Base Map - Transportation'],
-  ['./dist/gcds/gcds-map/assets/mapml/en/osmtile/osm', 'OpenStreetMap'],
-  ['./dist/gcds/gcds-map/assets/mapml/en/apstile/arctic', 'Arctic Ocean Basemap MapML Service']
+  ['./dist/gcds-map/gcds-map/assets/mapml/en/cbmtile/toporama', 'Toporama'],
+  ['./dist/gcds-map/gcds-map/assets/mapml/en/cbmtile/cbmt', 'Canada Base Map - Transportation'],
+  ['./dist/gcds-map/gcds-map/assets/mapml/en/osmtile/osm', 'OpenStreetMap'],
+  ['./dist/gcds-map/gcds-map/assets/mapml/en/apstile/arctic', 'Arctic Ocean Basemap MapML Service']
 ];
 
 // Build a mapping object so we can show titles in the dropdown but store the URL as the actual value
@@ -51,12 +49,12 @@ export default {
       }
     },
     layer: {
-      name: '\<map-layer\>',
+      name: '\<gcds-map-layer\>',
       control: 'select',
       options: Object.keys(layerMap),
       mapping: layerMap,
       table: {
-        type: { summary: 'Layers are specified by one or more \<map-layer\> elements.' },
+        type: { summary: 'Layers are specified by one or more \<gcds-map-layer\> elements.' },
         defaultValue: { summary: '-' }
       }
     },
@@ -109,13 +107,13 @@ export default {
 // "Show Code" disclosure widget; don't change it without testing the result...)
 const TemplateBasic = (args) => {
   return `<!-- Web component code (HTML, Angular, Vue) -->
-<mapml-viewer lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
+<gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
-  <map-caption>${args.caption}</map-caption>
+//  <map-caption>${args.caption}</map-caption>
 
-  <map-layer src="${args.layer}" ${`checked`}></map-layer>
+  <gcds-map-layer src="${args.layer}" ${`checked`}></gcds-map-layer>
 
-</mapml-viewer>
+</gcds-map>
 <!-- React code -->`;
 };
 
@@ -129,21 +127,21 @@ Default.args = {
   static: false,
   lang: 'en',
   controlslist: ['geolocation'],
-  layer: './dist/gcds/gcds-map/assets/mapml/en/osmtile/cbmt',
+  layer: './dist/gcds-map/gcds-map/assets/mapml/en/osmtile/cbmt',
   caption: 'A map of Victoria, Canada'
 };
 
 export const HiddenBasemap = (args) => {
   return `<!-- Web component code (HTML, Angular, Vue) -->
-<mapml-viewer lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" projection="${args.projection}"${args.controls ? ' controls' : ''}>
+<gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" projection="${args.projection}"${args.controls ? ' controls' : ''}>
 
   <map-caption>${args.caption}</map-caption>
 
-  <map-layer src="${args.layer}" checked hidden></map-layer>
+  <gcds-map-layer src="${args.layer}" checked hidden></gcds-map-layer>
 
-  <map-layer src="./dist/gcds/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></map-layer>
+  <gcds-map-layer src="./dist/gcds-map/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></gcds-map-layer>
 
-</mapml-viewer>
+</gcds-map>
 <!-- React code -->`;
 };
 HiddenBasemap.args = {
@@ -152,19 +150,19 @@ HiddenBasemap.args = {
   zoom: 4,
   projection: 'OSMTILE',
   controls: true,
-  layer: './dist/gcds/gcds-map/assets/mapml/en/osmtile/cbmt',
+  layer: './dist/gcds-map/gcds-map/assets/mapml/en/osmtile/cbmt',
   caption: "Canada's current weather conditions"
 };
 
-export const Playground = args => `<mapml-viewer lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
+export const Playground = args => `<gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
   <map-caption>${args.caption}</map-caption>
 
-  <map-layer src="${args.layer}" checked hidden></map-layer>
+  <gcds-map-layer src="${args.layer}" checked hidden></gcds-map-layer>
 
-  <map-layer src="./dist/gcds/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></map-layer>
+  <gcds-map-layer src="./dist/gcds-map/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></gcds-map-layer>
 
-</mapml-viewer>`; 
+</gcds-map>`; 
 
 Playground.args = {
   lat: 53.087426, 
@@ -175,19 +173,19 @@ Playground.args = {
   static: false,
   lang: 'en',
   controlslist: ['geolocation'],
-  layer: './dist/gcds/gcds-map/assets/mapml/en/osmtile/cbmt',
+  layer: './dist/gcds-map/gcds-map/assets/mapml/en/osmtile/cbmt',
   caption: "Canada's current weather conditions"
 };
 
-export const GeoJSON2MapMLExample = args => `<mapml-viewer id="np" lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
+export const GeoJSON2MapMLExample = args => `<gcds-map id="np" lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
   <map-caption>${args.caption}</map-caption>
 
-  <map-layer src="${args.layer}" checked hidden></map-layer>
+  <gcds-map-layer src="${args.layer}" checked hidden></gcds-map-layer>
 
-  <!-- A GeoJSON <map-layer> is created and styled by a function call here -->
+  <!-- A GeoJSON <gcds-map-layer> is created and styled by a function call here -->
 
-</mapml-viewer>`;
+</gcds-map>`;
 
 GeoJSON2MapMLExample.args = {
   lat: 53.087426, 
@@ -198,14 +196,14 @@ GeoJSON2MapMLExample.args = {
   static: false,
   lang: 'en',
   controlslist: ['geolocation'],
-  layer: './dist/gcds/gcds-map/assets/mapml/en/osmtile/cbmt',
+  layer: './dist/gcds-map/gcds-map/assets/mapml/en/osmtile/cbmt',
   caption: "Canada's Provinces and Territories in styled GeoJSON"
 };
 
 GeoJSON2MapMLExample.loaders = [
   async () => {
     try {
-      const response = await fetch('./dist/gcds/gcds-map/assets/canada.json');
+      const response = await fetch('./dist/gcds-map/gcds-map/assets/canada.json');
       if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
       }
@@ -226,14 +224,14 @@ GeoJSON2MapMLExample.parameters = {
       type: 'code',
       language: 'html',
       code: `<!-- Web component code (HTML, Angular, Vue) -->
-<mapml-viewer id="np" lat="${GeoJSON2MapMLExample.args.lat}" lon="${GeoJSON2MapMLExample.args.lon}" zoom="${GeoJSON2MapMLExample.args.zoom}" lang="${GeoJSON2MapMLExample.args.lang}" projection="${GeoJSON2MapMLExample.args.projection}"${GeoJSON2MapMLExample.args.controls ? ' controls' : ''}${GeoJSON2MapMLExample.args.static ? ' static' : ''}${GeoJSON2MapMLExample.args.controlslist.length > 0  ? ` controlslist="${GeoJSON2MapMLExample.args.controlslist.join(' ')}"` : ''}>
+<gcds-map id="np" lat="${GeoJSON2MapMLExample.args.lat}" lon="${GeoJSON2MapMLExample.args.lon}" zoom="${GeoJSON2MapMLExample.args.zoom}" lang="${GeoJSON2MapMLExample.args.lang}" projection="${GeoJSON2MapMLExample.args.projection}"${GeoJSON2MapMLExample.args.controls ? ' controls' : ''}${GeoJSON2MapMLExample.args.static ? ' static' : ''}${GeoJSON2MapMLExample.args.controlslist.length > 0  ? ` controlslist="${GeoJSON2MapMLExample.args.controlslist.join(' ')}"` : ''}>
 
   <map-caption>${GeoJSON2MapMLExample.args.caption}</map-caption>
 
-  <map-layer src="${GeoJSON2MapMLExample.args.layer}" checked hidden></map-layer>
+  <gcds-map-layer src="${GeoJSON2MapMLExample.args.layer}" checked hidden></gcds-map-layer>
 
   <!-- this layer created via javascript, using M.geojson2mapml API functions -->
-  <map-layer label="Provinces and territories of Canada" checked media="(0 < map-zoom < 7)" opacity="0.65">
+  <gcds-map-layer label="Provinces and territories of Canada" checked media="(0 < map-zoom < 7)" opacity="0.65">
     <map-style>
      .canada { fill-opacity: 0.7; stroke-width: 1; stroke: white; stroke-opacity: 1; stroke-dasharray: 3; } 
      .bc { fill: #ffdeb2; stroke: #e6c8a1; } .ab { fill: #facad6; stroke: #e8708e; } 
@@ -253,9 +251,9 @@ GeoJSON2MapMLExample.parameters = {
       <map-properties>...</map-properties>
     </map-feature>
     ... etc ...
-  </map-layer>
+  </gcds-map-layer>
 
-</mapml-viewer>
+</gcds-map>
 <!-- React code -->`
     }
   }
@@ -335,7 +333,7 @@ GeoJSON2MapMLExample.play = async ({ canvasElement, loaded }) => {
     // Convert GeoJSON to MapML
     let provs = mapmlGlobal.M.geojson2mapml(geoJsonData, provOptions);
 
-    // post-process the <map-layer> just created - need to update the geojson2mapml
+    // post-process the <gcds-map-layer> just created - need to update the geojson2mapml
     // api to add map-feature and perhaps other callbacks opportunities for 
     // post-facto setting class values and perhaps other stuff tbc
 
@@ -373,7 +371,7 @@ GeoJSON2MapMLExample.play = async ({ canvasElement, loaded }) => {
     console.error('Error in map playground:', error);
   }
 };
-customElements.whenDefined('mapml-viewer').then(() => {
+customElements.whenDefined('gcds-map').then(() => {
   (async () => {
     console.log('starting playground operations...');
 
@@ -432,15 +430,15 @@ story, it's accomplished by the play function).
 });
 
 export const DarkMode = args => `<!-- Web component code (HTML, Angular, Vue) -->
-<mapml-viewer lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
+<gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
   <map-caption>${args.caption}</map-caption>
 
-  <map-layer media="(prefers-color-scheme: dark)" src="./dist/gcds/gcds-map/assets/mapml/en/osmtile/dark.mapml" checked></map-layer>
+  <gcds-map-layer media="(prefers-color-scheme: dark)" src="./dist/gcds-map/gcds-map/assets/mapml/en/osmtile/dark.mapml" checked></gcds-map-layer>
 
-  <map-layer media="(prefers-color-scheme: light)" src="./dist/gcds/gcds-map/assets/mapml/en/osmtile/light.mapml" checked></map-layer>
+  <gcds-map-layer media="(prefers-color-scheme: light)" src="./dist/gcds-map/gcds-map/assets/mapml/en/osmtile/light.mapml" checked></gcds-map-layer>
 
-</mapml-viewer>
+</gcds-map>
 <!-- React code -->`; 
 
 DarkMode.args = {
@@ -457,13 +455,13 @@ DarkMode.args = {
 
 export const InlineVsRemote = (args) => {
   return `<!-- Web component code (HTML, Angular, Vue) -->
-<mapml-viewer lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" projection="${args.projection}"${args.controls ? ' controls' : ''}>
+<gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" projection="${args.projection}"${args.controls ? ' controls' : ''}>
 
   <map-caption>${args.caption}</map-caption>
 
-  <map-layer label="Remote layer content - XHTML markup rules" src="${args.layer}" checked hidden></map-layer>
+  <gcds-map-layer label="Remote layer content - XHTML markup rules" src="${args.layer}" checked hidden></gcds-map-layer>
 
-  <map-layer label="map-title takes precedence" checked>
+  <gcds-map-layer label="map-title takes precedence" checked>
     <map-title>Inline layer content - HTML markup rules</map-title>
     <map-meta name="projection" content="OSMTILE"></map-meta>
     <map-feature zoom="15">
@@ -477,9 +475,9 @@ export const InlineVsRemote = (args) => {
         </map-point>
       </map-geometry>
     </map-feature>
-  </map-layer>
+  </gcds-map-layer>
 
-</mapml-viewer>
+</gcds-map>
 <!-- React code -->`;
 };
 InlineVsRemote.args = {
@@ -488,204 +486,7 @@ InlineVsRemote.args = {
   zoom: 4,
   projection: 'OSMTILE',
   controls: true,
-  layer: './dist/gcds/gcds-map/assets/mapml/en/osmtile/cbmt',
+  layer: './dist/gcds-map/gcds-map/assets/mapml/en/osmtile/cbmt',
   caption: "A map with remote and inline MapML content layers"
-};
-
-export const CustomProjection = (args) => {
-  const viewer = document.querySelector('mapml-viewer')  as MapMLViewerElement; 
-  viewer.defineCustomProjection(`{ "projection": "EPSG3573", "proj4string" : "+proj=laea +lat_0=90 +lon_0=-100 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",  "origin" : [-4889334.802955,4889334.802955], "resolutions" : [38197.92815,19098.96407,9549.482037,4774.741019,2387.370509,1193.685255,596.8426273,298.4213137,149.2106568,74.60532841,37.30266421], "bounds" : [[-4594983,4507258],[4655569,-4562485]], "tilesize" : 256 }`);
-  return `
-    <mapml-viewer lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
-
-  <map-caption>${args.caption}</map-caption>
-
-  <map-layer src="${args.layer}" ${`checked`}></map-layer>
-
-</mapml-viewer>
-  `;
-};
-
-CustomProjection.args = {
-  lat: 76.263458,
-  lon: -96.785466,
-  zoom: 1,
-  projection: 'EPSG3573',
-  controls: true,
-  static: false,
-  lang: 'en',
-  controlslist: ['geolocation'],
-  layer: './dist/gcds/gcds-map/assets/mapml/en/custom/arcticsdi.mapml',
-  caption: 'A map in a custom-defined projection'
-};
-
-CustomProjection.parameters = {
-  docs: {
-    source: {
-      type: 'code',
-      language: 'html',
-      code: `<!-- Web component code (HTML, Angular, Vue) -->
-<script type="module">
-  const viewer = document.querySelector('mapml-viewer');
-  viewer.defineCustomProjection(\`{ 
-    "projection": "EPSG3573",
-    "proj4string" : "+proj=laea +lat_0=90 +lon_0=-100 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",  
-    "origin" : [-4889334.802955,4889334.802955], 
-    "resolutions" : [38197.92815,19098.96407,9549.482037,4774.741019,2387.370509,1193.685255,596.8426273,298.4213137,149.2106568,74.60532841,37.30266421],
-    "bounds" : [[-4594983,4507258],[4655569,-4562485]], 
-    "tilesize" : 256 }
-  \`);
-</script>
-
-<mapml-viewer projection="${CustomProjection.args.projection}" lat="${CustomProjection.args.lat}" lon="${CustomProjection.args.lon}" zoom="${CustomProjection.args.zoom}" lang="${CustomProjection.args.lang}" ${CustomProjection.args.controls ? ' controls' : ''}${CustomProjection.args.static ? ' static' : ''}${CustomProjection.args.controlslist.length > 0  ? ` controlslist="${CustomProjection.args.controlslist.join(' ')}"` : ''}>
-
-  <map-caption>${CustomProjection.args.caption}</map-caption>
-
-  <map-layer src="${CustomProjection.args.layer}" checked></map-layer>
-  
-</mapml-viewer>
-<!-- React code -->`
-    }
-  }
-};
-export default {
-  title: 'Components/Map',
-  argTypes: {
-      controls: {
-        name: 'controls',
-        control: 'boolean',
-        table: {
-          type: { summary: 'Add map controls' },
-          defaultValue: { summary: 'false if the attribute is absent' }
-        }
-      },
-      lat: {
-        name: 'lat',
-        control: { type: 'number' },
-        table: {
-          type: { summary: 'Initial latitude of map centre, range +/- 90' },
-          defaultValue: { summary: '0' }
-        }
-      },
-      lon: {
-        name: 'lon',
-        control: { type: 'number' },
-        table: {
-          type: { summary: 'Initial longitude of map centre, range +/- 180' },
-          defaultValue: { summary: '0' }
-        }
-      },
-      zoom: {
-        name: 'zoom',
-        control: { type: 'number' },
-        table: {
-          type: { summary: 'Initial zoom of map, range 0-22' },
-          defaultValue: { summary: '0' }
-        }
-      },
-      projection: {
-        name: 'projection',
-        control: 'select',
-        options: ['OSMTILE', 'CBMTILE'],
-        table: {
-          type: { summary: 'Tiled CRS name' },
-          defaultValue: { summary: 'OSMTILE (Web Mercator)' },
-        },
-        type: { required: false }
-      },
-      controlslist: {
-        name: 'controlslist',
-        control: 'multi-select',
-        options: ['geolocation', 'nofullscreen', 'nozoom', 'nolayer', 'noreload', 'noscale'],
-        table: {
-          type: { summary: 'Space-separated list of tokens for controls to display' },
-          defaultValue: { summary: 'Empty string' },
-        },
-      },
-      caption: {
-        name: 'caption',
-        control: 'text',
-        table: {
-          type: { summary: 'The screen-reader accessible caption of the map (not visible)' },
-          defaultValue: { summary: 'Empty string' }
-        },
-        type: { required: false }
-      }
-    }
-};
-
-const TemplateBasic = (args) => {
-  return `
-  <gcds-map key="mapml-viewer" lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" ${args.controls ? 'controls' : ''}  
-      controlslist="${args.controlslist.length > 0 ? args.controlslist.join(' ') : ''}"
-      projection="${args.projection}" caption="This is a test">
-      <gcds-map-layer
-        label="Canada Base Map - Transportation (CBMT) - EPSG:3857"
-        src="https://geogratis.gc.ca/mapml/en/osmtile/cbmt/"
-        checked="true"
-      ></gcds-map-layer>
-    </gcds-map>
-  `;
-}
-
-const TemplateMultiLayer = (args) => `
-  <gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" ${args.controls ? 'controls' : ''}  ${args.controlslist ? `controlslist="${args.controlslist}"` : ''}
-    projection="${args.projection}">
-    <gcds-map-layer
-      label="Canada Base Map - Transportation (CBMT)"
-      src="https://geogratis.gc.ca/mapml/en/osmtile/cbmt/"
-      checked="${args.checked}"
-    ></gcds-map-layer>
-    <gcds-map-layer
-      label="Another Layer"
-      src="https://geogratis.gc.ca/mapml/en/osmtile/kNN_LandCover_VegTreed_250m/"
-      checked="${args.checked}"
-    ></gcds-map-layer>
-  </gcds-map>
-`;
-
-const TemplateHiddenBaseMap = (args) => `
-  <gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" ${args.controls ? 'controls' : ''}  ${args.controlslist ? `controlslist="${args.controlslist}"` : ''}
-    projection="${args.projection}">
-    <gcds-map-layer
-      label="Canada Base Map - Transportation (CBMT)"
-      src="https://geogratis.gc.ca/mapml/en/osmtile/cbmt/"
-      checked="${args.checked}"
-      hidden="${args.hidden}"
-    ></gcds-map-layer>
-    <gcds-map-layer
-      src="https://geogratis.gc.ca/mapml/en/osmtile/kNN_LandCover_VegTreed_250m/"
-      checked="${args.checked}"
-    ></gcds-map-layer>
-  </gcds-map>
-`;
-
-
-// each named export is a 'story'
-export const Default = TemplateBasic.bind({});
-Default.args = {
-  lat: 66.5,
-  lon: -106,
-  zoom: 2,
-  projection: 'OSMTILE',
-  controls: true,
-  controlslist: ['geolocation']
-};
-
-export const MultiLayer = TemplateMultiLayer.bind({});
-MultiLayer.args = {
-  lat: 66.5,
-  lon: -106,
-  zoom: 2,
-  checked: false,
-};
-
-export const HiddenBaseMap = TemplateHiddenBaseMap.bind({});
-HiddenBaseMap.args = {
-  lat: 66.5,
-  lon: -106,
-  zoom: 2,
-  checked: true,
-  hidden: true
 };
 

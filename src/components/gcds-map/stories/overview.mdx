@@ -1,11 +1,11 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
-import * as Map from './gcds-map.stories';
+import * as Map from './gcds-map.stories.tsx';
 
 <Meta of={Map} name="Overview" />
 
-# Map<br/>`<mapml-viewer>`
+# Map<br/>`<gcds-map>`
 
-The `<mapml-viewer>` component enables slippy maps with one or more `<map-layer>` children;
+The `<gcds-map>` component enables slippy maps with one or more `<map-layer>` children;
 the `<map-caption>` element can be used to provide a screen reader-friendly caption or title
 for the map.
 
@@ -78,16 +78,6 @@ flavours of markup requires a different approach.
 
 <Canvas of={Map.InlineVsRemote} story={{ inline: true }} />
 
-### Custom map projections
-
-There are four pre-defined MapML projections: OSMTILE ("Web Mercator"), CBMTILE
-(Lambert Conformal Conic defined for Canada's spatial data infrastructure), WGS84, and
-APSTILE (Alaskan Polar Stereographic).  Your maps can use other projections that
-are supported by the [proj4js JavaScript library](https://github.com/proj4js) for 
-web mapping, by executing a snippet of JavaScript with a compatible projection
-definition as shown below. See the [MapML.js documentation](https://maps4html.org/web-map-doc/docs/api/mapml-viewer-api#definecustomprojectionoptions) for details. 
-
-<Canvas of={Map.CustomProjection} story={{ inline: true }} />
 
 ## Resources
 
