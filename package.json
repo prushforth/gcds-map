@@ -1,5 +1,5 @@
 {
-  "name": "component-display",
+  "name": "gcds-map",
   "version": "0.0.1",
   "description": "Stencil Component Starter",
   "main": "dist/index.cjs.js",
@@ -10,8 +10,8 @@
   "unpkg": "dist/component-display/component-display.esm.js",
   "exports": {
     ".": {
-      "import": "./dist/component-display/component-display.esm.js",
-      "require": "./dist/component-display/component-display.cjs.js"
+      "import": "./dist/gcds-map/gcds-map.esm.js",
+      "require": "./dist/gcds-map/gcds-map.cjs.js"
     },
     "./loader": {
       "import": "./loader/index.js",

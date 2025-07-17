@@ -25,17 +25,23 @@
 
     <!-- GC Design System Utility -->
     <link rel="stylesheet" href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-utility@latest/dist/gcds-utility.min.css" />
+    <script type="module" src="/components/gcds-map/map-property-sheet-standalone.js"></script>
+
   </head>
   <body>
-    <gcds-container size="xl" main-container centered tag="main">
+      <gcds-heading tag="h2">Map</gcds-heading>
+
+      <component-display attrs='[{"name": "zoom", "control": "text", "defaultValue": "10"}]'>
+        <mapml-viewer lat="45.4215" lon="-75.6972" zoom="10" projection="OSMTILE" caption="test" controls controlslist="geolocation">
+          <map-layer src="/build/gcds-map/assets/mapml/en/osmtile/cbmt" checked></map-layer>
+        </mapml-viewer>
+      </component-display>
+
+      <gcds-container size="xl" main-container centered tag="main">
       <gcds-heading tag="h1">Proof of concept - component-display</gcds-heading>
 
       <gcds-text>I want to try and replace our storybook iframe on the documentation site mainly so we truly have an accessible and bilingual experience.</gcds-text>
 
-      <gcds-heading tag="h2">Maps</gcds-heading>
-      <mapml-viewer lat="45.4215" lon="-75.6972" zoom="10" projection="OSMTILE" caption="test" controls controlslist="geolocation">
-        <map-layer src="/build/gcds-map/assets/mapml/en/osmtile/cbmt" checked></map-layer>
-      </mapml-viewer>
 
       <gcds-heading tag="h2">Button</gcds-heading>
 
