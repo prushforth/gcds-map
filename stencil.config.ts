@@ -19,6 +19,7 @@ export const config: Config = {
           dest: 'mapml.css',
           warn: true
         },
+        // this is needed for storybook to find mapml.css
         {
           src: '../node_modules/@maps4html/mapml/dist/mapml.css',
           dest: '../esm/mapml.css',
@@ -41,10 +42,6 @@ export const config: Config = {
         {
           src: '../node_modules/@cdssnc/gcds-components/dist/gcds',
           dest: 'gcds',
-        },
-        {
-          src: 'components/gcds-map/gcds-map.css',
-          dest: 'build/gcds-map/gcds-map.css'
         },
         {
           src: 'components/gcds-map/assets',
