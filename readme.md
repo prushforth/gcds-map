@@ -1,6 +1,6 @@
 # gcds-map
 
-A Government of Canada Design System (GCDS) component that provides an accessible, standards-based web map viewer using MapML.
+A Government of Canada Design System (GCDS) plugin component that provides an accessible, standards-based web map viewer using [MapML](https://maps4html.org/web-map-doc/).
 
 ## Installation
 
@@ -14,8 +14,7 @@ This component requires the following peer dependencies:
 
 ```json
 {
-  "@cds-snc/gcds-components": "^x.x.x",
-  "@maps4html/mapml": "^x.x.x"
+  "@cdssnc/gcds-components": "^x.x.x",
 }
 ```
 
@@ -33,16 +32,8 @@ This component requires the following peer dependencies:
 
 ```html
 <gcds-map projection="CBMTILE" lat="60.0" lon="-95.0" zoom="3" controls="true">
-  <gcds-map-layer 
-    checked 
-    src="https://geogratis.gc.ca/mapml/en/cbmtile/cbmt/"
-    label="Canada Base Map"
-  ></gcds-map-layer>
-  <gcds-map-layer 
-    src="https://example.com/overlay.mapml"
-    label="Data Overlay"
-    opacity="0.7"
-  ></gcds-map-layer>
+  <gcds-map-layer checked src="https://geogratis.gc.ca/mapml/en/cbmtile/cbmt/"></gcds-map-layer>
+  <gcds-map-layer src="https://example.com/overlay.mapml" opacity="0.7"></gcds-map-layer>
 </gcds-map>
 ```
 
@@ -50,7 +41,7 @@ This component requires the following peer dependencies:
 
 ### gcds-map
 
-The main map component that wraps the MapML viewer.
+The main map component that wraps and manages the [MapML viewer](https://maps4html.org/web-map-doc/).
 
 #### Properties
 
@@ -88,7 +79,7 @@ The `gcds-map` component creates a shadow DOM that contains a `<mapml-viewer>` e
 The component follows a "set once" pattern for map properties. Initial attributes (projection, lat, lon, zoom, etc.) are passed to the `<mapml-viewer>` during render, but are never updated afterward. This approach:
 
 - Respects the `mapml-viewer`'s internal state management and Leaflet integration
-- Avoids timing conflicts between Stencil's lifecycle and custom element lifecycle
+- (Hopefully)avoids timing conflicts between Stencil's lifecycle and custom element lifecycle
 - Allows the MapML viewer to manage its own coordinate system and pixel relationships
 - Lets browser rendering and CSS rules handle layout after initial creation
 
@@ -132,4 +123,4 @@ This component supports all browsers that support:
 
 ## License
 
-[License details here]
+MIT License
