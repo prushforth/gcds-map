@@ -28,7 +28,19 @@ const config = {
     defaultName: 'Stories'
   },
   webpackFinal: async (config) => {
-    // Use ts-loader for .ts and .tsx files
+    // First, modify existing CSS rules to exclude mapml.css
+    config.module.rules.forEach(rule => {
+      if (rule.test && rule.test.toString().includes('css')) {
+        rule.exclude = /mapml\.css$/;
+      }
+    });
+    config.module.rules.unshift({
+      test: /mapml\.css$/,
+      type: 'asset/resource',
+      generator: {
+        filename: 'mapml.css'  // Ensure it's served as mapml.css
+      }
+    });
     config.module.rules.push({
       test: /\.(ts|tsx)$/,
       use: [
@@ -40,22 +52,8 @@ const config = {
         },
       ],
     });
-    /* this is for mapml.js which is imported at run time */
-    config.module.rules.push({
-      test: /\.(js|ts)$/,
-      use: [
-        {
-          loader: require.resolve('babel-loader'),
-          options: {
-            plugins: [require.resolve('babel-plugin-transform-import-meta')],
-          },
-        },
-      ],
-    });
-    
+
     config.resolve.extensions.push('.ts', '.tsx');
-
-
     return config;
   }
 };
