@@ -5,7 +5,7 @@ import * as Map from './gcds-map.stories.tsx';
 
 # Map<br/>`<gcds-map>`
 
-The `<gcds-map>` component enables slippy maps with one or more `<map-layer>` children;
+The `<gcds-map>` component enables slippy maps with one or more `<gcds-map-layer>` children;
 the `<map-caption>` element can be used to provide a screen reader-friendly caption or title
 for the map.
 
@@ -67,16 +67,6 @@ MapML user guide for more information on [styling](https://maps4html.org/web-map
 [media queries](https://maps4html.org/web-map-doc/docs/api/mapml-viewer-api#supported-map-media-query-features).
 
 <Canvas of={Map.DarkMode} story={{ inline: true }} />
-
-### Inline vs Remote MapML content
-
-The [ `<map-layer>` element](https://maps4html.org/web-map-doc/docs/elements/layer/) can contain HTML-flavoured MapML custom elements between
-the opening and closing tags, called "inline" content, or it can refer to XML-flavoured
-xhtml custom element markup via a `src="url"` (but not both).  It can be a bit tricky if you
-copy content between different contexts as such, since the parsing of these two
-flavours of markup requires a different approach.
-
-<Canvas of={Map.InlineVsRemote} story={{ inline: true }} />
 
 
 ## Resources

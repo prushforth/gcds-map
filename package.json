@@ -7,7 +7,6 @@
   "types": "dist/types/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/component-display/component-display.esm.js",
   "exports": {
     ".": {
       "import": "./dist/gcds-map/gcds-map.esm.js",

@@ -65,7 +65,7 @@ export class GcdsMap {
   render() {
     // Build the attributes object for initial render only
     const mapmlViewerAttrs: any = {};
-    
+
     if (this.projection !== undefined) mapmlViewerAttrs.projection = this.projection;
     if (this.lat !== undefined) mapmlViewerAttrs.lat = this.lat;
     if (this.lon !== undefined) mapmlViewerAttrs.lon = this.lon;

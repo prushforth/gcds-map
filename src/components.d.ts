@@ -5,18 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { AttributesType, EventType, SlotType } from "./components/component-display/component-display";
-export { AttributesType, EventType, SlotType } from "./components/component-display/component-display";
 export namespace Components {
-    interface ComponentDisplay {
-        /**
-          * @default false
-         */
-        "accessibility"?: boolean;
-        "attrs"?: string | Array<AttributesType>;
-        "events"?: string | Array<EventType>;
-        "slots"?: string | Array<SlotType>;
-    }
     interface GcdsMap {
         /**
           * @default true
@@ -46,12 +35,6 @@ export interface GcdsMapLayerCustomEvent<T> extends CustomEvent<T> {
     target: HTMLGcdsMapLayerElement;
 }
 declare global {
-    interface HTMLComponentDisplayElement extends Components.ComponentDisplay, HTMLStencilElement {
-    }
-    var HTMLComponentDisplayElement: {
-        prototype: HTMLComponentDisplayElement;
-        new (): HTMLComponentDisplayElement;
-    };
     interface HTMLGcdsMapElement extends Components.GcdsMap, HTMLStencilElement {
     }
     var HTMLGcdsMapElement: {
@@ -78,21 +61,11 @@ declare global {
         new (): HTMLGcdsMapLayerElement;
     };
     interface HTMLElementTagNameMap {
-        "component-display": HTMLComponentDisplayElement;
         "gcds-map": HTMLGcdsMapElement;
         "gcds-map-layer": HTMLGcdsMapLayerElement;
     }
 }
 declare namespace LocalJSX {
-    interface ComponentDisplay {
-        /**
-          * @default false
-         */
-        "accessibility"?: boolean;
-        "attrs"?: string | Array<AttributesType>;
-        "events"?: string | Array<EventType>;
-        "slots"?: string | Array<SlotType>;
-    }
     interface GcdsMap {
         /**
           * @default true
@@ -120,7 +93,6 @@ declare namespace LocalJSX {
         "src"?: string;
     }
     interface IntrinsicElements {
-        "component-display": ComponentDisplay;
         "gcds-map": GcdsMap;
         "gcds-map-layer": GcdsMapLayer;
     }
@@ -129,7 +101,6 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
-            "component-display": LocalJSX.ComponentDisplay & JSXBase.HTMLAttributes<HTMLComponentDisplayElement>;
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
             "gcds-map-layer": LocalJSX.GcdsMapLayer & JSXBase.HTMLAttributes<HTMLGcdsMapLayerElement>;
         }

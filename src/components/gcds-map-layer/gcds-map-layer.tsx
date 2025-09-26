@@ -21,7 +21,7 @@ export class GcdsMapLayer {
   componentDidLoad() {
     // This component primarily exists as a declarative wrapper
     // The actual map-layer element will be created by gcds-map in its shadow DOM
-    
+
     // Notify parent gcds-map that this layer is ready
     this.el.dispatchEvent(new CustomEvent('gcds-layer-ready', {
       bubbles: true,

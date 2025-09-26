@@ -10,8 +10,8 @@ export const config: Config = {
       esmLoaderPath: '../loader',
       copy: [
         {
-          src: 'components/gcds-map/assets',  
-          dest: 'gcds-map/assets',
+          src: 'components/gcds-map/assets',
+          dest: 'assets',
           warn: true
         },
         {
@@ -45,7 +45,7 @@ export const config: Config = {
         },
         {
           src: 'components/gcds-map/assets',
-          dest: 'build/gcds-map/assets',
+          dest: 'build/assets',
           warn: true
         },
         {

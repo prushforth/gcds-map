@@ -5,7 +5,7 @@ A Government of Canada Design System (GCDS) plugin component that provides an ac
 ## Installation
 
 ```bash
-npm install @your-org/gcds-map
+npm install @cdssnc/gcds-map
 ```
 
 ### Peer Dependencies
@@ -41,7 +41,7 @@ This component requires the following peer dependencies:
 
 ### gcds-map
 
-The main map component that wraps and manages the [MapML viewer](https://maps4html.org/web-map-doc/).
+The <gcds-map> component wraps the [MapML viewer](https://maps4html.org/web-map-doc/).
 
 #### Properties
 
