@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>gcds-map DOM API Test page</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/www/gcds/gcds.css" />
+    <script type="module" src="/www/gcds/gcds.esm.js"></script>
+
+    <script type="module" src="/www/build/gcds-map.esm.js"></script>
+    <style>gcds-map { display: block; width: 100%; height: 400px; }</style>
+  </head>
+  <body>
+  </body>
+  <script>
+    // custom projection template for testing
+    let template = '{"projection":"basic","proj4string":"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs","resolutions":[8192, 4096, 2048, 1024, 512, 256, 128],"origin":[0,0],"bounds":[[-34655800, -39000000], [10000000, 39310000]],"tilesize":265}';
+  </script>
+</html>

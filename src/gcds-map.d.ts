@@ -7,6 +7,8 @@ export interface MapMLViewerElement extends HTMLElement {
 }
 
 export interface MapLayerElement extends HTMLElement {
+  label: any;
+  whenReady(): any;
   src: string;
   checked: boolean;
 }

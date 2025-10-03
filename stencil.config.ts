@@ -4,6 +4,7 @@ import nodePolyfills from 'rollup-plugin-node-polyfills';
 export const config: Config = {
   namespace: 'gcds-map',
   taskQueue: 'async',
+  globalScript: 'src/global/mapml-globals.js',
   outputTargets: [
     {
       type: 'dist',
@@ -12,17 +13,6 @@ export const config: Config = {
         {
           src: 'components/gcds-map/assets',
           dest: 'assets',
-          warn: true
-        },
-        {
-          src: '../node_modules/@maps4html/mapml/dist/mapml.css',
-          dest: 'mapml.css',
-          warn: true
-        },
-        // this is needed for storybook to find mapml.css
-        {
-          src: '../node_modules/@maps4html/mapml/dist/mapml.css',
-          dest: '../esm/mapml.css',
           warn: true
         }
       ],
@@ -46,11 +36,6 @@ export const config: Config = {
         {
           src: 'components/gcds-map/assets',
           dest: 'build/assets',
-          warn: true
-        },
-        {
-          src: '../node_modules/@maps4html/mapml/dist/mapml.css',
-          dest: 'build/mapml.css',
           warn: true
         }
       ],

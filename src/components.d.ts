@@ -8,16 +8,32 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface GcdsMap {
         /**
-          * @default true
+          * @default false
          */
-        "controls"?: boolean;
-        "controlslist"?: string;
-        "extent"?: string;
+        "_controls": boolean;
+        "_controlslist"?: string;
         "height"?: string;
+        /**
+          * @default 0
+         */
         "lat"?: number;
+        "locale"?: any;
+        /**
+          * @default 0
+         */
         "lon"?: number;
+        /**
+          * @default 'OSMTILE'
+         */
         "projection"?: string;
+        /**
+          * @default false
+         */
+        "static"?: boolean;
         "width"?: string;
+        /**
+          * @default 0
+         */
         "zoom"?: number;
     }
     interface GcdsMapLayer {
@@ -68,16 +84,32 @@ declare global {
 declare namespace LocalJSX {
     interface GcdsMap {
         /**
-          * @default true
+          * @default false
          */
-        "controls"?: boolean;
-        "controlslist"?: string;
-        "extent"?: string;
+        "_controls"?: boolean;
+        "_controlslist"?: string;
         "height"?: string;
+        /**
+          * @default 0
+         */
         "lat"?: number;
+        "locale"?: any;
+        /**
+          * @default 0
+         */
         "lon"?: number;
+        /**
+          * @default 'OSMTILE'
+         */
         "projection"?: string;
+        /**
+          * @default false
+         */
+        "static"?: boolean;
         "width"?: string;
+        /**
+          * @default 0
+         */
         "zoom"?: number;
     }
     interface GcdsMapLayer {
