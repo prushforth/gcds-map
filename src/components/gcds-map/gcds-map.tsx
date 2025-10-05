@@ -7,7 +7,7 @@ import {
 // import Proj from 'proj4leaflet/src/proj4leaflet.js';
 import { Util } from '../../utils/mapml/Util.js';
 import { DOMTokenList } from '../../utils/mapml/DOMTokenList';
-import { locale } from '../../utils/mapml/generated-locale.js';
+// import { locale } from '../../utils/mapml/generated-locale.js';
 // import { matchMedia } from '../../utils/mapml/elementSupport/viewers/matchMedia.js';
 // TODO: Import Stencil component versions when created
 // import { HTMLLayerElement } from '../map-layer/map-layer.js';
@@ -30,10 +30,10 @@ import { locale } from '../../utils/mapml/generated-locale.js';
 // attribution control doesn't get auto-added 
   // Auto-added via Map.addInitHook
 // import { attributionButton } from '../../utils/mapml/control/AttributionButton.js';
-// import { reloadButton } from '../../utils/mapml/control/ReloadButton.js';
-// import { scaleBar } from '../../utils/mapml/control/ScaleBar.js';
-// import { fullscreenButton } from '../../utils/mapml/control/FullscreenButton.js';
-// import { geolocationButton } from '../../utils/mapml/control/GeolocationButton.js';
+import { reloadButton } from '../../utils/mapml/control/ReloadButton.js';
+import { scaleBar } from '../../utils/mapml/control/ScaleBar.js';
+import { fullscreenButton } from '../../utils/mapml/control/FullscreenButton.js';
+import { geolocationButton } from '../../utils/mapml/control/GeolocationButton.js';
 // import { debugOverlay } from '../../utils/mapml/layers/DebugOverlay.js';
 // import { crosshair } from '../../utils/mapml/layers/Crosshair.js';
 // import { featureIndexOverlay } from '../../utils/mapml/layers/FeatureIndexOverlay.js';
@@ -63,7 +63,7 @@ export class GcdsMap {
   @State() _source: string;
   @State() _history: any[] = [];
   @State() _historyIndex: number = -1;
-  @State() _traversalCall: boolean = false;
+  @State() _traversalCall: number = 0;
 
   // Private properties that mirror the original (will be set in componentDidLoad)
   private _map: any;
@@ -87,9 +87,8 @@ private _scaleBar: any;
     // create an array to track the history of the map and the current index
     this._history = [];
     this._historyIndex = -1;
-    this._traversalCall = false;
+    this._traversalCall = 0;
   }
-
   // see comments below regarding attributeChangedCallback vs. getter/setter
   // usage.  Effectively, the user of the element must use the property, not
   // the getAttribute/setAttribute/removeAttribute DOM API, because the latter
@@ -103,12 +102,9 @@ private _scaleBar: any;
       this._toggleControls();
     }
   }
-
-  // Override the controls prop with true HTML boolean attribute behavior
   get controls() {
     return this.el.hasAttribute('controls');
   }
-
   @Watch('_controlslist')
   controlsListChanged(newValue: string) {
     if (this._controlsList) {
@@ -119,12 +115,10 @@ private _scaleBar: any;
       }
     }
   }
-
   // controlsList getter/setter - mirrors original mapml-viewer.js
   get controlsList(): DOMTokenList {
     return this._controlsList;
   }
-
   set controlsList(value: string | null) {
     if (this._controlsList && typeof value === 'string') {
       this._controlsList.value = value;
@@ -136,7 +130,6 @@ private _scaleBar: any;
       this.el.removeAttribute('controlslist');
     }
   }
-
   @Watch('width')
   widthChanged(_newValue: string) {
     // Mirror original width setter logic
@@ -166,17 +159,6 @@ private _scaleBar: any;
       // Update map center
     }
   }
-
-  @Watch('zoom')
-  zoomChanged(newValue: number) {
-    var parsedVal = parseInt(newValue.toString(), 10);
-    if (!isNaN(parsedVal) && parsedVal >= 0 && parsedVal <= 25) {
-      if (this._map) {
-        // Update map zoom
-      }
-    }
-  }
-
   @Watch('projection')
   async projectionChanged(newValue: string) {
     if (newValue) {
@@ -188,14 +170,20 @@ private _scaleBar: any;
       }
     }
   }
-
-  // Mirror the getter properties from original
+  @Watch('zoom')
+  zoomChanged(newValue: number) {
+    var parsedVal = parseInt(newValue.toString(), 10);
+    if (!isNaN(parsedVal) && parsedVal >= 0 && parsedVal <= 25) {
+      if (this._map) {
+        // Update map zoom
+      }
+    }
+  }
   get layers() {
     return this.el.getElementsByTagName('map-layer');
   }
 
   get extent() {
-    if (!this._map) return null;
     let map = this._map,
       pcrsBounds = Util.pixelToPCRSBounds(
         map.getPixelBounds(),
@@ -218,13 +206,22 @@ private _scaleBar: any;
           maxZoom = (this.layers[i] as any).extent.zoom.maxZoom;
       }
     }
-    formattedExtent.zoom = { minZoom, maxZoom };
+
+    formattedExtent.zoom = {
+      minZoom: minZoom !== Infinity ? minZoom : map.getMinZoom(),
+      maxZoom: maxZoom !== -Infinity ? maxZoom : map.getMaxZoom()
+    };
     return formattedExtent;
   }
 
   // Mirror the connectedCallback logic in componentDidLoad
   async componentDidLoad() {
     try {
+    this._source = this.el.outerHTML;
+    // create an array to track the history of the map and the current index
+      this._history = [];
+      this._historyIndex = -1;
+      this._traversalCall = 0;
       // Ensure MapML controls are loaded and their init hooks are registered
       // BEFORE creating any maps. This is critical for proper attribution control.
       await this._ensureControlsLoaded();
@@ -302,44 +299,22 @@ private _scaleBar: any;
       throw new Error('Error: ' + e);
     }
   }
-
-  // Mirror disconnectedCallback
-  disconnectedCallback() {
-    // Add cleanup logic from original disconnectedCallback
-    if (this._map) {
-      this._map.remove();
-    }
-  }
-
-  // Helper methods that mirror the original
-  async _ensureControlsLoaded() {
-    // Force MapML control modules to load and register their init hooks
-    // This ensures attribution and other controls work properly
-    try {
-      console.log('Loading MapML controls...');
-      await import('../../utils/mapml/control/AttributionButton.js');
-      // TODO: Load other controls as needed
-      // await import('../../utils/mapml/control/ReloadButton.js');
-      // await import('../../utils/mapml/control/FullscreenButton.js');
-      console.log('MapML controls loaded successfully');
-    } catch (error) {
-      console.error('Failed to load MapML controls:', error);
-    }
-  }
-
   _setLocale() {
-    // Set up locale support - use prop if provided, otherwise use default
-    if (!this.locale) {
-      // Use the imported default locale
-      this.locale = locale;
+    if (this.el.closest(':lang(fr)') === this.el) {
+      this.locale = (window as any).M.options.localeFr;
+    } else if (this.el.closest(':lang(en)') === this.el) {
+      this.locale = (window as any).M.options.localeEn;
+    } else {
+      // "browser" locale
+      this.locale = (window as any).M.options.locale;
     }
-    
-    // Make locale available on the element for MapML controls
-    (this.el as any).locale = this.locale;
-    
-    console.log('Locale set to:', this.locale);
   }
+  disconnectedCallback() {
+    this._removeEvents();
 
+    delete this._map;
+    this._deleteControls();
+  }
   _initShadowRoot() {
     // In Stencil, shadow DOM structure is handled by render()
     // This method now only handles the light DOM hiding CSS
@@ -350,6 +325,20 @@ private _scaleBar: any;
     this.el.appendChild(hideElementsCSS);
     
     // Note: _container is now set via ref in render(), shadow DOM creation is automatic
+  }
+
+  // Helper methods that mirror the original
+  async _ensureControlsLoaded() {
+    // Force MapML control modules to load and register their init hooks
+    // This ensures attribution and other controls work properly
+    try {
+      console.log('Loading MapML controls...');
+      await import('../../utils/mapml/control/AttributionButton.js');
+      // TODO: Load other controls if needed
+      console.log('MapML controls loaded successfully');
+    } catch (error) {
+      console.error('Failed to load MapML controls:', error);
+    }
   }
 
   _changeWidth(_w: number | string) {
@@ -407,7 +396,36 @@ private _scaleBar: any;
   }
 
   _addToHistory() {
-    // TODO: Implement history management
+    if (this._traversalCall > 0) {
+      // this._traversalCall tracks how many consecutive moveends to ignore from history
+      this._traversalCall--; // this is useful for ignoring moveends corresponding to back, forward and reload
+      return;
+    }
+
+    let mapLocation = this._map.getPixelBounds().getCenter();
+    let location = {
+      zoom: this._map.getZoom(),
+      x: mapLocation.x,
+      y: mapLocation.y
+    };
+    this._historyIndex++;
+    this._history.splice(this._historyIndex, 0, location);
+    // Remove future history and overwrite it when map pan/zoom while inside history
+    if (this._historyIndex + 1 !== this._history.length) {
+      this._history.length = this._historyIndex + 1;
+    }
+    if (this._historyIndex === 0) {
+      // when at initial state of map, disable back, forward, and reload items
+      this._map.contextMenu.toggleContextMenuItem('Back', 'disabled'); // back contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled'); // reload contextmenu item
+      this._reloadButton?.disable();
+    } else {
+      this._map.contextMenu.toggleContextMenuItem('Back', 'enabled'); // back contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Reload', 'enabled'); // reload contextmenu item
+      this._reloadButton?.enable();
+    }
   }
 
   // Creates All map controls and adds them to the map, when created.
@@ -421,16 +439,16 @@ private _scaleBar: any;
     // }).addTo(this._map);
     // this._map.on('movestart', this._layerControl.collapse, this._layerControl);
 
-    // let scaleValue = M.options.announceScale;
+    let scaleValue = (window as any).M.options.announceScale;
 
-    // if (scaleValue === 'metric') {
-    //   scaleValue = { metric: true, imperial: false };
-    // }
-    // if (scaleValue === 'imperial') {
-    //   scaleValue = { metric: false, imperial: true };
-    // }
+    if (scaleValue === 'metric') {
+      scaleValue = { metric: true, imperial: false };
+    }
+    if (scaleValue === 'imperial') {
+      scaleValue = { metric: false, imperial: true };
+    }
 
-    // if (!this._scaleBar) this._scaleBar = scaleBar(scaleValue).addTo(this._map);
+    if (!this._scaleBar) this._scaleBar = scaleBar(scaleValue).addTo(this._map);
 
     // Only add controls if there is enough top left vertical space
     if (!this._zoomControl && totalSize + 93 <= mapSize) {
@@ -442,18 +460,18 @@ private _scaleBar: any;
         })
         .addTo(this._map);
     }
-    // if (!this._reloadButton && totalSize + 49 <= mapSize) {
-    //   totalSize += 49;
-    //   this._reloadButton = reloadButton().addTo(this._map);
-    // }
-    // if (!this._fullScreenControl && totalSize + 49 <= mapSize) {
-    //   totalSize += 49;
-    //   this._fullScreenControl = fullscreenButton().addTo(this._map);
-    // }
+    if (!this._reloadButton && totalSize + 49 <= mapSize) {
+      totalSize += 49;
+      this._reloadButton = reloadButton().addTo(this._map);
+    }
+    if (!this._fullScreenControl && totalSize + 49 <= mapSize) {
+      totalSize += 49;
+      this._fullScreenControl = fullscreenButton().addTo(this._map);
+    }
 
-    // if (!this._geolocationButton) {
-    //   this._geolocationButton = geolocationButton().addTo(this._map);
-    // }
+    if (!this._geolocationButton) {
+      this._geolocationButton = geolocationButton().addTo(this._map);
+    }
   }
 
   // Sets controls by hiding/unhiding them based on the map attribute
@@ -468,20 +486,20 @@ private _scaleBar: any;
   }
 
   _hideControls() {
-    // this._setControlsVisibility('fullscreen', true);
-    // this._setControlsVisibility('layercontrol', true);
-    // this._setControlsVisibility('reload', true);
+    this._setControlsVisibility('fullscreen', true);
+    this._setControlsVisibility('layercontrol', true);
+    this._setControlsVisibility('reload', true);
     this._setControlsVisibility('zoom', true);
-    // this._setControlsVisibility('geolocation', true);
-    // this._setControlsVisibility('scale', true);
+    this._setControlsVisibility('geolocation', true);
+    this._setControlsVisibility('scale', true);
   }
   _showControls() {
-    // this._setControlsVisibility('fullscreen', false);
-    // this._setControlsVisibility('layercontrol', false);
-    // this._setControlsVisibility('reload', false);
+    this._setControlsVisibility('fullscreen', false);
+    this._setControlsVisibility('layercontrol', false);
+    this._setControlsVisibility('reload', false);
     this._setControlsVisibility('zoom', false);
-    // this._setControlsVisibility('geolocation', true);
-    // this._setControlsVisibility('scale', false);
+    this._setControlsVisibility('geolocation', true);
+    this._setControlsVisibility('scale', false);
 
     // prune the controls shown if necessary
     // this logic could be embedded in _showControls
@@ -584,6 +602,7 @@ private _scaleBar: any;
       'moveend',
       function () {
         this._updateMapCenter();
+        this._addToHistory();
         this.el.dispatchEvent(
           new CustomEvent('moveend', { detail: { target: this } })
         );
@@ -631,6 +650,49 @@ private _scaleBar: any;
     // TODO: Implement event cleanup
   }
 
+  /**
+   * Allows the user to reload/reset the map's location to it's initial location
+   */
+  reload() {
+    let initialLocation = this._history.shift();
+    let mapLocation = this._map.getPixelBounds().getCenter();
+    let curr = {
+      zoom: this._map.getZoom(),
+      x: mapLocation.x,
+      y: mapLocation.y
+    };
+
+    this._map.contextMenu.toggleContextMenuItem('Back', 'disabled'); // back contextmenu item
+    this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
+    this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled'); // reload contextmenu item
+    this._reloadButton?.disable();
+
+    this._history = [initialLocation];
+    this._historyIndex = 0;
+
+    if (initialLocation.zoom !== curr.zoom) {
+      this._traversalCall = 2; // ignores the next 2 moveend events
+
+      let currScale = this._map.options.crs.scale(curr.zoom); // gets the scale of the current zoom level
+      let initScale = this._map.options.crs.scale(initialLocation.zoom); // gets the scale of the initial location's zoom
+
+      let scale = currScale / initScale;
+
+      this._map.panBy(
+        [
+          initialLocation.x * scale - curr.x,
+          initialLocation.y * scale - curr.y
+        ],
+        { animate: false }
+      );
+      this._map.setZoom(initialLocation.zoom);
+    } else {
+      // if it's on the same zoom level as the initial location, no need to calculate scales
+      this._traversalCall = 1;
+      this._map.panBy([initialLocation.x - curr.x, initialLocation.y - curr.y]);
+    }
+    this._map.getContainer().focus();
+  }
 
   async whenProjectionDefined(projection: string) {
     // Mirror the original whenProjectionDefined logic
