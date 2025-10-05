@@ -5,16 +5,18 @@
 This is a **Stencil-based fork** of MapML viewer technology that creates GCDS-compliant web map components. The architecture follows a **shadow DOM encapsulation pattern** with a critical **"set once"** property design.
 
 ### Key Components
-- **`gcds-map`**: Main Stencil component that wraps `mapml-viewer` in shadow DOM
-- many other gcds components will be added to mirror the corresponding map-* components in MapML.js
-- each map-* component in MapML.js will have a corresponding gcds-* component here, of the same name except for
-the gcds-map component which will replace mapml-viewer.
-- **MapML source**: Embedded copy of MapML.js library (`src/mapml-source/`) as a git submodule of this repo. This the "source" code that will be progressively refactored into gcds-* components.
+- **`gcds-map`**: Main Stencil component that is a stencil refactoring of `mapml-viewer` from src/mapml-source/mapml-viewer.js
+  - wraps a Leaflet map instance in its shadow DOM
+  - manages map properties (lat, lon, zoom, etc.) some of which are set once at initialization by the user and then updated by the component as the view changes
+  - dynamically loads MapML controls to ensure proper Leaflet init hooks
+ many other stencil components will be added via refactoring of the corresponding map-* components in MapML.js
+- each map-* component in MapML.js will have a corresponding map-* stencil component here, of the same name except for the gcds-map component which will replace mapml-viewer.
+- **MapML source**: Embedded copy of MapML.js library (`src/mapml-source/`) as a git submodule of this repo. This the "source" code that will be progressively refactored into gcds-* components. It is not involved in the build and should not be referenced or modified in this project
 
 ## Essential Development Patterns
 - migrating and refactoring from mapml-source/**/*.js files to src/components/**/*.tsx files
-- will try to keep / migrate the tests from the mapml-source/test/ folder to the corresponding src/components/gcds-* component test folder, if possible
-- the key reason to include the mapml-source as a submodule is to have access to the original source code for reference while refactoring. The maintenance of the gcds-map and other gcds-* components will be done by using graphical diff / apply  changes if and where possible. Consequently, source order and correspondence of files and file names will be important while refactoring.
+- will try to keep / migrate the tests from the mapml-source/test/ folder to the corresponding src/components/gcds-* or map- component test folder, if possible
+- the key reason to include the mapml-source as a submodule is to have access to the original source code for reference while refactoring. The maintenance of the gcds-map and other stencil map-* components will be done by using graphical diff / apply  changes if and where possible. Consequently, source order and correspondence of files and file names will be important while refactoring.
 
 
 ### "Set Once" Property Design
