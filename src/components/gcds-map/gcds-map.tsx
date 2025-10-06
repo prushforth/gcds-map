@@ -113,6 +113,8 @@ private _scaleBar: any;
       if (this._map) {
         this._toggleControls();
       }
+      
+      // Element property is now handled by getter/setter, no manual sync needed
     }
   }
   // controlsList getter/setter - mirrors original mapml-viewer.js
@@ -120,14 +122,19 @@ private _scaleBar: any;
     return this._controlsList;
   }
   set controlsList(value: string | null) {
-    if (this._controlsList && typeof value === 'string') {
-      this._controlsList.value = value;
-    }
-    // Update the HTML attribute to match
-    if (value) {
-      this.el.setAttribute('controlslist', value);
-    } else {
-      this.el.removeAttribute('controlslist');
+    // This is the component API for programmatic HTML attribute updates
+    if (this._controlsList && (typeof value === 'string' || value === null)) {
+      // Update HTML attribute (standard behavior)
+      if (value) {
+        this.el.setAttribute('controlslist', value);
+      } else {
+        this.el.removeAttribute('controlslist');
+      }
+      // DOMTokenList automatically reflects the attribute change
+      // Re-toggle controls based on new attribute value
+      if (this._map) {
+        this._toggleControls();
+      }
     }
   }
   @Watch('width')
@@ -222,6 +229,10 @@ private _scaleBar: any;
       this._history = [];
       this._historyIndex = -1;
       this._traversalCall = 0;
+      
+      // Sync initial history state to element for MapML controls
+      (this.el as any)._history = this._history;
+      (this.el as any)._historyIndex = this._historyIndex;
       // Ensure MapML controls are loaded and their init hooks are registered
       // BEFORE creating any maps. This is critical for proper attribution control.
       await this._ensureControlsLoaded();
@@ -333,7 +344,15 @@ private _scaleBar: any;
     // This ensures attribution and other controls work properly
     try {
       console.log('Loading MapML controls...');
-      await import('../../utils/mapml/control/AttributionButton.js');
+    // await import('leaflet');
+    // const locateModule = await import('leaflet.locatecontrol');
+    // console.log('LocateControl loaded:', locateModule);
+    
+    // // Now load GeolocationButton which depends on LocateControl
+    // const geolocationModule = await import('../../utils/mapml/control/GeolocationButton.js');
+    // console.log('GeolocationButton loaded:', geolocationModule);
+
+    await import('../../utils/mapml/control/AttributionButton.js');
       // TODO: Load other controls if needed
       console.log('MapML controls loaded successfully');
     } catch (error) {
@@ -381,6 +400,29 @@ private _scaleBar: any;
       (this.el as any)._map = this._map;
       (window as any).__debugMap = this._map;
       
+      // Expose component history properties on element for MapML control compatibility
+      (this.el as any)._history = this._history;
+      (this.el as any)._historyIndex = this._historyIndex;
+      
+      // Expose controlsList API on element for MapML control compatibility
+      // Follow standard HTML DOMTokenList behavior (like video.controlsList)
+      Object.defineProperty(this.el, 'controlsList', {
+        get: () => this._controlsList,
+        set: (value: string | null) => {
+          // Standard behavior: property assignment updates DOMTokenList value
+          // but does NOT update HTML attribute (unlike component setter)
+          if (this._controlsList && (typeof value === 'string' || value === null)) {
+            this._controlsList.value = value || '';
+            // Trigger control visibility updates without changing HTML attribute
+            if (this._map) {
+              this._toggleControls();
+            }
+          }
+        },
+        configurable: true,
+        enumerable: true
+      });
+      
       this._addToHistory();
       this._createControls();
       this._toggleControls();
@@ -426,6 +468,10 @@ private _scaleBar: any;
       this._map.contextMenu.toggleContextMenuItem('Reload', 'enabled'); // reload contextmenu item
       this._reloadButton?.enable();
     }
+    
+    // Sync updated history properties to element for MapML controls
+    (this.el as any)._history = this._history;
+    (this.el as any)._historyIndex = this._historyIndex;
   }
 
   // Creates All map controls and adds them to the map, when created.
@@ -651,6 +697,84 @@ private _scaleBar: any;
   }
 
   /**
+   * Allow user to move back in history
+   */
+  back() {
+    let history = this._history;
+    let curr = history[this._historyIndex];
+
+    if (this._historyIndex > 0) {
+      this._map.contextMenu.toggleContextMenuItem('Forward', 'enabled');
+      this._historyIndex--;
+      let prev = history[this._historyIndex];
+      
+      // Disable back, reload contextmenu item when at the end of history
+      if (this._historyIndex === 0) {
+        this._map.contextMenu.toggleContextMenuItem('Back', 'disabled');
+        this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled');
+        this._reloadButton?.disable();
+      }
+
+      if (prev.zoom !== curr.zoom) {
+        this._traversalCall = 2;
+        let currScale = this._map.options.crs.scale(curr.zoom);
+        let prevScale = this._map.options.crs.scale(prev.zoom);
+        let scale = currScale / prevScale;
+        this._map.panBy([
+          prev.x * scale - curr.x,
+          prev.y * scale - curr.y
+        ], { animate: false });
+        this._map.setZoom(prev.zoom);
+      } else {
+        this._traversalCall = 1;
+        this._map.panBy([prev.x - curr.x, prev.y - curr.y]);
+      }
+      
+      // Sync updated history properties to element
+      (this.el as any)._history = this._history;
+      (this.el as any)._historyIndex = this._historyIndex;
+    }
+  }
+
+  /**
+   * Allows user to move forward in history
+   */
+  forward() {
+    let history = this._history;
+    let curr = history[this._historyIndex];
+    
+    if (this._historyIndex < history.length - 1) {
+      this._map.contextMenu.toggleContextMenuItem('Back', 'enabled');
+      this._historyIndex++;
+      let next = history[this._historyIndex];
+      
+      // Disable forward contextmenu item when at the end of history
+      if (this._historyIndex === history.length - 1) {
+        this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled');
+      }
+
+      if (next.zoom !== curr.zoom) {
+        this._traversalCall = 2;
+        let currScale = this._map.options.crs.scale(curr.zoom);
+        let nextScale = this._map.options.crs.scale(next.zoom);
+        let scale = currScale / nextScale;
+        this._map.panBy([
+          next.x * scale - curr.x,
+          next.y * scale - curr.y
+        ], { animate: false });
+        this._map.setZoom(next.zoom);
+      } else {
+        this._traversalCall = 1;
+        this._map.panBy([next.x - curr.x, next.y - curr.y]);
+      }
+      
+      // Sync updated history properties to element
+      (this.el as any)._history = this._history;
+      (this.el as any)._historyIndex = this._historyIndex;
+    }
+  }
+
+  /**
    * Allows the user to reload/reset the map's location to it's initial location
    */
   reload() {
@@ -669,6 +793,10 @@ private _scaleBar: any;
 
     this._history = [initialLocation];
     this._historyIndex = 0;
+    
+    // Sync updated history properties to element for MapML controls
+    (this.el as any)._history = this._history;
+    (this.el as any)._historyIndex = this._historyIndex;
 
     if (initialLocation.zoom !== curr.zoom) {
       this._traversalCall = 2; // ignores the next 2 moveend events

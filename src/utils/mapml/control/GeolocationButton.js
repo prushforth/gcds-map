@@ -1,5 +1,5 @@
 import { Control } from 'leaflet';
-import { LocateControl } from 'leaflet.locatecontrol';
+import LocateControl from 'leaflet.locatecontrol'; // default export works, doesn't rely on bundler
 
 export var GeolocationButton = Control.extend({
   options: {

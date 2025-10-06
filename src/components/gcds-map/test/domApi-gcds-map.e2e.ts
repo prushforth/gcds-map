@@ -68,7 +68,7 @@ test.describe('gcds-map DOM API Tests', () => {
     expect(velName).toBe('GCDS-MAP');
     // check for error messages in console
     expect(errorLogs.length).toBe(0);
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(500);
     // testing to ensure gcds-map was successfully implemented
     let verifymap = await page.evaluate(
       () => document.body.querySelector('gcds-map')?.childElementCount
@@ -198,32 +198,32 @@ test.describe('gcds-map DOM API Tests', () => {
       '.leaflet-top.leaflet-left > .leaflet-control-zoom',
       (div) => (div as HTMLElement).hidden
     );
-    // let reloadHidden = await page.$eval(
-    //   '.leaflet-top.leaflet-left > .mapml-reload-button',
-    //   (div) => (div as HTMLElement).hidden
-    // );
-    // let fullscreenHidden = await page.$eval(
-    //   '.leaflet-top.leaflet-left > .leaflet-control-fullscreen',
-    //   (div) => (div as HTMLElement).hidden
-    // );
-    // let layerControlHidden = await page.$eval(
-    //   '.leaflet-top.leaflet-right > .leaflet-control-layers',
-    //   (div) => (div as HTMLElement).hidden
-    // );
-    // let scaleHidden = await page.$eval(
-    //   '.leaflet-bottom.leaflet-left > .mapml-control-scale',
-    //   (div) => (div as HTMLElement).hidden
-    // );
-    // let geolocation = await page.$eval(
-    //   '.leaflet-bottom.leaflet-right > .leaflet-control-locate',
-    //   (div) => (div as HTMLElement).hidden
-    // );
-    // expect(geolocation).toEqual(true);
+    let reloadHidden = await page.$eval(
+      '.leaflet-top.leaflet-left > .mapml-reload-button',
+      (div) => (div as HTMLElement).hidden
+    );
+    let fullscreenHidden = await page.$eval(
+      '.leaflet-top.leaflet-left > .leaflet-control-fullscreen',
+      (div) => (div as HTMLElement).hidden
+    );
+    let layerControlHidden = await page.$eval(
+      '.leaflet-top.leaflet-right > .leaflet-control-layers',
+      (div) => (div as HTMLElement).hidden
+    );
+    let scaleHidden = await page.$eval(
+      '.leaflet-bottom.leaflet-left > .mapml-control-scale',
+      (div) => (div as HTMLElement).hidden
+    );
+    let geolocation = await page.$eval(
+      '.leaflet-bottom.leaflet-right > .leaflet-control-locate',
+      (div) => (div as HTMLElement).hidden
+    );
+    expect(geolocation).toEqual(true);
     expect(zoomHidden).toEqual(true);
-    // expect(reloadHidden).toEqual(true);
-    // expect(fullscreenHidden).toEqual(true);
-    // expect(layerControlHidden).toEqual(true);
-    // expect(scaleHidden).toEqual(true);
+    expect(reloadHidden).toEqual(true);
+    expect(fullscreenHidden).toEqual(true);
+    expect(layerControlHidden).toEqual(true);
+    expect(scaleHidden).toEqual(true);
   });
 
   test.skip('Removing layer removes layer control', async () => {
