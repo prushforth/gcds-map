@@ -1,4 +1,4 @@
-import { locale, localeFr } from '../../utils/mapml/generated-locale.js';
+import { locale, localeFr } from '../../../utils/mapml/generated-locale.js';
 
 export var Options = {
   featureIndexOverlayOption: false,

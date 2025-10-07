@@ -1,27 +1,107 @@
-# gcds-map-layer
+# map-layer Component
 
+Refactored from `mapml-source/src/map-layer.js` and `layer.js`.
 
+## Overview
+
+The `map-layer` component represents a layer in a MapML map. It extends the `BaseLayerElement` functionality and provides:
+
+- Layer content loading (local or remote via `src`)
+- Layer visibility and opacity controls
+- Media query support for responsive layers
+- Integration with map layer controls
+
+## Usage
+
+```html
+<!-- Basic layer -->
+<map-layer label="My Layer" checked>
+  <!-- Local MapML content -->
+  <map-feature>...</map-feature>
+</map-layer>
+
+<!-- Remote layer -->
+<map-layer src="https://example.com/layer.mapml" label="Remote Layer" checked></map-layer>
+
+<!-- Layer with opacity -->
+<map-layer src="layer.mapml" label="Semi-transparent" opacity="0.5" checked></map-layer>
+
+<!-- Responsive layer -->
+<map-layer src="mobile.mapml" media="(max-width: 768px)" label="Mobile Layer" checked></map-layer>
+```
+
+## Integration with gcds-map
+
+The `map-layer` component must be used within a `gcds-map` component:
+
+```html
+<gcds-map lat="45.4215" lon="-75.6972" zoom="10" projection="OSMTILE" controls>
+  <map-layer src="canada-base.mapml" label="Canada Base" checked></map-layer>
+  <map-layer src="population.mapml" label="Population Data" opacity="0.7"></map-layer>
+</gcds-map>
+```
 
 <!-- Auto Generated Below -->
 
+
+## Overview
+
+Map Layer component - refactored from mapml-source/src/map-layer.js
+Uses composition instead of inheritance due to Stencil constraints
 
 ## Properties
 
 | Property  | Attribute | Description | Type      | Default     |
 | --------- | --------- | ----------- | --------- | ----------- |
 | `checked` | `checked` |             | `boolean` | `false`     |
-| `label`   | `label`   |             | `string`  | `undefined` |
-| `opacity` | `opacity` |             | `string`  | `undefined` |
-| `src`     | `src`     |             | `string`  | `undefined` |
+| `hidden`  | `hidden`  |             | `boolean` | `false`     |
+| `label`   | `label`   |             | `string`  | `''`        |
+| `media`   | `media`   |             | `string`  | `undefined` |
+| `opacity` | `opacity` |             | `number`  | `1.0`       |
+| `src`     | `src`     |             | `string`  | `''`        |
 
 
-## Events
+## Methods
 
-| Event         | Description | Type               |
-| ------------- | ----------- | ------------------ |
-| `layerchange` |             | `CustomEvent<any>` |
-| `layererror`  |             | `CustomEvent<any>` |
-| `layerload`   |             | `CustomEvent<any>` |
+### `getExtent() => Promise<any>`
+
+
+
+#### Returns
+
+Type: `Promise<any>`
+
+
+
+### `queryable() => Promise<boolean>`
+
+
+
+#### Returns
+
+Type: `Promise<boolean>`
+
+
+
+### `whenReady() => Promise<void>`
+
+
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+### `zoomTo() => Promise<void>`
+
+
+
+#### Returns
+
+Type: `Promise<void>`
+
+
 
 
 ----------------------------------------------

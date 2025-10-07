@@ -1,5 +1,5 @@
 import { Handler } from 'leaflet';
-import { Util } from '../mapml/Util.js';
+import { Util } from '../Util.js';
 export var FeatureIndex = Handler.extend({
   initialize: function (map) {
     Handler.prototype.initialize.call(this, map);

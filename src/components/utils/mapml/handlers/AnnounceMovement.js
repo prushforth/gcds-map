@@ -1,5 +1,5 @@
 import { Handler } from 'leaflet';
-import { Util } from '../mapml/Util.js';
+import { Util } from '../Util.js';
 export var AnnounceMovement = Handler.extend({
   addHooks: function () {
     this._map.on({
@@ -126,7 +126,7 @@ export var AnnounceMovement = Handler.extend({
   },
 
   totalBounds: function (e) {
-    // don't bother with non-MapMLLayer layers...
+    // don't bother with non-MapLayer layers...
     if (!e.layer._layerEl) return;
     let map = this.options.mapEl;
     map.whenLayersReady().then(() => {

@@ -996,11 +996,19 @@ label.mapml-layer-item-toggle {
   
   /* Critical MapML defaults that must be available immediately */
   display: inline-block;
-  height: 150px;        /* Explicit fallback (not min-height) */
-  width: 300px;         /* Explicit fallback (not min-width) */
+  /* Use CSS custom properties for responsive sizing - fallback to defaults if not set */
+  height: var(--map-height, 150px);        
+  width: var(--map-width, 300px);         
   contain: layout size;
   border-width: 2px;
   border-style: inset;
+}
+
+/* Ensure container fills the host element */
+.mapml-map-container {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 /* ===== GCDS LAYER ARCHITECTURE ===== */
@@ -1011,12 +1019,7 @@ label.mapml-layer-item-toggle {
     /* GCDS responsive overrides (when CSS loads) */
     position: relative;
     
-    /* CSS custom properties for flexibility - only override when explicitly set */
-    /* Removed: --map-width: 100%; --map-height: auto; to preserve defaults */
-    
-    /* Only apply responsive sizing when custom properties are explicitly set */
-    width: var(--map-width, 300px);
-    height: var(--map-height, 150px);
+    /* Aspect ratio support for responsive design */
     aspect-ratio: var(--map-aspect);
   }
 }

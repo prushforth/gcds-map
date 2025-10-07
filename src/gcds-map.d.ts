@@ -6,18 +6,10 @@ export interface MapMLViewerElement extends HTMLElement {
   defineCustomProjection: (projection: string) => void;
 }
 
-export interface MapLayerElement extends HTMLElement {
-  label: any;
-  whenReady(): any;
-  src: string;
-  checked: boolean;
-}
-
 // Global HTML element types for mapml-viewer
 declare global {
   interface HTMLElementTagNameMap {
     'mapml-viewer': MapMLViewerElement;
-    'map-layer': MapLayerElement;
   }
   
   interface HTMLMapmlViewerElement extends MapMLViewerElement {}

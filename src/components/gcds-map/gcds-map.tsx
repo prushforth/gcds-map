@@ -5,9 +5,9 @@ import {
   control
 } from 'leaflet';
 // import Proj from 'proj4leaflet/src/proj4leaflet.js';
-import { Util } from '../../utils/mapml/Util.js';
-import { DOMTokenList } from '../../utils/mapml/DOMTokenList';
-// import { locale } from '../../utils/mapml/generated-locale.js';
+import { Util } from '../utils/mapml/Util.js';
+import { DOMTokenList } from '../utils/mapml/DOMTokenList.js';
+import { locale, localeFr } from '../../utils/mapml/generated-locale.js';
 // import { matchMedia } from '../../utils/mapml/elementSupport/viewers/matchMedia.js';
 // TODO: Import Stencil component versions when created
 // import { HTMLLayerElement } from '../map-layer/map-layer.js';
@@ -23,17 +23,18 @@ import { DOMTokenList } from '../../utils/mapml/DOMTokenList';
 // import { HTMLMapAreaElement } from '../map-area/map-area.js';
 
 // TODO: Uncomment when implementing controls
-// import { layerControl } from '../../utils/mapml/control/LayerControl.js';
+import { layerControl } from '../utils/mapml/control/LayerControl.js';
 // due to Stencil bundling shenanigans, the import here doesn't happen 
 // (maybe because it's not actually called anywhere - the attribution control
 // was auto-added and the
 // attribution control doesn't get auto-added 
   // Auto-added via Map.addInitHook
 // import { attributionButton } from '../../utils/mapml/control/AttributionButton.js';
-import { reloadButton } from '../../utils/mapml/control/ReloadButton.js';
-import { scaleBar } from '../../utils/mapml/control/ScaleBar.js';
+import { reloadButton } from '../utils/mapml/control/ReloadButton.js';
+import { scaleBar } from '../utils/mapml/control/ScaleBar.js';
 
-import { geolocationButton } from '../../utils/mapml/control/GeolocationButton.js';
+import { geolocationButton } from '../utils/mapml/control/GeolocationButton.js';
+import { fullscreenButton } from '../utils/mapml/control/FullscreenButton.js';
 // import { debugOverlay } from '../../utils/mapml/layers/DebugOverlay.js';
 // import { crosshair } from '../../utils/mapml/layers/Crosshair.js';
 // import { featureIndexOverlay } from '../../utils/mapml/layers/FeatureIndexOverlay.js';
@@ -127,13 +128,13 @@ export class GcdsMap {
   }
   @Watch('width')
   widthChanged(newValue: string) {
-    if (newValue && this._map) {
+    if (newValue) {
       this._changeWidth(newValue);
     }
   }
   @Watch('height')
   heightChanged(newValue: string) {
-    if (newValue && this._map) {
+    if (newValue) {
       this._changeHeight(newValue);
     }
   }
@@ -259,7 +260,7 @@ export class GcdsMap {
       this._changeWidth(w);
       this._changeHeight(h);
 
-      this._createMap();
+      await this._createMap();
 
       // https://github.com/Maps4HTML/MapML.js/issues/274
       this.el.setAttribute('role', 'application');
@@ -296,12 +297,12 @@ export class GcdsMap {
   }
   _setLocale() {
     if (this.el.closest(':lang(fr)') === this.el) {
-      this.locale = (window as any).M.options.localeFr;
+      this.locale = localeFr;
     } else if (this.el.closest(':lang(en)') === this.el) {
-      this.locale = (window as any).M.options.localeEn;
+      this.locale = locale;
     } else {
-      // "browser" locale
-      this.locale = (window as any).M.options.locale;
+      // Default to English locale for browser default
+      this.locale = locale;
     }
   }
   _initShadowRoot() {
@@ -395,8 +396,7 @@ export class GcdsMap {
     // const geolocationModule = await import('../../utils/mapml/control/GeolocationButton.js');
     // console.log('GeolocationButton loaded:', geolocationModule);
 
-    await import('../../utils/mapml/control/AttributionButton.js');
-      await import('../../utils/mapml/control/FullscreenButton.js');
+      await import('../utils/mapml/control/AttributionButton.js');
       // TODO: Load other controls if needed
       console.log('MapML controls loaded successfully');
     } catch (error) {
@@ -408,13 +408,13 @@ export class GcdsMap {
     let mapSize = this._map.getSize().y,
       totalSize = 0;
 
-    // this._layerControl = layerControl(null, {
-    //   collapsed: true,
-    //   mapEl: this
-    // }).addTo(this._map);
-    // this._map.on('movestart', this._layerControl.collapse, this._layerControl);
-    // // Expose on element for MapML compatibility
-    // (this.el as any)._layerControl = this._layerControl;
+    this._layerControl = layerControl(null, {
+      collapsed: true,
+      mapEl: this.el
+    }).addTo(this._map);
+    this._map.on('movestart', this._layerControl.collapse, this._layerControl);
+    // Expose on element for MapML compatibility
+    (this.el as any)._layerControl = this._layerControl;
 
     let scaleValue = (window as any).M.options.announceScale;
 
@@ -451,12 +451,9 @@ export class GcdsMap {
     }
     if (!this._fullScreenControl && totalSize + 49 <= mapSize) {
       totalSize += 49;
-      // Use dynamic import to get fullscreen button
-      import('../../utils/mapml/control/FullscreenButton.js').then((module) => {
-        this._fullScreenControl = module.fullscreenButton().addTo(this._map);
-        // Expose on element for MapML compatibility
-        (this.el as any)._fullScreenControl = this._fullScreenControl;
-      });
+      this._fullScreenControl = fullscreenButton().addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._fullScreenControl = this._fullScreenControl;
     }
 
     if (!this._geolocationButton) {
@@ -523,9 +520,9 @@ export class GcdsMap {
       });
     }
     // Hide layer control if no layers (will be uncommented when layer control is implemented)
-    // if (this._layerControl && this._layerControl._layers.length === 0) {
-    //   this._layerControl._container.setAttribute('hidden', '');
-    // }
+    if (this._layerControl && this._layerControl._layers.length === 0) {
+      this._layerControl._container.setAttribute('hidden', '');
+    }
   }
   // delete the map controls that are private properties of this custom element
   _deleteControls() {
@@ -649,12 +646,12 @@ export class GcdsMap {
   _changeWidth(width: number | string) {
     const widthPx = typeof width === 'string' ? width : width + 'px';
     
-    // Update host element style
-    this.el.style.width = widthPx;
+    // Use CSS custom property instead of inline style for responsive design
+    this.el.style.setProperty('--map-width', widthPx);
     
     // Update container if it exists
     if (this._container) {
-      this._container.style.width = widthPx;
+      this._container.style.width = '100%'; // Container should fill host
     }
     
     // Invalidate map size if map exists
@@ -666,12 +663,12 @@ export class GcdsMap {
   _changeHeight(height: number | string) {
     const heightPx = typeof height === 'string' ? height : height + 'px';
     
-    // Update host element style
-    this.el.style.height = heightPx;
+    // Use CSS custom property instead of inline style for responsive design
+    this.el.style.setProperty('--map-height', heightPx);
     
     // Update container if it exists
     if (this._container) {
-      this._container.style.height = heightPx;
+      this._container.style.height = '100%'; // Container should fill host
     }
     
     // Invalidate map size if map exists

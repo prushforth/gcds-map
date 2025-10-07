@@ -175,6 +175,7 @@ test.describe('gcds-map DOM API Tests', () => {
   });
 
   test('Toggle all gcds-map controls by adding or removing controls attribute', async () => {
+    await page.pause();
     const viewerHandle = await page.evaluateHandle(() =>
       document.querySelector('gcds-map')
     );

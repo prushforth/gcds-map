@@ -27,7 +27,9 @@
     "loader/"
   ],
   "scripts": {
+    "prebuild": "node scripts/generate-locale.js",
     "build": "stencil build",
+    "prestart": "node scripts/generate-locale.js",
     "start": "stencil build --dev --watch --serve",
     "test": "playwright test",
     "storybook": "storybook dev -p 6006",

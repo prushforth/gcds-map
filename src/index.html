@@ -30,15 +30,19 @@
   <body>
 
 
-      <gcds-container size="xl" main-container centered tag="main" lang="fr">
+      <gcds-container size="xl" main-container centered tag="main">
 
       <gcds-heading tag="h2">Proof of concept for plugin / peer dependency architecture</gcds-heading>
 
       <gcds-text>This demo uses gcds components as an npm "peer dependency",and the &lt;component-display&gt; and &lt;gcds-map&gt; plugins</gcds-text>
 
-      <gcds-heading tag="h2">&lt;gcds-map&gt; plugin</gcds-heading>
+      <gcds-heading tag="h2">&lt;gcds-map&gt; plugin with &lt;map-layer&gt;</gcds-heading>
 
-      <gcds-map lat="45.4215" lon="-75.6972" zoom="10" projection="OSMTILE" controls></gcds-map>
+      <gcds-map  lang="fr" lat="45.4215" lon="-75.6972" zoom="10" projection="OSMTILE" controls>
+        <map-layer label="Test Layer" checked opacity="0.8">
+          <!-- Local MapML content would go here -->
+        </map-layer>
+      </gcds-map>
 
       <gcds-heading tag="h2">Button</gcds-heading>
 

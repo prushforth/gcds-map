@@ -36,6 +36,37 @@ export namespace Components {
          */
         "zoom"?: number;
     }
+    /**
+     * Map Layer component - refactored from mapml-source/src/map-layer.js
+     * Uses composition instead of inheritance due to Stencil constraints
+     */
+    interface MapLayer {
+        /**
+          * @default false
+         */
+        "checked": boolean;
+        "getExtent": () => Promise<any>;
+        /**
+          * @default false
+         */
+        "hidden": boolean;
+        /**
+          * @default ''
+         */
+        "label": string;
+        "media": string;
+        /**
+          * @default 1.0
+         */
+        "opacity": number;
+        "queryable": () => Promise<boolean>;
+        /**
+          * @default ''
+         */
+        "src": string;
+        "whenReady": () => Promise<void>;
+        "zoomTo": () => Promise<void>;
+    }
 }
 declare global {
     interface HTMLGcdsMapElement extends Components.GcdsMap, HTMLStencilElement {
@@ -44,8 +75,19 @@ declare global {
         prototype: HTMLGcdsMapElement;
         new (): HTMLGcdsMapElement;
     };
+    /**
+     * Map Layer component - refactored from mapml-source/src/map-layer.js
+     * Uses composition instead of inheritance due to Stencil constraints
+     */
+    interface HTMLMapLayerElement extends Components.MapLayer, HTMLStencilElement {
+    }
+    var HTMLMapLayerElement: {
+        prototype: HTMLMapLayerElement;
+        new (): HTMLMapLayerElement;
+    };
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
+        "map-layer": HTMLMapLayerElement;
     }
 }
 declare namespace LocalJSX {
@@ -79,8 +121,36 @@ declare namespace LocalJSX {
          */
         "zoom"?: number;
     }
+    /**
+     * Map Layer component - refactored from mapml-source/src/map-layer.js
+     * Uses composition instead of inheritance due to Stencil constraints
+     */
+    interface MapLayer {
+        /**
+          * @default false
+         */
+        "checked"?: boolean;
+        /**
+          * @default false
+         */
+        "hidden"?: boolean;
+        /**
+          * @default ''
+         */
+        "label"?: string;
+        "media"?: string;
+        /**
+          * @default 1.0
+         */
+        "opacity"?: number;
+        /**
+          * @default ''
+         */
+        "src"?: string;
+    }
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
+        "map-layer": MapLayer;
     }
 }
 export { LocalJSX as JSX };
@@ -88,6 +158,11 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
+            /**
+             * Map Layer component - refactored from mapml-source/src/map-layer.js
+             * Uses composition instead of inheritance due to Stencil constraints
+             */
+            "map-layer": LocalJSX.MapLayer & JSXBase.HTMLAttributes<HTMLMapLayerElement>;
         }
     }
 }

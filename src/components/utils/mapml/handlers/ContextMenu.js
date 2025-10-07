@@ -7,7 +7,7 @@ import {
   stamp,
   extend
 } from 'leaflet';
-import { Util } from '../mapml/Util.js';
+import { Util } from '../Util.js';
 /*
 MIT License related to portions of M.ContextMenu 
 Copyright (c) 2017 adam.ratcliffe@gmail.com
