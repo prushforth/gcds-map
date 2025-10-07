@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCDS Map Fullscreen Test</title>
+    <script type="module" src="/build/gcds-map.esm.js"></script>
+    <script nomodule src="/build/gcds-map.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        gcds-map {
+            width: 600px;
+            height: 400px;
+            border: 2px solid #ccc;
+        }
+        .test-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>GCDS Map Fullscreen Test</h1>
+        <p>This test verifies that fullscreen functionality works via the original Leaflet Handler approach:</p>
+        <ul>
+            <li>✅ No `requestFullscreen` method exposed on gcds-map component</li>
+            <li>✅ Fullscreen functionality handled entirely by FullscreenButton Leaflet control</li>
+            <li>✅ Control calls `map.toggleFullscreen()` which uses native DOM methods directly</li>
+            <li>✅ No circular call issues</li>
+        </ul>
+        <p><strong>Test:</strong> Click the fullscreen button in the map controls (top-left corner)</p>
+    </div>
+
+    <gcds-map 
+        lat="45.4215" 
+        lon="-75.6972" 
+        zoom="10" 
+        projection="OSMTILE"
+        controls>
+    </gcds-map>
+
+    <div class="controls">
+        <button onclick="testFullscreenAccess()">Test: Check if requestFullscreen exists on element</button>
+        <button onclick="testMapAccess()">Test: Check map access</button>
+        <button onclick="checkConsole()">Check Console</button>
+    </div>
+
+    <div id="test-results"></div>
+
+    <script>
+        function testFullscreenAccess() {
+            const map = document.querySelector('gcds-map');
+            const results = document.getElementById('test-results');
+            
+            results.innerHTML = '<h3>Element Method Test Results:</h3>';
+            
+            // Test if requestFullscreen exists on element (it shouldn't be our custom method now)
+            const hasRequestFullscreen = typeof map.requestFullscreen === 'function';
+            results.innerHTML += `<p>Has requestFullscreen: ${hasRequestFullscreen}</p>`;
+            
+            if (hasRequestFullscreen) {
+                // Check if it's the native method or our custom method
+                const isNative = map.requestFullscreen.toString().indexOf('native code') !== -1 || 
+                                 !map.requestFullscreen.toString().includes('this.requestFullscreen()');
+                results.innerHTML += `<p>Is native method: ${isNative}</p>`;
+            }
+            
+            // Test navigation methods (these should still exist)
+            results.innerHTML += `<p>Has reload method: ${typeof map.reload === 'function'}</p>`;
+            results.innerHTML += `<p>Has back method: ${typeof map.back === 'function'}</p>`;
+            results.innerHTML += `<p>Has forward method: ${typeof map.forward === 'function'}</p>`;
+        }
+        
+        function testMapAccess() {
+            const map = document.querySelector('gcds-map');
+            const results = document.getElementById('test-results');
+            
+            results.innerHTML = '<h3>Map Access Test Results:</h3>';
+            
+            // Test if we can access the Leaflet map
+            if (map._map) {
+                results.innerHTML += '<p>✅ Leaflet map accessible via _map</p>';
+                results.innerHTML += `<p>Map has toggleFullscreen: ${typeof map._map.toggleFullscreen === 'function'}</p>`;
+                results.innerHTML += `<p>Map has isFullscreen: ${typeof map._map.isFullscreen === 'function'}</p>`;
+            } else {
+                results.innerHTML += '<p>❌ Leaflet map not accessible</p>';
+            }
+        }
+        
+        function checkConsole() {
+            console.log('=== GCDS Map Fullscreen Test ===');
+            const map = document.querySelector('gcds-map');
+            console.log('Map element:', map);
+            console.log('Leaflet map:', map._map);
+            console.log('Has requestFullscreen on element:', typeof map.requestFullscreen);
+            if (map._map) {
+                console.log('Has toggleFullscreen on map:', typeof map._map.toggleFullscreen);
+                console.log('Has isFullscreen on map:', typeof map._map.isFullscreen);
+            }
+        }
+        
+        // Run initial tests when map is ready
+        setTimeout(() => {
+            testFullscreenAccess();
+            testMapAccess();
+        }, 2000);
+    </script>
+</body>
+</html>

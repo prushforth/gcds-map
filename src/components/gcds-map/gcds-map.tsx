@@ -32,7 +32,7 @@ import { DOMTokenList } from '../../utils/mapml/DOMTokenList';
 // import { attributionButton } from '../../utils/mapml/control/AttributionButton.js';
 import { reloadButton } from '../../utils/mapml/control/ReloadButton.js';
 import { scaleBar } from '../../utils/mapml/control/ScaleBar.js';
-import { fullscreenButton } from '../../utils/mapml/control/FullscreenButton.js';
+
 import { geolocationButton } from '../../utils/mapml/control/GeolocationButton.js';
 // import { debugOverlay } from '../../utils/mapml/layers/DebugOverlay.js';
 // import { crosshair } from '../../utils/mapml/layers/Crosshair.js';
@@ -364,6 +364,11 @@ export class GcdsMap {
         enumerable: true
       });
       
+      // Expose navigation methods on element for MapML control compatibility
+      (this.el as any).reload = () => this.reload();
+      (this.el as any).back = () => this.back();
+      (this.el as any).forward = () => this.forward();
+      
       this._addToHistory();
       this._createControls();
       this._toggleControls();
@@ -391,6 +396,7 @@ export class GcdsMap {
     // console.log('GeolocationButton loaded:', geolocationModule);
 
     await import('../../utils/mapml/control/AttributionButton.js');
+      await import('../../utils/mapml/control/FullscreenButton.js');
       // TODO: Load other controls if needed
       console.log('MapML controls loaded successfully');
     } catch (error) {
@@ -445,9 +451,12 @@ export class GcdsMap {
     }
     if (!this._fullScreenControl && totalSize + 49 <= mapSize) {
       totalSize += 49;
-      this._fullScreenControl = fullscreenButton().addTo(this._map);
-      // Expose on element for MapML compatibility
-      (this.el as any)._fullScreenControl = this._fullScreenControl;
+      // Use dynamic import to get fullscreen button
+      import('../../utils/mapml/control/FullscreenButton.js').then((module) => {
+        this._fullScreenControl = module.fullscreenButton().addTo(this._map);
+        // Expose on element for MapML compatibility
+        (this.el as any)._fullScreenControl = this._fullScreenControl;
+      });
     }
 
     if (!this._geolocationButton) {
@@ -857,6 +866,7 @@ export class GcdsMap {
     }
     this._map.getContainer().focus();
   }
+
   _toggleFullScreen() {
     this._map.toggleFullscreen();
   }

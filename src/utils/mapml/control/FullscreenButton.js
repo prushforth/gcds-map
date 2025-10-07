@@ -63,11 +63,10 @@ Map.include({
   },
 
   toggleFullscreen: function (options) {
-    // the <map> element can't contain a shadow root, so we used a child <div>
-    // <mapml-viewer> can contain a shadow root, so return it directly
+    // <gcds-map> can contain a shadow root, so return it directly
     var mapEl = Util.getClosest(
       this.getContainer(),
-      'mapml-viewer,[is=web-map]'
+      'gcds-map'
     );
     if (this.isFullscreen()) {
       if (options && options.pseudoFullscreen) {
@@ -117,7 +116,7 @@ Map.include({
     this._isFullscreen = fullscreen;
     var container = Util.getClosest(
       this.getContainer(),
-      'mapml-viewer,[is=web-map]'
+      'gcds-map'
     );
     if (fullscreen) {
       DomUtil.addClass(container, 'mapml-fullscreen-on');
@@ -129,7 +128,7 @@ Map.include({
 
   _onFullscreenChange: function (e) {
     var fullscreenElement = Util.getClosest(this.getContainer(), ':fullscreen'),
-      mapEl = Util.getClosest(this.getContainer(), 'mapml-viewer,[is=web-map]');
+      mapEl = Util.getClosest(this.getContainer(), 'gcds-map');
     if (fullscreenElement === mapEl && !this._isFullscreen) {
       this._setFullscreen(true);
       this.fire('fullscreenchange');

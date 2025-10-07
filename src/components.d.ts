@@ -36,19 +36,6 @@ export namespace Components {
          */
         "zoom"?: number;
     }
-    interface GcdsMapLayer {
-        /**
-          * @default false
-         */
-        "checked"?: boolean;
-        "label"?: string;
-        "opacity"?: string;
-        "src": string;
-    }
-}
-export interface GcdsMapLayerCustomEvent<T> extends CustomEvent<T> {
-    detail: T;
-    target: HTMLGcdsMapLayerElement;
 }
 declare global {
     interface HTMLGcdsMapElement extends Components.GcdsMap, HTMLStencilElement {
@@ -57,28 +44,8 @@ declare global {
         prototype: HTMLGcdsMapElement;
         new (): HTMLGcdsMapElement;
     };
-    interface HTMLGcdsMapLayerElementEventMap {
-        "layerchange": any;
-        "layerload": any;
-        "layererror": any;
-    }
-    interface HTMLGcdsMapLayerElement extends Components.GcdsMapLayer, HTMLStencilElement {
-        addEventListener<K extends keyof HTMLGcdsMapLayerElementEventMap>(type: K, listener: (this: HTMLGcdsMapLayerElement, ev: GcdsMapLayerCustomEvent<HTMLGcdsMapLayerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLGcdsMapLayerElementEventMap>(type: K, listener: (this: HTMLGcdsMapLayerElement, ev: GcdsMapLayerCustomEvent<HTMLGcdsMapLayerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-    }
-    var HTMLGcdsMapLayerElement: {
-        prototype: HTMLGcdsMapLayerElement;
-        new (): HTMLGcdsMapLayerElement;
-    };
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
-        "gcds-map-layer": HTMLGcdsMapLayerElement;
     }
 }
 declare namespace LocalJSX {
@@ -112,21 +79,8 @@ declare namespace LocalJSX {
          */
         "zoom"?: number;
     }
-    interface GcdsMapLayer {
-        /**
-          * @default false
-         */
-        "checked"?: boolean;
-        "label"?: string;
-        "onLayerchange"?: (event: GcdsMapLayerCustomEvent<any>) => void;
-        "onLayererror"?: (event: GcdsMapLayerCustomEvent<any>) => void;
-        "onLayerload"?: (event: GcdsMapLayerCustomEvent<any>) => void;
-        "opacity"?: string;
-        "src"?: string;
-    }
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
-        "gcds-map-layer": GcdsMapLayer;
     }
 }
 export { LocalJSX as JSX };
@@ -134,7 +88,6 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
-            "gcds-map-layer": LocalJSX.GcdsMapLayer & JSXBase.HTMLAttributes<HTMLGcdsMapLayerElement>;
         }
     }
 }
