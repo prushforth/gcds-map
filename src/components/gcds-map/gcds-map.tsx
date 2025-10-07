@@ -63,7 +63,7 @@ export class GcdsMap {
   @State() _source: string;
   @State() _history: any[] = [];
   @State() _historyIndex: number = -1;
-  @State() _traversalCall: number = 0;
+  @State() _traversalCall: number | false = false;
 
   // Private properties that mirror the original (will be set in componentDidLoad)
   private _map: any;
@@ -80,21 +80,12 @@ export class GcdsMap {
   private _geolocationButton: any;
   private _scaleBar: any;
 
-  // Note: Stencil handles constructor automatically, but we can use componentWillLoad for initialization
-  componentWillLoad() {
-    // Mirror the original constructor logic
-    this._source = this.el.outerHTML;
-    // create an array to track the history of the map and the current index
-    this._history = [];
-    this._historyIndex = -1;
-    this._traversalCall = 0;
-  }
+
   // see comments below regarding attributeChangedCallback vs. getter/setter
   // usage.  Effectively, the user of the element must use the property, not
   // the getAttribute/setAttribute/removeAttribute DOM API, because the latter
   // calls don't result in the getter/setter being called (so you have to use
   // the getter/setter directly)
-
   @Watch('controls')
   controlsChanged(newValue: boolean) {
     // Mirror original controls setter logic
@@ -114,25 +105,14 @@ export class GcdsMap {
       if (this._map) {
         this._toggleControls();
       }
-      
-      // Element property is now handled by getter/setter, no manual sync needed
     }
   }
 
-  @Watch('static')
-  staticChanged() {
-    if (this._map) {
-      this._toggleStatic();
-    }
-  }
-  // controlsList getter/setter - mirrors original mapml-viewer.js
   get controlsList(): DOMTokenList {
     return this._controlsList;
   }
   set controlsList(value: string | null) {
-    // This is the component API for programmatic HTML attribute updates
     if (this._controlsList && (typeof value === 'string' || value === null)) {
-      // Update HTML attribute (standard behavior)
       if (value) {
         this.el.setAttribute('controlslist', value);
       } else {
@@ -151,7 +131,6 @@ export class GcdsMap {
       this._changeWidth(newValue);
     }
   }
-
   @Watch('height')
   heightChanged(newValue: string) {
     if (newValue && this._map) {
@@ -159,29 +138,9 @@ export class GcdsMap {
     }
   }
 
-  // Width getter that mirrors mapml-viewer.js behavior
-  get computedWidth() {
-    return +window.getComputedStyle(this.el).width.replace('px', '');
-  }
-
-  // Height getter that mirrors mapml-viewer.js behavior  
-  get computedHeight() {
-    return +window.getComputedStyle(this.el).height.replace('px', '');
-  }
-
-  @Watch('lat')
-  latChanged(newValue: number) {
-    if (newValue && this._map) {
-      // Update map center
-    }
-  }
-
-  @Watch('lon')
-  lonChanged(newValue: number) {
-    if (newValue && this._map) {
-      // Update map center
-    }
-  }
+  // Note: lat, lon, and zoom are NOT watched because in mapml-viewer, changing these
+  // attributes does not change the map position/zoom. These attributes are only 
+  // updated by map events to reflect the current state for external observers.
   @Watch('projection')
   async projectionChanged(newValue: string) {
     if (newValue) {
@@ -193,19 +152,14 @@ export class GcdsMap {
       }
     }
   }
-  @Watch('zoom')
-  zoomChanged(newValue: number) {
-    var parsedVal = parseInt(newValue.toString(), 10);
-    if (!isNaN(parsedVal) && parsedVal >= 0 && parsedVal <= 25) {
-      if (this._map) {
-        // Update map zoom
-      }
-    }
-  }
+  
+  // Note: zoom is NOT watched because in mapml-viewer, changing the zoom attribute
+  // does not change the map zoom. The zoom attribute is only updated by map events
+  // to reflect the current state for external observers.
+  
   get layers() {
     return this.el.getElementsByTagName('map-layer');
   }
-
   get extent() {
     let map = this._map,
       pcrsBounds = Util.pixelToPCRSBounds(
@@ -236,7 +190,21 @@ export class GcdsMap {
     };
     return formattedExtent;
   }
-
+  @Watch('static')
+  staticChanged() {
+    if (this._map) {
+      this._toggleStatic();
+    }
+  }
+  // Note: Stencil handles constructor automatically, but we can use componentWillLoad for initialization
+  componentWillLoad() {
+    // Mirror the original constructor logic
+    this._source = this.el.outerHTML;
+    // create an array to track the history of the map and the current index
+    this._history = [];
+    this._historyIndex = -1;
+    this._traversalCall = false;
+  }
   // Mirror the connectedCallback logic in componentDidLoad
   async componentDidLoad() {
     try {
@@ -244,7 +212,7 @@ export class GcdsMap {
     // create an array to track the history of the map and the current index
       this._history = [];
       this._historyIndex = -1;
-      this._traversalCall = 0;
+      this._traversalCall = false;
       
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
@@ -336,12 +304,6 @@ export class GcdsMap {
       this.locale = (window as any).M.options.locale;
     }
   }
-  disconnectedCallback() {
-    this._removeEvents();
-
-    delete this._map;
-    this._deleteControls();
-  }
   _initShadowRoot() {
     // In Stencil, shadow DOM structure is handled by render()
     // This method now only handles the light DOM hiding CSS
@@ -353,63 +315,6 @@ export class GcdsMap {
     
     // Note: _container is now set via ref in render(), shadow DOM creation is automatic
   }
-
-  // Helper methods that mirror the original
-  async _ensureControlsLoaded() {
-    // Force MapML control modules to load and register their init hooks
-    // This ensures attribution and other controls work properly
-    try {
-      console.log('Loading MapML controls...');
-    // await import('leaflet');
-    // const locateModule = await import('leaflet.locatecontrol');
-    // console.log('LocateControl loaded:', locateModule);
-    
-    // // Now load GeolocationButton which depends on LocateControl
-    // const geolocationModule = await import('../../utils/mapml/control/GeolocationButton.js');
-    // console.log('GeolocationButton loaded:', geolocationModule);
-
-    await import('../../utils/mapml/control/AttributionButton.js');
-      // TODO: Load other controls if needed
-      console.log('MapML controls loaded successfully');
-    } catch (error) {
-      console.error('Failed to load MapML controls:', error);
-    }
-  }
-
-  _changeWidth(width: number | string) {
-    const widthPx = typeof width === 'string' ? width : width + 'px';
-    
-    // Update host element style
-    this.el.style.width = widthPx;
-    
-    // Update container if it exists
-    if (this._container) {
-      this._container.style.width = widthPx;
-    }
-    
-    // Invalidate map size if map exists
-    if (this._map) {
-      this._map.invalidateSize();
-    }
-  }
-
-  _changeHeight(height: number | string) {
-    const heightPx = typeof height === 'string' ? height : height + 'px';
-    
-    // Update host element style
-    this.el.style.height = heightPx;
-    
-    // Update container if it exists
-    if (this._container) {
-      this._container.style.height = heightPx;
-    }
-    
-    // Invalidate map size if map exists
-    if (this._map) {
-      this._map.invalidateSize();
-    }
-  }
-
   _createMap() {
     console.log('_createMap() called');
     console.log('this._map:', this._map);
@@ -465,73 +370,33 @@ export class GcdsMap {
       this._setUpEvents();
     }
   }
+  disconnectedCallback() {
+    this._removeEvents();
 
-  _toggleStatic() {
-    // Mirror the original mapml-viewer _toggleStatic behavior
-    if (this._map) {
-      if (this.static) {
-        // Disable all map interactions when static=true
-        this._map.dragging.disable();
-        this._map.touchZoom.disable();
-        this._map.doubleClickZoom.disable();
-        this._map.scrollWheelZoom.disable();
-        this._map.boxZoom.disable();
-        this._map.keyboard.disable();
-        if (this._zoomControl) {
-          this._zoomControl.disable();
-        }
-      } else {
-        // Enable all map interactions when static=false
-        this._map.dragging.enable();
-        this._map.touchZoom.enable();
-        this._map.doubleClickZoom.enable();
-        this._map.scrollWheelZoom.enable();
-        this._map.boxZoom.enable();
-        this._map.keyboard.enable();
-        if (this._zoomControl) {
-          this._zoomControl.enable();
-        }
-      }
-    }
+    delete this._map;
+    this._deleteControls();
   }
-
-  _addToHistory() {
-    if (this._traversalCall > 0) {
-      // this._traversalCall tracks how many consecutive moveends to ignore from history
-      this._traversalCall--; // this is useful for ignoring moveends corresponding to back, forward and reload
-      return;
-    }
-
-    let mapLocation = this._map.getPixelBounds().getCenter();
-    let location = {
-      zoom: this._map.getZoom(),
-      x: mapLocation.x,
-      y: mapLocation.y
-    };
-    this._historyIndex++;
-    this._history.splice(this._historyIndex, 0, location);
-    // Remove future history and overwrite it when map pan/zoom while inside history
-    if (this._historyIndex + 1 !== this._history.length) {
-      this._history.length = this._historyIndex + 1;
-    }
-    if (this._historyIndex === 0) {
-      // when at initial state of map, disable back, forward, and reload items
-      this._map.contextMenu.toggleContextMenuItem('Back', 'disabled'); // back contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled'); // reload contextmenu item
-      this._reloadButton?.disable();
-    } else {
-      this._map.contextMenu.toggleContextMenuItem('Back', 'enabled'); // back contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Reload', 'enabled'); // reload contextmenu item
-      this._reloadButton?.enable();
-    }
+  // Helper methods that mirror the original
+  async _ensureControlsLoaded() {
+    // Force MapML control modules to load and register their init hooks
+    // This ensures attribution and other controls work properly
+    try {
+      console.log('Loading MapML controls...');
+    // await import('leaflet');
+    // const locateModule = await import('leaflet.locatecontrol');
+    // console.log('LocateControl loaded:', locateModule);
     
-    // Sync updated history properties to element for MapML controls
-    (this.el as any)._history = this._history;
-    (this.el as any)._historyIndex = this._historyIndex;
-  }
+    // // Now load GeolocationButton which depends on LocateControl
+    // const geolocationModule = await import('../../utils/mapml/control/GeolocationButton.js');
+    // console.log('GeolocationButton loaded:', geolocationModule);
 
+    await import('../../utils/mapml/control/AttributionButton.js');
+      // TODO: Load other controls if needed
+      console.log('MapML controls loaded successfully');
+    } catch (error) {
+      console.error('Failed to load MapML controls:', error);
+    }
+  }
   // Creates All map controls and adds them to the map, when created.
   _createControls() {
     let mapSize = this._map.getSize().y,
@@ -591,7 +456,6 @@ export class GcdsMap {
       (this.el as any)._geolocationButton = this._geolocationButton;
     }
   }
-
   // Sets controls by hiding/unhiding them based on the map attribute
   _toggleControls() {
     if (this.controls === false) {
@@ -654,7 +518,6 @@ export class GcdsMap {
     //   this._layerControl._container.setAttribute('hidden', '');
     // }
   }
-
   // delete the map controls that are private properties of this custom element
   _deleteControls() {
     delete this._layerControl;
@@ -664,7 +527,7 @@ export class GcdsMap {
     delete this._geolocationButton;
     delete this._scaleBar;
   }
-  // Sets the control's visibility AND all its childrens visibility,
+    // Sets the control's visibility AND all its childrens visibility,
   // for the control element based on the Boolean hide parameter
   _setControlsVisibility(control, hide) {
     let container;
@@ -715,8 +578,32 @@ export class GcdsMap {
         container.removeAttribute('hidden');
       }
     }
+  }  
+  _toggleStatic() {
+    // Mirror the original mapml-viewer _toggleStatic behavior
+    if (this._map) {
+      if (this.static) {
+        this._map.dragging.disable();
+        this._map.touchZoom.disable();
+        this._map.doubleClickZoom.disable();
+        this._map.scrollWheelZoom.disable();
+        this._map.boxZoom.disable();
+        this._map.keyboard.disable();
+        this._zoomControl.disable();
+      } else {
+        this._map.dragging.enable();
+        this._map.touchZoom.enable();
+        this._map.doubleClickZoom.enable();
+        this._map.scrollWheelZoom.enable();
+        this._map.boxZoom.enable();
+        this._map.keyboard.enable();
+        this._zoomControl.enable();
+      }
+    }
   }
-
+  _removeEvents() {
+    // TODO: Implement event cleanup
+  }
   _setUpEvents() {
     // Set up map event handlers to sync with component props
     this._map.on(
@@ -750,7 +637,39 @@ export class GcdsMap {
       this
     );
   }
+  _changeWidth(width: number | string) {
+    const widthPx = typeof width === 'string' ? width : width + 'px';
+    
+    // Update host element style
+    this.el.style.width = widthPx;
+    
+    // Update container if it exists
+    if (this._container) {
+      this._container.style.width = widthPx;
+    }
+    
+    // Invalidate map size if map exists
+    if (this._map) {
+      this._map.invalidateSize();
+    }
+  }
 
+  _changeHeight(height: number | string) {
+    const heightPx = typeof height === 'string' ? height : height + 'px';
+    
+    // Update host element style
+    this.el.style.height = heightPx;
+    
+    // Update container if it exists
+    if (this._container) {
+      this._container.style.height = heightPx;
+    }
+    
+    // Invalidate map size if map exists
+    if (this._map) {
+      this._map.invalidateSize();
+    }
+  }
   _updateMapCenter() {
     // Update component props to match map state and sync to DOM attributes
     // Note: Stencil mutable props don't automatically reflect changes back to DOM attributes
@@ -766,11 +685,53 @@ export class GcdsMap {
       this.el.setAttribute('zoom', this.zoom.toString());
     }
   }
-
-  _removeEvents() {
-    // TODO: Implement event cleanup
+  _resetHistory() {
+    this._history = [];
+    this._historyIndex = -1;
+    this._traversalCall = false;
+    // weird but ok (original comment)
+    this._addToHistory();
   }
+  _addToHistory() {
+    if (typeof this._traversalCall === 'number' && this._traversalCall > 0) {
+      // this._traversalCall tracks how many consecutive moveends to ignore from history
+      this._traversalCall--; // this is useful for ignoring moveends corresponding to back, forward and reload
+      // Reset to false when it reaches 0 (mimics original behavior)
+      if (this._traversalCall === 0) {
+        this._traversalCall = false;
+      }
+      return;
+    }
 
+    let mapLocation = this._map.getPixelBounds().getCenter();
+    let location = {
+      zoom: this._map.getZoom(),
+      x: mapLocation.x,
+      y: mapLocation.y
+    };
+    this._historyIndex++;
+    this._history.splice(this._historyIndex, 0, location);
+    // Remove future history and overwrite it when map pan/zoom while inside history
+    if (this._historyIndex + 1 !== this._history.length) {
+      this._history.length = this._historyIndex + 1;
+    }
+    if (this._historyIndex === 0) {
+      // when at initial state of map, disable back, forward, and reload items
+      this._map.contextMenu.toggleContextMenuItem('Back', 'disabled'); // back contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled'); // reload contextmenu item
+      this._reloadButton?.disable();
+    } else {
+      this._map.contextMenu.toggleContextMenuItem('Back', 'enabled'); // back contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
+      this._map.contextMenu.toggleContextMenuItem('Reload', 'enabled'); // reload contextmenu item
+      this._reloadButton?.enable();
+    }
+    
+    // Sync updated history properties to element for MapML controls
+    (this.el as any)._history = this._history;
+    (this.el as any)._historyIndex = this._historyIndex;
+  }
   /**
    * Allow user to move back in history
    */
@@ -896,6 +857,10 @@ export class GcdsMap {
     }
     this._map.getContainer().focus();
   }
+  _toggleFullScreen() {
+    this._map.toggleFullscreen();
+  }
+
 
   async whenProjectionDefined(projection: string) {
     // Mirror the original whenProjectionDefined logic
