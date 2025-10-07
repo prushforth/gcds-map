@@ -693,7 +693,7 @@ summary {
 @media print {
   .leaflet-control {
     -webkit-print-color-adjust: exact;
-                  color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 
@@ -991,18 +991,16 @@ label.mapml-layer-item-toggle {
 }
 /* ===== ESSENTIAL HOST DEFAULTS (immediate application for getBoundingClientRect) ===== */
 :host {
+  /* Reset first, then apply critical MapML defaults */
+  all: initial;
+  
   /* Critical MapML defaults that must be available immediately */
   display: inline-block;
   height: 150px;        /* Explicit fallback (not min-height) */
   width: 300px;         /* Explicit fallback (not min-width) */
-
-  all: initial;
   contain: layout size;
   border-width: 2px;
   border-style: inset;
-  
-  /* Re-apply display after 'all: initial' reset */
-  display: inline-block;
 }
 
 /* ===== GCDS LAYER ARCHITECTURE ===== */
@@ -1011,16 +1009,14 @@ label.mapml-layer-item-toggle {
 @layer reset {
   :host {
     /* GCDS responsive overrides (when CSS loads) */
-    display: block;
     position: relative;
     
-    /* CSS custom properties for flexibility */
-    --map-width: 100%;
-    --map-height: auto;
-    --map-aspect: 16/9;
+    /* CSS custom properties for flexibility - only override when explicitly set */
+    /* Removed: --map-width: 100%; --map-height: auto; to preserve defaults */
     
-    width: var(--map-width);
-    height: var(--map-height);
+    /* Only apply responsive sizing when custom properties are explicitly set */
+    width: var(--map-width, 300px);
+    height: var(--map-height, 150px);
     aspect-ratio: var(--map-aspect);
   }
 }

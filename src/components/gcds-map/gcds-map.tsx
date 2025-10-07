@@ -51,10 +51,10 @@ export class GcdsMap {
   @Prop({ mutable: true }) lon?: number = 0;
   @Prop({ mutable: true }) zoom?: number = 0;
   @Prop() projection?: string = 'OSMTILE';
-  @Prop() width?: string;
-  @Prop() height?: string;
-  @Prop({ reflect: true, attribute: 'controls' }) _controls: boolean = false;
-  @Prop() static?: boolean = false;
+  @Prop({ reflect: true }) width?: string;
+  @Prop({ reflect: true }) height?: string;
+  @Prop({ reflect: true, attribute: 'controls' }) controls: boolean = false;
+  @Prop({ reflect: true }) static?: boolean = false;
   @Prop({ reflect: true, attribute: 'controlslist' }) _controlslist?: string;
   @Prop() locale?: any;
 
@@ -73,12 +73,12 @@ export class GcdsMap {
   // private _crosshair: any; // TODO: Use when implementing crosshair
   // private _featureIndexOverlay: any; // TODO: Use when implementing feature index
 
-private _zoomControl: any;
-private _layerControl: any;
-private _reloadButton: any;
-private _fullScreenControl: any;
-private _geolocationButton: any;
-private _scaleBar: any;
+  private _zoomControl: any;
+  private _layerControl: any;
+  private _reloadButton: any;
+  private _fullScreenControl: any;
+  private _geolocationButton: any;
+  private _scaleBar: any;
 
   // Note: Stencil handles constructor automatically, but we can use componentWillLoad for initialization
   componentWillLoad() {
@@ -95,15 +95,16 @@ private _scaleBar: any;
   // calls don't result in the getter/setter being called (so you have to use
   // the getter/setter directly)
 
-  @Watch('_controls')
-  controlsChanged(_newValue: boolean) {
+  @Watch('controls')
+  controlsChanged(newValue: boolean) {
     // Mirror original controls setter logic
     if (this._map) {
-      this._toggleControls();
+      if (newValue) {
+        this._showControls();
+      } else {
+        this._hideControls();
+      }
     }
-  }
-  get controls() {
-    return this.el.hasAttribute('controls');
   }
   @Watch('_controlslist')
   controlsListChanged(newValue: string) {
@@ -115,6 +116,13 @@ private _scaleBar: any;
       }
       
       // Element property is now handled by getter/setter, no manual sync needed
+    }
+  }
+
+  @Watch('static')
+  staticChanged() {
+    if (this._map) {
+      this._toggleStatic();
     }
   }
   // controlsList getter/setter - mirrors original mapml-viewer.js
@@ -138,19 +146,27 @@ private _scaleBar: any;
     }
   }
   @Watch('width')
-  widthChanged(_newValue: string) {
-    // Mirror original width setter logic
-    if (this._map) {
-      // Update map size
+  widthChanged(newValue: string) {
+    if (newValue && this._map) {
+      this._changeWidth(newValue);
     }
   }
 
   @Watch('height')
-  heightChanged(_newValue: string) {
-    // Mirror original height setter logic
-    if (this._map) {
-      // Update map size
+  heightChanged(newValue: string) {
+    if (newValue && this._map) {
+      this._changeHeight(newValue);
     }
+  }
+
+  // Width getter that mirrors mapml-viewer.js behavior
+  get computedWidth() {
+    return +window.getComputedStyle(this.el).width.replace('px', '');
+  }
+
+  // Height getter that mirrors mapml-viewer.js behavior  
+  get computedHeight() {
+    return +window.getComputedStyle(this.el).height.replace('px', '');
   }
 
   @Watch('lat')
@@ -360,15 +376,35 @@ private _scaleBar: any;
     }
   }
 
-  _changeWidth(_w: number | string) {
-    // Handle width changes - this will be used when implementing map resize
+  _changeWidth(width: number | string) {
+    const widthPx = typeof width === 'string' ? width : width + 'px';
+    
+    // Update host element style
+    this.el.style.width = widthPx;
+    
+    // Update container if it exists
+    if (this._container) {
+      this._container.style.width = widthPx;
+    }
+    
+    // Invalidate map size if map exists
     if (this._map) {
       this._map.invalidateSize();
     }
   }
 
-  _changeHeight(_h: number | string) {
-    // Handle height changes - this will be used when implementing map resize
+  _changeHeight(height: number | string) {
+    const heightPx = typeof height === 'string' ? height : height + 'px';
+    
+    // Update host element style
+    this.el.style.height = heightPx;
+    
+    // Update container if it exists
+    if (this._container) {
+      this._container.style.height = heightPx;
+    }
+    
+    // Invalidate map size if map exists
     if (this._map) {
       this._map.invalidateSize();
     }
@@ -431,9 +467,31 @@ private _scaleBar: any;
   }
 
   _toggleStatic() {
-    // Handle static attribute toggle
-    if (this.static) {
-      // Add static behavior
+    // Mirror the original mapml-viewer _toggleStatic behavior
+    if (this._map) {
+      if (this.static) {
+        // Disable all map interactions when static=true
+        this._map.dragging.disable();
+        this._map.touchZoom.disable();
+        this._map.doubleClickZoom.disable();
+        this._map.scrollWheelZoom.disable();
+        this._map.boxZoom.disable();
+        this._map.keyboard.disable();
+        if (this._zoomControl) {
+          this._zoomControl.disable();
+        }
+      } else {
+        // Enable all map interactions when static=false
+        this._map.dragging.enable();
+        this._map.touchZoom.enable();
+        this._map.doubleClickZoom.enable();
+        this._map.scrollWheelZoom.enable();
+        this._map.boxZoom.enable();
+        this._map.keyboard.enable();
+        if (this._zoomControl) {
+          this._zoomControl.enable();
+        }
+      }
     }
   }
 
@@ -484,6 +542,8 @@ private _scaleBar: any;
     //   mapEl: this
     // }).addTo(this._map);
     // this._map.on('movestart', this._layerControl.collapse, this._layerControl);
+    // // Expose on element for MapML compatibility
+    // (this.el as any)._layerControl = this._layerControl;
 
     let scaleValue = (window as any).M.options.announceScale;
 
@@ -494,7 +554,11 @@ private _scaleBar: any;
       scaleValue = { metric: false, imperial: true };
     }
 
-    if (!this._scaleBar) this._scaleBar = scaleBar(scaleValue).addTo(this._map);
+    if (!this._scaleBar) {
+      this._scaleBar = scaleBar(scaleValue).addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._scaleBar = this._scaleBar;
+    }
 
     // Only add controls if there is enough top left vertical space
     if (!this._zoomControl && totalSize + 93 <= mapSize) {
@@ -505,18 +569,26 @@ private _scaleBar: any;
           zoomOutTitle: this.locale.btnZoomOut
         })
         .addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._zoomControl = this._zoomControl;
     }
     if (!this._reloadButton && totalSize + 49 <= mapSize) {
       totalSize += 49;
       this._reloadButton = reloadButton().addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._reloadButton = this._reloadButton;
     }
     if (!this._fullScreenControl && totalSize + 49 <= mapSize) {
       totalSize += 49;
       this._fullScreenControl = fullscreenButton().addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._fullScreenControl = this._fullScreenControl;
     }
 
     if (!this._geolocationButton) {
       this._geolocationButton = geolocationButton().addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._geolocationButton = this._geolocationButton;
     }
   }
 
@@ -524,10 +596,12 @@ private _scaleBar: any;
   _toggleControls() {
     if (this.controls === false) {
       this._hideControls();
-      this._map.contextMenu.toggleContextMenuItem('Controls', 'disabled');
+      // TODO: Add context menu support later
+      // this._map.contextMenu.toggleContextMenuItem('Controls', 'disabled');
     } else {
       this._showControls();
-      this._map.contextMenu.toggleContextMenuItem('Controls', 'enabled');
+      // TODO: Add context menu support later
+      // this._map.contextMenu.toggleContextMenuItem('Controls', 'enabled');
     }
   }
 
@@ -575,6 +649,7 @@ private _scaleBar: any;
         }
       });
     }
+    // Hide layer control if no layers (will be uncommented when layer control is implemented)
     // if (this._layerControl && this._layerControl._layers.length === 0) {
     //   this._layerControl._container.setAttribute('hidden', '');
     // }

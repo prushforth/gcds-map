@@ -9,8 +9,8 @@
 
 | Property        | Attribute      | Description | Type      | Default     |
 | --------------- | -------------- | ----------- | --------- | ----------- |
-| `_controls`     | `controls`     |             | `boolean` | `false`     |
 | `_controlslist` | `controlslist` |             | `string`  | `undefined` |
+| `controls`      | `controls`     |             | `boolean` | `false`     |
 | `height`        | `height`       |             | `string`  | `undefined` |
 | `lat`           | `lat`          |             | `number`  | `0`         |
 | `locale`        | `locale`       |             | `any`     | `undefined` |

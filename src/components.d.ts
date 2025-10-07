@@ -7,11 +7,11 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface GcdsMap {
+        "_controlslist"?: string;
         /**
           * @default false
          */
-        "_controls": boolean;
-        "_controlslist"?: string;
+        "controls": boolean;
         "height"?: string;
         /**
           * @default 0
@@ -83,11 +83,11 @@ declare global {
 }
 declare namespace LocalJSX {
     interface GcdsMap {
+        "_controlslist"?: string;
         /**
           * @default false
          */
-        "_controls"?: boolean;
-        "_controlslist"?: string;
+        "controls"?: boolean;
         "height"?: string;
         /**
           * @default 0
