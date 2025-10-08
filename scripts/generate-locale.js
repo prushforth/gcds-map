@@ -43,13 +43,13 @@ export const localeFr = ${JSON.stringify(localeFr, null, 2)};
 `;
 
     // Ensure the directory exists
-    const outputDir = path.resolve(__dirname, '../src/utils/mapml');
+    const outputDir = path.resolve(__dirname, '../src/generated');
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
     // Write the generated TypeScript file
-    const outputPath = path.resolve(outputDir, 'generated-locale.ts');
+    const outputPath = path.resolve(outputDir, 'locale.ts');
     fs.writeFileSync(outputPath, tsContent, 'utf-8');
 
     console.log(`✅ Generated locale file: ${outputPath}`);

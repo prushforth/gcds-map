@@ -68,11 +68,12 @@ export var createLayerControlHTML = async function () {
     removeControlButton,
     'click',
     (e) => {
+      console.log('Layer removal button clicked', { target: e.target, mapEl, layerEl: this });
       let fieldset = 0,
         elem,
         root;
       root =
-        mapEl.tagName === 'MAPML-VIEWER'
+        mapEl.tagName === 'GCDS-MAP'
           ? mapEl.shadowRoot
           : mapEl.querySelector('.mapml-web-map').shadowRoot;
       if (

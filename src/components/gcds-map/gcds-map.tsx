@@ -7,7 +7,7 @@ import {
 // import Proj from 'proj4leaflet/src/proj4leaflet.js';
 import { Util } from '../utils/mapml/Util.js';
 import { DOMTokenList } from '../utils/mapml/DOMTokenList.js';
-import { locale, localeFr } from '../../utils/mapml/generated-locale.js';
+import { locale, localeFr } from '../../generated/locale.js';
 // import { matchMedia } from '../../utils/mapml/elementSupport/viewers/matchMedia.js';
 // TODO: Import Stencil component versions when created
 // import { HTMLLayerElement } from '../map-layer/map-layer.js';
@@ -361,6 +361,13 @@ export class GcdsMap {
         enumerable: true
       });
       
+      // Expose locale property on element for MapML control compatibility
+      Object.defineProperty(this.el, 'locale', {
+        get: () => this.locale,
+        configurable: true,
+        enumerable: true
+      });
+      
       // Expose navigation methods on element for use by context menu items etc
       (this.el as any).reload = () => this.reload();
       (this.el as any).back = () => this.back();
@@ -370,6 +377,7 @@ export class GcdsMap {
       (this.el as any)._toggleFullScreen = () => this._toggleFullScreen();
       (this.el as any).toggleDebug = () => this.toggleDebug();
       (this.el as any).viewSource = () => this.viewSource();
+      (this.el as any)._toggleControls = () => this._toggleControls();
 
       this._addToHistory();
       this._createControls();
@@ -461,12 +469,10 @@ export class GcdsMap {
   _toggleControls() {
     if (this.controls === false) {
       this._hideControls();
-      // TODO: Add context menu support later
-      // this._map.contextMenu.toggleContextMenuItem('Controls', 'disabled');
+      this._map.contextMenu.toggleContextMenuItem('Controls', 'disabled');
     } else {
       this._showControls();
-      // TODO: Add context menu support later
-      // this._map.contextMenu.toggleContextMenuItem('Controls', 'enabled');
+      this._map.contextMenu.toggleContextMenuItem('Controls', 'enabled');
     }
   }
 

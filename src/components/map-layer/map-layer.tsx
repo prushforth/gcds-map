@@ -1,153 +1,328 @@
-import { Component, Prop, State, Element, Watch, Method, h } from '@stencil/core';
-import { setOptions, bounds, point } from 'leaflet';
-
+import { Component, Prop, State, Element, Watch, Method } from '@stencil/core';
+import { setOptions } from 'leaflet';
 import { Util } from '../utils/mapml/Util.js';
-// Import the MapLayer module and access the factory function
 import * as MapLayerModule from '../utils/mapml/layers/MapLayer.js';
 
-/**
- * Map Layer component - refactored from mapml-source/src/map-layer.js
- * Uses composition instead of inheritance due to Stencil constraints
- */
 @Component({
   tag: 'map-layer',
   shadow: true
 })
-export class MapLayer {
+export class MapLayerStencil {
   @Element() el: HTMLElement;
 
-  // Properties from original BaseLayerElement
-  @Prop({ reflect: true, mutable: true }) src: string = '';
-  @Prop({ reflect: true, mutable: true }) label: string = '';
-  @Prop({ reflect: true, mutable: true }) checked: boolean = false;
-  @Prop({ reflect: true, mutable: true }) hidden: boolean = false;
-  @Prop({ reflect: true, mutable: true }) opacity: number = 1.0;
-  @Prop({ reflect: true, mutable: true }) media: string;
+  // Core properties matching BaseLayerElement observedAttributes
+  @Prop({ reflect: true, mutable: true }) src?: string;
+  @Prop({ reflect: true, mutable: true }) label?: string;
+  @Prop({ reflect: true, mutable: true }) checked?: boolean;
+  // Note: hidden is a standard HTML attribute, handled via attributeChangedCallback
+  @Prop({ reflect: true, mutable: true }) opacity?: number;
+  @Prop({ reflect: true, mutable: true }) media?: string;
 
   // Internal state
   @State() _layer: any;
   @State() _layerControl: any;
-  @State() _layerControlHTML: any;
   @State() _opacity: number = 1.0;
-  @State() _mql: MediaQueryList;
-  @State() _changeHandler: () => void;
-  @State() _observer: MutationObserver;
-  @State() _fetchError: any;
   @State() disabled: boolean = false;
 
-  // Layer control UI elements
-  @State() _layerControlCheckbox: HTMLInputElement;
-  @State() _layerControlLabel: HTMLElement;
-  @State() _opacityControl: HTMLElement;
-  @State() _opacitySlider: HTMLInputElement;
-  @State() _styles: HTMLElement;
+  componentDidLoad() {
+    // Expose methods on the DOM element for MapML compatibility using Object.defineProperty
+    try {
+      Object.defineProperty(this.el, 'zoomTo', {
+        value: () => this.zoomTo(),
+        writable: true,
+        configurable: true
+      });
+      
+      Object.defineProperty(this.el, 'getProjection', {
+        value: () => this.getProjection(),
+        writable: true,
+        configurable: true
+      });
+      
+      Object.defineProperty(this.el, 'getOuterHTML', {
+        value: () => this.getOuterHTML(),
+        writable: true,
+        configurable: true
+      });
+      
+      Object.defineProperty(this.el, 'whenReady', {
+        value: () => this.whenReady(),
+        writable: true,
+        configurable: true
+      });
+      
+      Object.defineProperty(this.el, 'getAlternateStyles', {
+        value: (styleLinks: NodeList | HTMLElement[]) => this.getAlternateStyles(styleLinks),
+        writable: true,
+        configurable: true
+      });
+      
+      // Expose _layer property for MapML compatibility
+      Object.defineProperty(this.el, '_layer', {
+        get: () => this._layer,
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose _layerControl property for MapML compatibility
+      Object.defineProperty(this.el, '_layerControl', {
+        get: () => this._layerControl,
+        set: (value) => { this._layerControl = value; },
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose _opacity property for MapML compatibility
+      Object.defineProperty(this.el, '_opacity', {
+        get: () => this.opacity ?? 1.0,
+        set: (value) => { 
+          this.opacity = parseFloat(value);
+          // Update the attribute to reflect the change
+          this.el.setAttribute('opacity', this.opacity.toString());
+        },
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose _opacitySlider property for MapML compatibility
+      Object.defineProperty(this.el, '_opacitySlider', {
+        get: () => (this.el as any).__opacitySlider,
+        set: (value) => { (this.el as any).__opacitySlider = value; },
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose _layerControlCheckbox property for MapML compatibility
+      Object.defineProperty(this.el, '_layerControlCheckbox', {
+        get: () => (this.el as any).__layerControlCheckbox,
+        set: (value) => { (this.el as any).__layerControlCheckbox = value; },
+        configurable: true,
+        enumerable: true
+      });
+    } catch (error) {
+      console.warn('Could not expose methods on element:', error);
+      // Fallback: try later in componentDidRender
+    }
+    
+    // Set up observer for hidden attribute changes (since it's a standard HTML attribute)
+    this._setupHiddenAttributeObserver();
+    
+  }
 
-  private _hasConnected: boolean = false;
+  async componentDidRender() {
+    // Initialize the layer after parent map has fully rendered
+    if (!this._layerInitialized && !this._initializingLayer) {
+      this._initializingLayer = true;
+      
+      const mapEl = this.getMapEl();
+      if (mapEl) {
+        try {
+          // Wait for parent map to be ready
+          await this._waitForParentMapReady(mapEl);
+          
+          // Handle media query if present
+          if (this.media) {
+            this._registerMediaQuery(this.media);
+          } else {
+            await this._onAdd();
+          }
+          
+          this._layerInitialized = true;
+        } catch (error) {
+          console.error('Map initialization failed:', error);
+        }
+      } else {
+        console.warn('Parent map element not found');
+      }
+      
+      this._initializingLayer = false;
+    }
 
-  @Watch('src')
-  srcChanged(newValue: string, oldValue: string) {
-    if (this._hasConnected && newValue !== oldValue) {
-      this._onRemove();
-      if (newValue) {
-        this._onAdd();
+    // Additional attempt to expose methods if componentDidLoad failed
+    if (!(this.el as any).zoomTo) {
+      try {
+        Object.defineProperty(this.el, 'zoomTo', {
+          value: () => this.zoomTo(),
+          writable: true,
+          configurable: true
+        });
+        
+        Object.defineProperty(this.el, 'getProjection', {
+          value: () => this.getProjection(),
+          writable: true,
+          configurable: true
+        });
+        
+        Object.defineProperty(this.el, 'getOuterHTML', {
+          value: () => this.getOuterHTML(),
+          writable: true,
+          configurable: true
+        });
+        
+        Object.defineProperty(this.el, 'whenReady', {
+          value: () => this.whenReady(),
+          writable: true,
+          configurable: true
+        });
+        
+        Object.defineProperty(this.el, 'getAlternateStyles', {
+          value: (styleLinks: NodeList | HTMLElement[]) => this.getAlternateStyles(styleLinks),
+          writable: true,
+          configurable: true
+        });
+        
+        // Expose _layer property for MapML compatibility
+        Object.defineProperty(this.el, '_layer', {
+          get: () => this._layer,
+          configurable: true,
+          enumerable: true
+        });
+        
+        // Expose _layerControl property for MapML compatibility
+        Object.defineProperty(this.el, '_layerControl', {
+          get: () => this._layerControl,
+          set: (value) => { this._layerControl = value; },
+          configurable: true,
+          enumerable: true
+        });
+        
+        // Expose _opacity property for MapML compatibility
+        Object.defineProperty(this.el, '_opacity', {
+          get: () => this.opacity ?? 1.0,
+          set: (value) => { 
+            this.opacity = parseFloat(value);
+            // Update the attribute to reflect the change
+            this.el.setAttribute('opacity', this.opacity.toString());
+          },
+          configurable: true,
+          enumerable: true
+        });
+        
+        // Expose _opacitySlider property for MapML compatibility
+        Object.defineProperty(this.el, '_opacitySlider', {
+          get: () => (this.el as any).__opacitySlider,
+          set: (value) => { (this.el as any).__opacitySlider = value; },
+          configurable: true,
+          enumerable: true
+        });
+        
+        // Expose _layerControlCheckbox property for MapML compatibility
+        Object.defineProperty(this.el, '_layerControlCheckbox', {
+          get: () => (this.el as any).__layerControlCheckbox,
+          set: (value) => { (this.el as any).__layerControlCheckbox = value; },
+          configurable: true,
+          enumerable: true
+        });
+      } catch (error) {
+        console.warn('Still could not expose methods on element in componentDidRender:', error);
       }
     }
   }
 
-  @Watch('label')
-  labelChanged(newValue: string, oldValue: string) {
-    if (this._hasConnected && this._layer && newValue !== oldValue) {
-      this._layer.setName(newValue);
-      if (this._layerControl && !this.hidden) {
-        this._layerControl.addOrUpdateOverlay(this._layer, newValue);
-      }
+  // Watchers for attribute changes - these automatically don't fire during initial load
+  @Watch('src')
+  srcChanged(newValue: string, oldValue: string) {
+    if (newValue !== oldValue) {
+      console.log('Source changed:', newValue);
+      // Implementation will be added later
     }
   }
 
   @Watch('checked')
-  checkedChanged(newValue: boolean, oldValue: boolean) {
-    if (this._hasConnected && this._layer && newValue !== oldValue) {
-      if (newValue) {
-        this._layer.addTo(this._layer._map);
-      } else {
-        this._layer._map.removeLayer(this._layer);
+  checkedChanged(newValue: boolean) {
+    if (this._layer) {
+      
+      // Get the parent map element
+      const mapEl = this.el.closest('gcds-map') as HTMLElement;
+      if (mapEl && (mapEl as any)._map) {
+        const leafletMap = (mapEl as any)._map;
+        
+        if (newValue) {
+          // If checked is true, add the layer to the map
+          leafletMap.addLayer(this._layer);
+        } else {
+          // If checked is false, remove the layer from the map
+          leafletMap.removeLayer(this._layer);
+        }
       }
-    }
-  }
-
-  @Watch('hidden')
-  hiddenChanged(newValue: boolean, oldValue: boolean) {
-    if (this._hasConnected && this._layerControl && newValue !== oldValue) {
-      if (newValue) {
-        this._layerControl.removeLayer(this._layer);
-      } else {
-        this._layerControl.addOrUpdateOverlay(this._layer, this.label);
+      
+      // Update the layer control checkbox to match the checked state
+      const checkbox = (this.el as any).__layerControlCheckbox;
+      if (checkbox) {
+        checkbox.checked = newValue;
       }
     }
   }
 
   @Watch('opacity')
-  opacityChanged(newValue: number, oldValue: number) {
-    if (this._hasConnected && this._layer && newValue !== oldValue) {
-      if (newValue >= 0 && newValue <= 1) {
-        this._opacity = newValue;
-        this._layer.setOpacity(newValue);
+  opacityChanged(newValue: number) {
+    if (this._layer && newValue !== undefined) {
+      // Update the layer opacity via MapML's changeOpacity method
+      this._layer.changeOpacity(newValue);
+    }
+  }
+
+  // Handle hidden attribute changes via mutation observer or custom implementation
+  private _hiddenChangeHandler(newValue: boolean) {
+    if (this._layer && this._layerControl) {
+      console.log('Hidden changed:', newValue);
+      
+      if (newValue) {
+        // If hidden is true, remove the layer from the layer control
+        this._layerControl.removeLayer(this._layer);
+      } else {
+        // If hidden is false, add the layer back to the layer control and validate disabled state
+        this._layerControl.addOrUpdateOverlay(this._layer, this.label);
+        this._validateDisabled();
       }
     }
   }
 
-  @Watch('media')
-  mediaChanged(newValue: string, oldValue: string) {
-    if (this._hasConnected && newValue !== oldValue) {
-      this._registerMediaQuery(newValue);
-    }
+  getMapEl() {
+    return Util.getClosest(this.el, 'gcds-map,mapml-viewer,map[is=web-map]');
+  }
+
+  getProjection(): string {
+    // Simplified projection detection for now
+    return 'OSMTILE';
   }
 
   @Method()
-  async getExtent() {
-    if (this._layer) {
-      this._layer._calculateBounds();
-      const M = (window as any).M;
-      return Object.assign(
-        Util._convertAndFormatPCRS(
-          this._layer.bounds,
-          M[this.getProjection()],
-          this.getProjection()
-        ),
-        { zoom: this._layer.zoomBounds }
-      );
+  async zoomTo() {
+    console.log('zoomTo called for layer:', this.label);
+  }
+
+  @Method()
+  async getOuterHTML(): Promise<string> {
+    return this.el.outerHTML;
+  }
+
+  getAlternateStyles(styleLinks: NodeList | HTMLElement[]): HTMLElement | null {
+    // Implementation based on the original layer.js getAlternateStyles method
+    if (styleLinks.length > 1) {
+      const stylesControl = document.createElement('details');
+      const stylesControlSummary = document.createElement('summary');
+      const mapEl = this.getMapEl();
+      
+      stylesControlSummary.innerText = (mapEl as any)?.locale?.lmStyle || 'Style';
+      stylesControl.appendChild(stylesControlSummary);
+
+      for (let j = 0; j < styleLinks.length; j++) {
+        const styleLink = styleLinks[j] as any;
+        if (styleLink.getLayerControlOption) {
+          stylesControl.appendChild(styleLink.getLayerControlOption());
+        }
+        stylesControl.classList.add('mapml-layer-item-style', 'mapml-control-layers');
+      }
+      return stylesControl;
     }
     return null;
   }
 
   @Method()
-  async zoomTo() {
-    return this.whenReady().then(async () => {
-      const map = (this.getMapEl() as any)?._map;
-      const extent = await this.getExtent();
-      if (map && extent) {
-        const tL = extent.topLeft.pcrs;
-        const bR = extent.bottomRight.pcrs;
-        const layerBounds = bounds(
-          point(tL.horizontal, tL.vertical),
-          point(bR.horizontal, bR.vertical)
-        );
-        const center = map.options.crs.unproject(layerBounds.getCenter(true));
-        const maxZoom = extent.zoom.maxZoom;
-        const minZoom = extent.zoom.minZoom;
-        map.setView(center, Util.getMaxZoom(layerBounds, map, minZoom, maxZoom), {
-          animate: false
-        });
-      }
-    });
-  }
-
-  @Method()
   async whenReady(): Promise<void> {
     return new Promise((resolve, reject) => {
-      let interval: NodeJS.Timeout;
-      let failureTimer: NodeJS.Timeout;
-      
+      let interval: any, failureTimer: any;
       if (
         this._layer &&
         this._layerControlHTML &&
@@ -155,235 +330,114 @@ export class MapLayer {
       ) {
         resolve();
       } else {
-        let count = 0;
-        interval = setInterval(() => {
-          count++;
-          if (this._layer && this._layerControlHTML && (!this.src || this.el.shadowRoot?.childNodes.length)) {
-            clearInterval(interval);
-            clearTimeout(failureTimer);
-            resolve();
-          }
-        }, 100);
-        
-        failureTimer = setTimeout(() => {
+        const layerElement = this;
+        interval = setInterval(testForLayer, 200, layerElement);
+        failureTimer = setTimeout(layerNotDefined, 5000);
+      }
+      
+      function testForLayer(layerElement: MapLayerStencil) {
+        if (
+          layerElement._layer &&
+          layerElement._layerControlHTML &&
+          (!layerElement.src || layerElement.el.shadowRoot?.childNodes.length)
+        ) {
           clearInterval(interval);
-          reject(new Error('Layer not ready after timeout'));
-        }, 10000);
+          clearTimeout(failureTimer);
+          resolve();
+        } else if (layerElement._fetchError) {
+          clearInterval(interval);
+          clearTimeout(failureTimer);
+          reject('Error fetching layer content');
+        }
+      }
+      
+      function layerNotDefined() {
+        clearInterval(interval);
+        clearTimeout(failureTimer);
+        reject('Timeout reached waiting for layer to be ready');
       }
     });
   }
 
-  @Method()
-  async queryable(): Promise<boolean> {
-    const content = this.src ? this.el.shadowRoot : this.el;
-    return !!(
-      content?.querySelector('map-extent[checked] > map-link[rel=query]:not([disabled])') &&
-      this.checked &&
-      this._layer &&
-      !this.hidden
-    );
-  }
+  private _fetchError: boolean = false;
+  private _layerControlHTML: any;
+  private _layerInitialized: boolean = false;
+  private _initializingLayer: boolean = false;
 
-  getMapEl() {
-    // Find the closest gcds-map or mapml-viewer element
-    let element = this.el.parentElement;
-    while (element) {
-      if (element.tagName === 'GCDS-MAP' || element.tagName === 'MAPML-VIEWER' || 
-          (element.tagName === 'MAP' && element.hasAttribute('is'))) {
-        return element;
-      }
-      element = element.parentElement;
-    }
-    return null;
-  }
-
-  getProjection(): string {
-    const mapml = this.src ? this.el.shadowRoot : this.el;
-    let projection = (this.getMapEl() as any)?.projection || 'OSMTILE';
-    
-    const projectionMeta = mapml?.querySelector('map-meta[name=projection][content]');
-    if (projectionMeta) {
-      const content = Util._metaContentToObject(projectionMeta.getAttribute('content')).content;
-      projection = content || projection;
-    } else {
-      const extentWithUnits = mapml?.querySelector('map-extent[units]');
-      if (extentWithUnits) {
-        projection = extentWithUnits.getAttribute('units');
-      }
-    }
-    
-    return projection;
+  private async _waitForParentMapReady(mapEl: HTMLElement): Promise<void> {
+    // Wait for parent map to have its Leaflet _map instance created
+    return new Promise((resolve, reject) => {
+      const maxAttempts = 50; // 5 seconds max
+      let attempts = 0;
+      
+      const checkReady = () => {
+        attempts++;
+        
+        // Check if the parent gcds-map has created its Leaflet map instance
+        if ((mapEl as any)._map && typeof (mapEl as any)._map.addLayer === 'function') {
+          resolve();
+          return;
+        }
+        
+        if (attempts >= maxAttempts) {
+          reject(new Error('Timeout waiting for parent map Leaflet instance to be created'));
+          return;
+        }
+        
+        // Wait 100ms and try again
+        setTimeout(checkReady, 100);
+      };
+      
+      checkReady();
+    });
   }
 
   private _registerMediaQuery(mq: string) {
-    if (!this._changeHandler) {
-      this._changeHandler = () => {
-        this._onRemove();
-        if (this._mql.matches) {
-          this._onAdd();
-        }
-        this._validateDisabled();
-      };
-    }
-
-    if (mq) {
-      const map = this.getMapEl();
-      if (!map) return;
-
-      if (this._mql) {
-        this._mql.removeEventListener('change', this._changeHandler);
-      }
-
-      this._mql = (map as any).matchMedia(mq);
-      this._changeHandler();
-      this._mql.addEventListener('change', this._changeHandler);
-    } else if (this._mql) {
-      this._mql.removeEventListener('change', this._changeHandler);
-      delete this._mql;
-      this._onRemove();
-      this._onAdd();
-      this._validateDisabled();
-    }
+    // TODO: Implement media query registration
+    console.log('Media query registration not yet implemented:', mq);
   }
 
-  private _onAdd() {
-    return new Promise((resolve, reject) => {
-      this.el.addEventListener('changestyle', (e) => {
-        e.stopPropagation();
-        // Handle style changes
-      }, { once: true });
-
-      const base = this.el.baseURI || document.baseURI;
-      const headers = new Headers();
-      headers.append('Accept', 'text/mapml');
-
-      if (this.src) {
-        // Fetch remote content
-        const url = new URL(this.src, base);
-        fetch(url.href, { headers })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.text();
-          })
-          .then(mapmlText => {
-            const parser = new DOMParser();
-            const mapmlDoc = parser.parseFromString(mapmlText, 'application/xml');
-            this.copyRemoteContentToShadowRoot(mapmlDoc);
-            this.selectAlternateOrChangeProjection();
-            this._createLayer();
-            resolve(null);
-          })
-          .catch(error => {
-            this._fetchError = error;
-            reject(error);
-          });
-      } else {
-        // Local content
-        this.selectAlternateOrChangeProjection();
-        this._createLayer();
-        resolve(null);
-      }
-    }).catch((e) => {
-      if (e.message === 'changeprojection') {
-        // Handle projection change
-        if (e.cause?.href) {
-          this.src = e.cause.href;
-        } else if (e.cause?.mapprojection) {
-          const mapEl = this.getMapEl() as any;
-          if (mapEl) {
-            mapEl.projection = e.cause.mapprojection;
-          }
-        }
-      } else {
-        console.error('Layer load error:', e);
-        this._fetchError = e;
-      }
-    });
-  }
-
-  private _onRemove() {
-    if (this._observer) {
-      this._observer.disconnect();
-    }
-
-    const l = this._layer;
-    const lc = this._layerControl;
-
-    if (l) {
-      l.off();
-    }
-
-    if (l && l._map) {
-      l._map.removeLayer(l);
-    }
-
-    if (lc && !this.hidden) {
-      lc.removeLayer(l);
-    }
-
-    delete this._layer;
-    delete this._layerControl;
-    delete this._layerControlHTML;
-    delete this._fetchError;
-    
-    if (this.el.shadowRoot) {
-      this.el.shadowRoot.innerHTML = '';
-    }
-    if (this.src) {
-      this.el.innerHTML = '';
-    }
-  }
-
-  private _createLayer() {
-    // Create the MapML layer using the imported mapLayer factory function
-    this._layer = (MapLayerModule as any).mapLayer(
-      this.src || null, 
-      this.src ? this.el.shadowRoot : this.el, 
-      {
-        opacity: this._opacity
-      }
-    );
-    this._attachedToMap();
-    this._bindMutationObserver();
-  }
-
-  private copyRemoteContentToShadowRoot(mapml: Document) {
+  private _copyRemoteContentToShadowRoot(mapml: any) {
+    // Copy remote MapML content to shadow DOM
     const shadowRoot = this.el.shadowRoot;
+    if (!shadowRoot || !mapml) return;
+    
     const frag = document.createDocumentFragment();
     const elements = mapml.querySelectorAll('map-head > *, map-body > *');
-    
     for (let i = 0; i < elements.length; i++) {
-      frag.appendChild(elements[i].cloneNode(true));
+      frag.appendChild(elements[i]);
     }
     shadowRoot.appendChild(frag);
   }
 
-  private selectAlternateOrChangeProjection() {
+  private _selectAlternateOrChangeProjection() {
     const mapml = this.src ? this.el.shadowRoot : this.el;
-    const mapEl = this.getMapEl() as any;
+    const mapEl = this.getMapEl();
+    
+    if (!mapml || !mapEl) return;
     
     const selectedAlternate = 
-      this.getProjection() !== mapEl?.projection &&
-      mapml?.querySelector(
-        `map-link[rel=alternate][projection=${mapEl?.projection}][href]`
+      this.getProjection() !== (mapEl as any).projection &&
+      mapml.querySelector(
+        'map-link[rel=alternate][projection=' +
+          (mapEl as any).projection +
+          '][href]'
       );
 
     if (selectedAlternate) {
       const url = new URL(
         selectedAlternate.getAttribute('href'),
-        selectedAlternate.getAttribute('base') || this.el.baseURI
+        selectedAlternate.baseURI || document.baseURI
       ).href;
       throw new Error('changeprojection', {
         cause: { href: url }
       });
     }
-
+    
     const contentProjection = this.getProjection();
     if (
-      contentProjection !== mapEl?.projection &&
-      mapEl?.layers?.length === 1
+      contentProjection !== (mapEl as any).projection &&
+      (mapEl as any).layers?.length === 1
     ) {
       throw new Error('changeprojection', {
         cause: { mapprojection: contentProjection }
@@ -391,168 +445,342 @@ export class MapLayer {
     }
   }
 
-  private _bindMutationObserver() {
-    this._observer = new MutationObserver((mutationList) => {
-      for (let mutation of mutationList) {
-        if (mutation.type === 'childList') {
-          this._runMutationObserver(
-            Array.from(mutation.addedNodes)
-              .filter(node => node.nodeType === Node.ELEMENT_NODE) as Element[]
-          );
-        }
-      }
-    });
-    this._observer.observe(this.src ? this.el.shadowRoot : this.el, {
-      childList: true
-    });
+  private async _createLayerControlHTML() {
+    // Import and create layer control HTML
+    const { createLayerControlHTML } = await import('../utils/mapml/elementSupport/layers/createLayerControlForLayer.js');
+    
+    // This prevents the "Cannot read properties of null (reading 'shadowRoot')" error
+    // Note: _layer is already exposed via Object.defineProperty in componentDidLoad, so we don't set it here
+    (this.el as any).label = this.label;
+    (this.el as any).checked = this.checked;
+    (this.el as any).src = this.src;
+    
+    // Call the function bound to the actual DOM element (this.el), just like in layer.js
+    // The function expects 'this' to be the map-layer element, not the Stencil component
+    this._layerControlHTML = await createLayerControlHTML.call(this.el);
   }
 
-  private _runMutationObserver(elementsGroup: Element[]) {
-    // Handle dynamic content changes - features, extents, styles, etc.
-    for (let element of elementsGroup) {
-      switch (element.nodeName) {
-        case 'MAP-FEATURE':
-          this.whenReady().then(() => {
-            if (this._layer._mapmlvectors) {
-              this._layer._mapmlvectors.addLayer((element as any)._feature);
-            }
-          });
-          break;
-        case 'MAP-EXTENT':
-          this.whenReady().then(() => {
-            if ((element as any)._templatedLayer) {
-              this._layer.addLayer((element as any)._templatedLayer);
-            }
-          });
-          break;
-        // Add other cases as needed
+  private _setLocalizedDefaultLabel() {
+    if (!this._layer?._titleIsReadOnly && !this._layer?._title) {
+      const mapEl = this.getMapEl();
+      if (mapEl && (mapEl as any).locale?.dfLayer) {
+        this.label = (mapEl as any).locale.dfLayer;
       }
     }
   }
 
   private _attachedToMap() {
-    // Set layer position and properties
+    // Refactored from layer.js _attachedToMap()
+    // Set i to the position of this layer element in the set of layers
+    const mapEl = this.getMapEl();
+    if (!mapEl || !this._layer) return;
+
+    let i = 0;
     let position = 1;
-    const siblings = this.el.parentNode?.children;
-    if (siblings) {
-      for (let i = 0; i < siblings.length; i++) {
-        const sibling = siblings[i];
-        if ((sibling.nodeName === 'MAP-LAYER' || sibling.nodeName === 'LAYER-') && sibling !== this.el) {
-          position++;
-        } else if (sibling === this.el) {
-          break;
+    const nodes = mapEl.children;
+    
+    for (i = 0; i < nodes.length; i++) {
+      if (
+        nodes[i].nodeName === 'MAP-LAYER' ||
+        nodes[i].nodeName === 'LAYER-'
+      ) {
+        if (nodes[i] === this.el) {
+          position = i + 1;
+        } else if ((nodes[i] as any)._layer) {
+          (nodes[i] as any)._layer.setZIndex(i + 1);
         }
       }
     }
-
-    const mapEl = this.getMapEl() as any;
-    const proj = mapEl?.projection || 'OSMTILE';
     
-    if (this._layer && mapEl?._map) {
-      // Set layer options using Leaflet's setOptions
-      setOptions(this._layer, {
-        zIndex: position,
-        mapprojection: proj,
-        opacity: this.opacity
-      });
-      this._layer._map = mapEl._map;
+    const proj = (mapEl as any).projection ? (mapEl as any).projection : 'OSMTILE';
+    setOptions(this._layer, {
+      zIndex: position,
+      mapprojection: proj,
+      opacity: window.getComputedStyle(this.el).opacity
+    });
 
-      if (this.checked) {
-        this._layer.addTo(mapEl._map);
-      }
+    if (this.checked) {
+      this._layer.addTo((mapEl as any)._map);
+      // Toggle the this.disabled attribute depending on whether the layer
+      // is: same prj as map, within view/zoom of map
+    }
+    
+    (mapEl as any)._map.on('moveend layeradd', this._validateDisabled, this);
+    this._layer.on('add remove', this._validateDisabled, this);
 
-      this._layer.on('add remove', this._validateDisabled, this);
-      mapEl._map.on('moveend layeradd', this._validateDisabled, this);
+    if ((mapEl as any)._layerControl) {
+      this._layerControl = (mapEl as any)._layerControl;
+      // Expose _layerControl on DOM element for MapML compatibility
+      (this.el as any)._layerControl = this._layerControl;
+    }
+    
+    // If controls option is enabled, insert the layer into the overlays array
+    if ((mapEl as any)._layerControl && !this.el.hasAttribute('hidden')) {
+      this._layerControl.addOrUpdateOverlay(this._layer, this.label);
+    }
 
-      if (mapEl._layerControl) {
-        this._layerControl = mapEl._layerControl;
-        if (!this.hidden) {
-          this._layerControl.addOrUpdateOverlay(this._layer, this.label);
+    // The mapml document associated to this layer can in theory contain many
+    // link[@rel=legend] elements with different @type or other attributes;
+    // currently only support a single link, don't care about type, lang etc.
+    // TODO: add support for full LayerLegend object, and > one link.
+    if (this._layer._legendUrl) {
+      (this.el as any).legendLinks = [
+        {
+          type: 'application/octet-stream',
+          href: this._layer._legendUrl,
+          rel: 'legend',
+          lang: null,
+          hreflang: null,
+          sizes: null
         }
-      }
+      ];
     }
   }
 
   private _validateDisabled() {
+    // Refactored from layer.js _validateDisabled() - simplified version
+    // setTimeout is necessary to make the validateDisabled happen later than the moveend operations etc.,
+    // to ensure that the validated result is correct
     setTimeout(() => {
       const layer = this._layer;
+      const mapEl = this.getMapEl();
       const map = layer?._map;
       
-      if (this._mql && !this._mql.matches) {
+      // If there's a media query in play, check it early
+      if ((this as any)._mql && !(this as any)._mql.matches) {
+        this.el.setAttribute('disabled', '');
         this.disabled = true;
         return;
       }
-
-      if (map && layer) {
-        // Validate based on projection, zoom, bounds, etc.
-        const mapProjection = (this.getMapEl() as any)?.projection;
-        const layerProjection = this.getProjection();
+      
+      if (map && mapEl) {
+        // For now, implement basic validation logic
+        // TODO: Implement full extent-based validation like the original
         
-        this.disabled = mapProjection !== layerProjection;
+        // Get map extents - prerequisite: no inline and remote mapml elements exists at the same time
+        const mapExtents = this.src
+          ? this.el.shadowRoot?.querySelectorAll('map-extent')
+          : this.el.querySelectorAll('map-extent');
+        
+        if (mapExtents && mapExtents.length > 0) {
+          // Simplified: assume layer is enabled if it has extents and is checked
+          // The full implementation would check each extent's visibility
+          if (this.checked) {
+            this.el.removeAttribute('disabled');
+            this.disabled = false;
+          } else {
+            this.el.setAttribute('disabled', '');
+            this.disabled = true;
+          }
+        } else {
+          // No extents found, enable if checked
+          if (this.checked) {
+            this.el.removeAttribute('disabled');
+            this.disabled = false;
+          }
+        }
+        
         this.toggleLayerControlDisabled();
       }
     }, 0);
   }
-
+  
   private toggleLayerControlDisabled() {
-    if (this._layerControlCheckbox) {
-      this._layerControlCheckbox.disabled = this.disabled;
-    }
-    if (this._layerControlLabel) {
-      this._layerControlLabel.style.fontStyle = this.disabled ? 'italic' : 'normal';
-    }
-    if (this._opacitySlider) {
-      this._opacitySlider.disabled = this.disabled;
-    }
-    if (this._opacityControl) {
-      this._opacityControl.style.fontStyle = this.disabled ? 'italic' : 'normal';
-    }
-    if (this._styles) {
-      this._styles.style.fontStyle = this.disabled ? 'italic' : 'normal';
-    }
+    // TODO: Implement layer control disable/enable functionality
+    // This would disable/italicize layer control elements based on the disabled property
   }
 
-  connectedCallback() {
-    if (this.el.hasAttribute('data-moving')) return;
-    
-    this._hasConnected = true;
-    this._opacity = this.opacity || 1.0;
+  private async _onAdd() {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Set up changestyle event listener (similar to MapML)
+        this.el.addEventListener(
+          'changestyle',
+          (e: any) => {
+            e.stopPropagation();
+            if (e.detail) {
+              this.src = e.detail.src;
+            }
+          },
+          { once: true }
+        );
 
-    const doConnected = this._onAdd.bind(this);
-    const doRemove = this._onRemove.bind(this);
-    const registerMediaQuery = this._registerMediaQuery.bind(this);
-    const mq = this.media;
-
-    const mapEl = this.getMapEl() as any;
-    if (mapEl?.whenReady) {
-      mapEl.whenReady()
-        .then(() => {
-          doRemove();
-          if (mq) {
-            registerMediaQuery(mq);
-          } else {
-            doConnected();
+        const base = this.el.baseURI ? this.el.baseURI : document.baseURI;
+        
+        if (this.src) {
+          // Fetch remote MapML content
+          const headers = new Headers();
+          headers.append('Accept', 'text/mapml');
+          
+          const response = await fetch(this.src, { headers });
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
           }
-        })
-        .catch((error) => {
-          throw new Error('Map never became ready: ' + error);
-        });
+          
+          const mapml = await response.text();
+          const content = new DOMParser().parseFromString(mapml, 'text/xml');
+          
+          if (content.querySelector('parsererror') || !content.querySelector('mapml-')) {
+            this._fetchError = true;
+            console.log('Error fetching layer content:\n\n' + mapml + '\n');
+            throw new Error('Parser error');
+          }
+          
+          // Copy remote content to shadow DOM
+          this._copyRemoteContentToShadowRoot(content.querySelector('mapml-'));
+          
+          // Wait for child elements to be ready
+          const elements = this.el.shadowRoot.querySelectorAll('*');
+          const elementsReady = [];
+          for (let i = 0; i < elements.length; i++) {
+            if ((elements[i] as any).whenReady) {
+              elementsReady.push((elements[i] as any).whenReady());
+            }
+          }
+          await Promise.allSettled(elementsReady);
+          
+          // Check projection and create layer
+          this._selectAlternateOrChangeProjection();
+          
+          // Use static import - much simpler than dynamic import
+          const mapLayerFn = (MapLayerModule as any).mapLayer;
+          this._layer = mapLayerFn(new URL(this.src, base).href, this.el, {
+            projection: this.getProjection(),
+            opacity: this.opacity ?? 1.0
+          });
+        } else {
+          // Handle inline content
+          const elements = this.el.querySelectorAll('*');
+          const elementsReady = [];
+          for (let i = 0; i < elements.length; i++) {
+            if ((elements[i] as any).whenReady) {
+              elementsReady.push((elements[i] as any).whenReady());
+            }
+          }
+          await Promise.allSettled(elementsReady);
+          
+          this._selectAlternateOrChangeProjection();
+          
+          const mapLayerFn2 = (MapLayerModule as any).mapLayer;
+          this._layer = mapLayerFn2(null, this.el, {
+            projection: this.getProjection(),
+            opacity: this.opacity ?? 1.0
+          });
+        }
+        
+        // Create layer control HTML
+        await this._createLayerControlHTML();
+        this._setLocalizedDefaultLabel();
+        this._attachedToMap();
+        
+        // Set up mutation observers (simplified for now)
+        // TODO: Implement _runMutationObserver and _bindMutationObserver
+        
+        this._validateDisabled();
+        
+        // Dispatch loadedmetadata event
+        this.el.dispatchEvent(
+          new CustomEvent('loadedmetadata', { detail: { target: this.el } })
+        );
+        
+        resolve(undefined);
+        
+      } catch (error) {
+        if (error.message === 'changeprojection') {
+          if (error.cause?.href) {
+            console.log('Changing layer src to: ' + error.cause.href);
+            this.src = error.cause.href;
+          } else if (error.cause?.mapprojection) {
+            console.log('Changing map projection to match layer: ' + error.cause.mapprojection);
+            const mapEl = this.getMapEl();
+            if (mapEl) {
+              (mapEl as any).projection = error.cause.mapprojection;
+            }
+          }
+        } else if (error.message === 'Failed to fetch') {
+          this._fetchError = true;
+        } else {
+          console.log(error);
+          this.el.dispatchEvent(
+            new CustomEvent('error', { detail: { target: this.el } })
+          );
+        }
+        reject(error);
+      }
+    });
+  }
+
+  private _hiddenObserver?: MutationObserver;
+
+  private _setupHiddenAttributeObserver() {
+    // Store the current hidden state
+    let previousHiddenValue = this.el.hasAttribute('hidden');
+
+    // Set up MutationObserver to watch for hidden attribute changes
+    this._hiddenObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'hidden') {
+          const currentHiddenValue = this.el.hasAttribute('hidden');
+          if (currentHiddenValue !== previousHiddenValue) {
+            previousHiddenValue = currentHiddenValue;
+            this._hiddenChangeHandler(currentHiddenValue);
+          }
+        }
+      });
+    });
+
+    // Start observing
+    this._hiddenObserver.observe(this.el, {
+      attributes: true,
+      attributeFilter: ['hidden']
+    });
+  }
+
+  private _disconnectHiddenObserver() {
+    if (this._hiddenObserver) {
+      this._hiddenObserver.disconnect();
+      this._hiddenObserver = undefined;
     }
   }
 
   disconnectedCallback() {
+    // if the map-layer node is removed from the dom, the layer should be
+    // removed from the map and the layer control
     if (this.el.hasAttribute('data-moving')) return;
-    
     this._onRemove();
+  }
 
-    if (this._mql && this._changeHandler) {
-      this._mql.removeEventListener('change', this._changeHandler);
-      delete this._mql;
+  private _onRemove() {
+    // Disconnect any observers
+    this._disconnectHiddenObserver();
+    
+    // Get references to layer components for cleanup
+    let l = this._layer,
+      lc = this._layerControl;
+
+    // Remove event listeners from the layer
+    if (l) {
+      l.off();
     }
+    
+    // Remove the layer from the Leaflet map if it's added
+    if (l && l._map) {
+      l._map.removeLayer(l);
+    }
+
+    // Remove the layer from the layer control if it exists and layer is not hidden
+    if (lc && !this.el.hasAttribute('hidden')) {
+      // lc.removeLayer depends on this._layerControlHTML, can't delete it until after
+      lc.removeLayer(l);
+    }
+    
+    // Clean up layer references
+    delete this._layer;
+    delete this._layerControl;
+    delete this._layerControlHTML;
   }
 
   render() {
-    return <slot></slot>;
+    return null;
   }
 }
-

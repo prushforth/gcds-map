@@ -44,42 +44,26 @@ The `map-layer` component must be used within a `gcds-map` component:
 <!-- Auto Generated Below -->
 
 
-## Overview
-
-Map Layer component - refactored from mapml-source/src/map-layer.js
-Uses composition instead of inheritance due to Stencil constraints
-
 ## Properties
 
 | Property  | Attribute | Description | Type      | Default     |
 | --------- | --------- | ----------- | --------- | ----------- |
-| `checked` | `checked` |             | `boolean` | `false`     |
-| `hidden`  | `hidden`  |             | `boolean` | `false`     |
-| `label`   | `label`   |             | `string`  | `''`        |
+| `checked` | `checked` |             | `boolean` | `undefined` |
+| `label`   | `label`   |             | `string`  | `undefined` |
 | `media`   | `media`   |             | `string`  | `undefined` |
-| `opacity` | `opacity` |             | `number`  | `1.0`       |
-| `src`     | `src`     |             | `string`  | `''`        |
+| `opacity` | `opacity` |             | `number`  | `undefined` |
+| `src`     | `src`     |             | `string`  | `undefined` |
 
 
 ## Methods
 
-### `getExtent() => Promise<any>`
+### `getOuterHTML() => Promise<string>`
 
 
 
 #### Returns
 
-Type: `Promise<any>`
-
-
-
-### `queryable() => Promise<boolean>`
-
-
-
-#### Returns
-
-Type: `Promise<boolean>`
+Type: `Promise<string>`
 
 
 

@@ -1,6 +1,7 @@
 dist/
 www/
 loader/
+src/generated/
 
 *~
 *.sw[mnpcod]
