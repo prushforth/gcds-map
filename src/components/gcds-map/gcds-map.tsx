@@ -35,7 +35,7 @@ import { scaleBar } from '../utils/mapml/control/ScaleBar.js';
 
 import { geolocationButton } from '../utils/mapml/control/GeolocationButton.js';
 import { fullscreenButton } from '../utils/mapml/control/FullscreenButton.js';
-// import { debugOverlay } from '../../utils/mapml/layers/DebugOverlay.js';
+import { debugOverlay } from '../utils/mapml//layers/DebugOverlay.js';
 // import { crosshair } from '../../utils/mapml/layers/Crosshair.js';
 // import { featureIndexOverlay } from '../../utils/mapml/layers/FeatureIndexOverlay.js';
 
@@ -57,7 +57,7 @@ export class GcdsMap {
   @Prop({ reflect: true, attribute: 'controls' }) controls: boolean = false;
   @Prop({ reflect: true }) static?: boolean = false;
   @Prop({ reflect: true, attribute: 'controlslist' }) _controlslist?: string;
-  @Prop() locale?: any;
+  @Prop({ mutable: true }) locale?: any;
 
   // Internal state properties that mirror the original
   @State() _controlsList: DOMTokenList;
@@ -80,6 +80,7 @@ export class GcdsMap {
   private _fullScreenControl: any;
   private _geolocationButton: any;
   private _scaleBar: any;
+  private _debug: any;
 
 
   // see comments below regarding attributeChangedCallback vs. getter/setter
@@ -158,9 +159,7 @@ export class GcdsMap {
   // does not change the map zoom. The zoom attribute is only updated by map events
   // to reflect the current state for external observers.
   
-  get layers() {
-    return this.el.getElementsByTagName('map-layer');
-  }
+  // Note: instead of layers getter here, gcds-map.layers property is exposed via Object.defineProperty in componentDidLoad
   get extent() {
     let map = this._map,
       pcrsBounds = Util.pixelToPCRSBounds(
@@ -176,12 +175,13 @@ export class GcdsMap {
     // get min/max zoom from layers at this moment
     let minZoom = Infinity,
       maxZoom = -Infinity;
-    for (let i = 0; i < this.layers.length; i++) {
-      if ((this.layers[i] as any).extent) {
-        if ((this.layers[i] as any).extent.zoom.minZoom < minZoom)
-          minZoom = (this.layers[i] as any).extent.zoom.minZoom;
-        if ((this.layers[i] as any).extent.zoom.maxZoom > maxZoom)
-          maxZoom = (this.layers[i] as any).extent.zoom.maxZoom;
+    const layers = (this.el as any).layers;
+    for (let i = 0; i < layers.length; i++) {
+      if ((layers[i] as any).extent) {
+        if ((layers[i] as any).extent.zoom.minZoom < minZoom)
+          minZoom = (layers[i] as any).extent.zoom.minZoom;
+        if ((layers[i] as any).extent.zoom.maxZoom > maxZoom)
+          maxZoom = (layers[i] as any).extent.zoom.maxZoom;
       }
     }
 
@@ -209,12 +209,6 @@ export class GcdsMap {
   // Mirror the connectedCallback logic in componentDidLoad
   async componentDidLoad() {
     try {
-    this._source = this.el.outerHTML;
-    // create an array to track the history of the map and the current index
-      this._history = [];
-      this._historyIndex = -1;
-      this._traversalCall = false;
-      
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
       (this.el as any)._historyIndex = this._historyIndex;
@@ -260,7 +254,7 @@ export class GcdsMap {
       this._changeWidth(w);
       this._changeHeight(h);
 
-      await this._createMap();
+      this._createMap();
 
       // https://github.com/Maps4HTML/MapML.js/issues/274
       this.el.setAttribute('role', 'application');
@@ -317,27 +311,22 @@ export class GcdsMap {
     // Note: _container is now set via ref in render(), shadow DOM creation is automatic
   }
   _createMap() {
-    console.log('_createMap() called');
-    console.log('this._map:', this._map);
-    console.log('this._container:', this._container);
-    
     if (!this._map) {
-      console.log('Creating new map...');
       this._map = map(this._container, {
         center: new LatLng(this.lat, this.lon),
         minZoom: 0,
         maxZoom: (window as any).M[this.projection].options.resolutions.length - 1,
+        projection: this.projection,
+        // query: true,
+        contextMenu: true,
+        // announceMovement: M.options.announceMovement,
+        // featureIndex: true,
+        mapEl: this.el,
         crs: (window as any).M[this.projection],
         zoom: this.zoom,
-        zoomControl: false,
-        mapEl: this.el  // Pass element reference for MapML controls
+        zoomControl: false
       } as any);
-      
-      console.log('Map created:', this._map);
-      console.log('Map options:', this._map.options);
-      console.log('toggleableAttributionControl:', this._map.options.toggleableAttributionControl);
-      console.log('mapEl:', this._map.options.mapEl);
-      
+
       // Make map accessible for debugging
       (this.el as any)._map = this._map;
       (window as any).__debugMap = this._map;
@@ -365,11 +354,23 @@ export class GcdsMap {
         enumerable: true
       });
       
-      // Expose navigation methods on element for MapML control compatibility
+      // Expose layers getter on element for MapML control compatibility
+      Object.defineProperty(this.el, 'layers', {
+        get: () => this.el.getElementsByTagName('map-layer'),
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose navigation methods on element for use by context menu items etc
       (this.el as any).reload = () => this.reload();
       (this.el as any).back = () => this.back();
       (this.el as any).forward = () => this.forward();
-      
+
+      // expose fullscreen method on element for use by context menu item etc
+      (this.el as any)._toggleFullScreen = () => this._toggleFullScreen();
+      (this.el as any).toggleDebug = () => this.toggleDebug();
+      (this.el as any).viewSource = () => this.viewSource();
+
       this._addToHistory();
       this._createControls();
       this._toggleControls();
@@ -387,18 +388,12 @@ export class GcdsMap {
     // Force MapML control modules to load and register their init hooks
     // This ensures attribution and other controls work properly
     try {
-      console.log('Loading MapML controls...');
-    // await import('leaflet');
-    // const locateModule = await import('leaflet.locatecontrol');
-    // console.log('LocateControl loaded:', locateModule);
-    
-    // // Now load GeolocationButton which depends on LocateControl
-    // const geolocationModule = await import('../../utils/mapml/control/GeolocationButton.js');
-    // console.log('GeolocationButton loaded:', geolocationModule);
-
+      // needed because attributionButton is auto-added via Map.addInitHook and
+      // if it's not referenced by code, the bundler will omit it automatically
       await import('../utils/mapml/control/AttributionButton.js');
-      // TODO: Load other controls if needed
-      console.log('MapML controls loaded successfully');
+      // Load ContextMenu handler to register init hooks
+      await import('../utils/mapml/handlers/ContextMenu.js');
+      // TODO: other controls if needed
     } catch (error) {
       console.error('Failed to load MapML controls:', error);
     }
@@ -643,6 +638,16 @@ export class GcdsMap {
       this
     );
   }
+
+  toggleDebug() {
+    if (this._debug) {
+      this._debug.remove();
+      this._debug = undefined;
+    } else {
+      this._debug = debugOverlay().addTo(this._map);
+    }
+  }
+
   _changeWidth(width: number | string) {
     const widthPx = typeof width === 'string' ? width : width + 'px';
     
@@ -868,6 +873,12 @@ export class GcdsMap {
     this._map.toggleFullscreen();
   }
 
+  viewSource() {
+    let blob = new Blob([this._source], { type: 'text/plain' }),
+      url = URL.createObjectURL(blob);
+    window.open(url);
+    URL.revokeObjectURL(url);
+  }
 
   async whenProjectionDefined(projection: string) {
     // Mirror the original whenProjectionDefined logic
