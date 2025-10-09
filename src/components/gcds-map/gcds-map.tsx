@@ -1,4 +1,4 @@
-import { Component, Prop, Element, State, Watch, Method, h } from '@stencil/core';
+import { Component, Prop, Element, State, Watch, Method } from '@stencil/core';
 import {
   map,
   LatLng,
@@ -207,7 +207,9 @@ export class GcdsMap {
     this._traversalCall = false;
   }
   // Mirror the connectedCallback logic in componentDidLoad
-  async componentDidLoad() {
+  async connectedCallback() {
+
+    this._initShadowRoot();
     try {
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
@@ -300,15 +302,25 @@ export class GcdsMap {
     }
   }
   _initShadowRoot() {
-    // In Stencil, shadow DOM structure is handled by render()
-    // This method now only handles the light DOM hiding CSS
+
+    let shadowRoot = this.el.shadowRoot;
+    if (shadowRoot.querySelector('[aria-label="Interactive map"]')) return;
+    this._container = document.createElement('div');
+
+    let output =
+      "<output role='status' aria-live='polite' aria-atomic='true' class='mapml-screen-reader-output'></output>";
+    this._container.insertAdjacentHTML('beforeend', output);
+
+    // Make the Leaflet container element programmatically identifiable
+    // (https://github.com/Leaflet/Leaflet/issues/7193).
+    this._container.setAttribute('role', 'region');
+    this._container.setAttribute('aria-label', 'Interactive map');
+    shadowRoot.appendChild(this._container);
     
     // Hide all (light DOM) children of the map element (equivalent to hideElementsCSS)
     let hideElementsCSS = document.createElement('style');
     hideElementsCSS.innerHTML = `gcds-map > * { display: none!important; }`;
     this.el.appendChild(hideElementsCSS);
-    
-    // Note: _container is now set via ref in render(), shadow DOM creation is automatic
   }
   _createMap() {
     if (!this._map) {
@@ -376,9 +388,8 @@ export class GcdsMap {
       // // Expose zoomTo method on element for MapML compatibility
       (this.el as any).zoomTo = (lat: number, lon: number, zoom?: number) => this.zoomTo(lat, lon, zoom);
 
-      // // Expose promise-based methods on element for MapML compatibility
-      // (this.el as any).whenReady = () => this.whenReady();
-      // (this.el as any).whenLayersReady = () => this.whenLayersReady();
+      // Note: whenReady and whenLayersReady are automatically exposed by @Method() decorator
+      // No manual exposure needed for these methods
 
       // expose fullscreen method on element for use by context menu item etc
       (this.el as any)._toggleFullScreen = () => this._toggleFullScreen();
@@ -980,21 +991,6 @@ export class GcdsMap {
   }
 
   render() {
-    // Mirror the original shadow DOM structure from _initShadowRoot
-    return [
-      // CSS will be handled by styleUrl in @Component
-      <output 
-        role="status" 
-        aria-live="polite" 
-        aria-atomic="true" 
-        class="mapml-screen-reader-output"
-      ></output>,
-      <div 
-        ref={(el) => this._container = el as HTMLElement}
-        role="region" 
-        aria-label="Interactive map"
-        class="mapml-map-container"
-      ></div>
-    ];
+    return null;
   }
 }
