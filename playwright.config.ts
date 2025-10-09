@@ -11,7 +11,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3333/',
   },
   webServer: {
-    command: 'npx http-server . -p 3333 --cors -c-1',
+    command: 'npx stencil build --dev --watch --serve --port 3333',
     port: 3333,
     timeout: 120000,
     reuseExistingServer: !process.env.CI,

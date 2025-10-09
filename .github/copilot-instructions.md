@@ -8,6 +8,7 @@ This is a **Stencil-based fork** of MapML viewer technology that creates GCDS-co
 - **`gcds-map`**: Main Stencil component that is a stencil refactoring of `mapml-viewer` from src/mapml-source/mapml-viewer.js
   - wraps a Leaflet map instance in its shadow DOM
   - manages map properties (lat, lon, zoom, etc.) some of which are set once at initialization by the user and then updated by the component as the view changes
+  - the map-layer src attribute is not a "set once" attribute or property - it can be changed to load a different layer, or removed to change to local content
   - dynamically loads MapML controls to ensure proper Leaflet init hooks
  many other stencil components will be added via refactoring of the corresponding map-* components in MapML.js
 - each map-* component in MapML.js will have a corresponding map-* stencil component here, of the same name except for the gcds-map component which will replace mapml-viewer.

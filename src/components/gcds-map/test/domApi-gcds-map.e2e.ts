@@ -10,7 +10,7 @@ test.describe('gcds-map DOM API Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     page = await context.newPage();
-    await page.goto('src/components/gcds-map/test/domApi-gcds-map.html');
+    await page.goto('/test/domApi-gcds-map.html');
   });
 
   test.afterAll(async function () {

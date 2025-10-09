@@ -24,6 +24,15 @@ export class MapLayerStencil {
   @State() _opacity: number = 1.0;
   @State() disabled: boolean = false;
 
+  private loggedMessages: Set<unknown>;
+
+  // Note: Stencil handles constructor automatically, but we can use componentWillLoad for initialization
+  componentWillLoad() {
+    // Mirror the original constructor logic
+    this._opacity = this.opacity || 1.0;
+    // by keeping track of console.log, we can avoid overwhelming the console
+    this.loggedMessages = new Set();
+  }
   componentDidLoad() {
     // Expose methods on the DOM element for MapML compatibility using Object.defineProperty
     try {
@@ -80,6 +89,14 @@ export class MapLayerStencil {
           // Update the attribute to reflect the change
           this.el.setAttribute('opacity', this.opacity.toString());
         },
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose _fetchError property for MapML compatibility
+      Object.defineProperty(this.el, '_fetchError', {
+        get: () => this._fetchError,
+        set: (value) => { this._fetchError = value; },
         configurable: true,
         enumerable: true
       });
@@ -198,6 +215,14 @@ export class MapLayerStencil {
           enumerable: true
         });
         
+        // Expose _fetchError property for MapML compatibility
+        Object.defineProperty(this.el, '_fetchError', {
+          get: () => this._fetchError,
+          set: (value) => { this._fetchError = value; },
+          configurable: true,
+          enumerable: true
+        });
+        
         // Expose _opacitySlider property for MapML compatibility
         Object.defineProperty(this.el, '_opacitySlider', {
           get: () => (this.el as any).__opacitySlider,
@@ -279,12 +304,46 @@ export class MapLayerStencil {
   }
 
   getMapEl() {
-    return Util.getClosest(this.el, 'gcds-map,mapml-viewer,map[is=web-map]');
+    return Util.getClosest(this.el, 'gcds-map');
   }
 
-  getProjection(): string {
-    // Simplified projection detection for now
-    return 'OSMTILE';
+  /**
+   * For "local" content, getProjection will use content of "this"
+   * For "remote" content, you need to pass the shadowRoot to search through
+   */
+  getProjection() {
+    let mapml = this.src ? this.el.shadowRoot : this.el;
+    let projection = this.getMapEl().projection;
+    if (mapml.querySelector('map-meta[name=projection][content]')) {
+      projection =
+        Util._metaContentToObject(
+          mapml
+            .querySelector('map-meta[name=projection]')
+            .getAttribute('content')
+        ).content || projection;
+    } else if (mapml.querySelector('map-extent[units]')) {
+      const getProjectionFrom = (extents) => {
+        let extentProj = extents[0].attributes.units.value;
+        let isMatch = true;
+        for (let i = 0; i < extents.length; i++) {
+          if (extentProj !== extents[i].attributes.units.value) {
+            isMatch = false;
+          }
+        }
+        return isMatch ? extentProj : null;
+      };
+      projection =
+        getProjectionFrom(
+          Array.from(mapml.querySelectorAll('map-extent[units]'))
+        ) || projection;
+    } else {
+      const message = `A projection was not assigned to the '${this.label || this.el.querySelector('map-title').textContent}' Layer. \nPlease specify a projection for that layer using a map-meta element. \nSee more here - https://maps4html.org/web-map-doc/docs/elements/meta/`;
+      if (!this.loggedMessages.has(message)) {
+        console.log(message);
+        this.loggedMessages.add(message);
+      }
+    }
+    return projection;
   }
 
   @Method()
@@ -321,25 +380,25 @@ export class MapLayerStencil {
 
   @Method()
   async whenReady(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       let interval: any, failureTimer: any;
       if (
-        this._layer &&
+        (this.el as any)._layer &&
         this._layerControlHTML &&
         (!this.src || this.el.shadowRoot?.childNodes.length)
       ) {
         resolve();
       } else {
-        const layerElement = this;
+        const layerElement = this.el;
         interval = setInterval(testForLayer, 200, layerElement);
         failureTimer = setTimeout(layerNotDefined, 5000);
       }
-      
-      function testForLayer(layerElement: MapLayerStencil) {
+
+      function testForLayer(layerElement: any) {
         if (
           layerElement._layer &&
           layerElement._layerControlHTML &&
-          (!layerElement.src || layerElement.el.shadowRoot?.childNodes.length)
+          (!layerElement.src || layerElement.shadowRoot?.childNodes.length)
         ) {
           clearInterval(interval);
           clearTimeout(failureTimer);

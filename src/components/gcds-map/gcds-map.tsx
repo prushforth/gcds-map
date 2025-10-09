@@ -1,4 +1,4 @@
-import { Component, Prop, Element, State, Watch, h } from '@stencil/core';
+import { Component, Prop, Element, State, Watch, Method, h } from '@stencil/core';
 import {
   map,
   LatLng,
@@ -372,6 +372,13 @@ export class GcdsMap {
       (this.el as any).reload = () => this.reload();
       (this.el as any).back = () => this.back();
       (this.el as any).forward = () => this.forward();
+      
+      // // Expose zoomTo method on element for MapML compatibility
+      (this.el as any).zoomTo = (lat: number, lon: number, zoom?: number) => this.zoomTo(lat, lon, zoom);
+
+      // // Expose promise-based methods on element for MapML compatibility
+      // (this.el as any).whenReady = () => this.whenReady();
+      // (this.el as any).whenLayersReady = () => this.whenLayersReady();
 
       // expose fullscreen method on element for use by context menu item etc
       (this.el as any)._toggleFullScreen = () => this._toggleFullScreen();
@@ -619,7 +626,7 @@ export class GcdsMap {
         this._updateMapCenter();
         this._addToHistory();
         this.el.dispatchEvent(
-          new CustomEvent('moveend', { detail: { target: this } })
+          new CustomEvent('map-moveend', { detail: { target: this } })
         );
       },
       this
@@ -628,7 +635,7 @@ export class GcdsMap {
       'zoom',
       function () {
         this.el.dispatchEvent(
-          new CustomEvent('zoom', { detail: { target: this } })
+          new CustomEvent('map-zoom', { detail: { target: this } })
         );
       },
       this
@@ -710,14 +717,11 @@ export class GcdsMap {
     this._addToHistory();
   }
   _addToHistory() {
-    if (typeof this._traversalCall === 'number' && this._traversalCall > 0) {
-      // this._traversalCall tracks how many consecutive moveends to ignore from history
-      this._traversalCall--; // this is useful for ignoring moveends corresponding to back, forward and reload
-      // Reset to false when it reaches 0 (mimics original behavior)
-      if (this._traversalCall === 0) {
-        this._traversalCall = false;
-      }
-      return;
+    // this._traversalCall tracks how many consecutive moveends to ignore from history
+    // Check if we should ignore this moveend event due to programmatic navigation
+    if (this._traversalCall && this._traversalCall > 0) {
+      this._traversalCall--;
+      return; // Don't add to history during back/forward/reload operations
     }
 
     let mapLocation = this._map.getPixelBounds().getCenter();
@@ -726,67 +730,67 @@ export class GcdsMap {
       x: mapLocation.x,
       y: mapLocation.y
     };
+    
     this._historyIndex++;
     this._history.splice(this._historyIndex, 0, location);
-    // Remove future history and overwrite it when map pan/zoom while inside history
+    
+    // Remove future history when adding new location while in middle of history
     if (this._historyIndex + 1 !== this._history.length) {
       this._history.length = this._historyIndex + 1;
     }
-    if (this._historyIndex === 0) {
-      // when at initial state of map, disable back, forward, and reload items
-      this._map.contextMenu.toggleContextMenuItem('Back', 'disabled'); // back contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled'); // reload contextmenu item
-      this._reloadButton?.disable();
-    } else {
-      this._map.contextMenu.toggleContextMenuItem('Back', 'enabled'); // back contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
-      this._map.contextMenu.toggleContextMenuItem('Reload', 'enabled'); // reload contextmenu item
-      this._reloadButton?.enable();
-    }
+    // Update context menu button states based on history position
+    this._updateNavigationControls();
     
     // Sync updated history properties to element for MapML controls
     (this.el as any)._history = this._history;
     (this.el as any)._historyIndex = this._historyIndex;
   }
-  /**
-   * Allow user to move back in history
-   */
-  back() {
-    let history = this._history;
-    let curr = history[this._historyIndex];
 
-    if (this._historyIndex > 0) {
-      this._map.contextMenu.toggleContextMenuItem('Forward', 'enabled');
-      this._historyIndex--;
-      let prev = history[this._historyIndex];
-      
-      // Disable back, reload contextmenu item when at the end of history
-      if (this._historyIndex === 0) {
-        this._map.contextMenu.toggleContextMenuItem('Back', 'disabled');
-        this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled');
-        this._reloadButton?.disable();
-      }
-
-      if (prev.zoom !== curr.zoom) {
-        this._traversalCall = 2;
-        let currScale = this._map.options.crs.scale(curr.zoom);
-        let prevScale = this._map.options.crs.scale(prev.zoom);
-        let scale = currScale / prevScale;
-        this._map.panBy([
-          prev.x * scale - curr.x,
-          prev.y * scale - curr.y
-        ], { animate: false });
-        this._map.setZoom(prev.zoom);
-      } else {
-        this._traversalCall = 1;
-        this._map.panBy([prev.x - curr.x, prev.y - curr.y]);
-      }
-      
-      // Sync updated history properties to element
-      (this.el as any)._history = this._history;
-      (this.el as any)._historyIndex = this._historyIndex;
+  private _updateNavigationControls() {
+    // Centralize navigation control state management
+    const canGoBack = this._historyIndex > 0;
+    const canGoForward = this._historyIndex < this._history.length - 1;
+    const canReload = this._historyIndex > 0;
+    
+    // Update context menu items
+    this._map.contextMenu.toggleContextMenuItem('Back', canGoBack ? 'enabled' : 'disabled');
+    this._map.contextMenu.toggleContextMenuItem('Forward', canGoForward ? 'enabled' : 'disabled');
+    this._map.contextMenu.toggleContextMenuItem('Reload', canReload ? 'enabled' : 'disabled');
+    
+    // Update reload button
+    if (canReload) {
+      this._reloadButton?.enable();  
+    } else {
+      this._reloadButton?.disable();
     }
+  }
+
+  // Simplified back() method
+  back() {
+    if (this._historyIndex <= 0) return;
+    
+    let curr = this._history[this._historyIndex];
+    this._historyIndex--;
+    let prev = this._history[this._historyIndex];
+    
+    // Set traversal call count based on operations needed
+    if (prev.zoom !== curr.zoom) {
+      this._traversalCall = 2; // panBy + setZoom
+      let currScale = this._map.options.crs.scale(curr.zoom);
+      let prevScale = this._map.options.crs.scale(prev.zoom);
+      let scale = currScale / prevScale;
+      this._map.panBy([prev.x * scale - curr.x, prev.y * scale - curr.y], { animate: false });
+      this._map.setZoom(prev.zoom);
+    } else {
+      this._traversalCall = 1; // panBy only
+      this._map.panBy([prev.x - curr.x, prev.y - curr.y]);
+    }
+    
+    // Update controls immediately (don't wait for moveend)
+    this._updateNavigationControls();
+    
+    // Sync to element
+    (this.el as any)._historyIndex = this._historyIndex;
   }
 
   /**
@@ -811,67 +815,59 @@ export class GcdsMap {
         let currScale = this._map.options.crs.scale(curr.zoom);
         let nextScale = this._map.options.crs.scale(next.zoom);
         let scale = currScale / nextScale;
-        this._map.panBy([
-          next.x * scale - curr.x,
-          next.y * scale - curr.y
-        ], { animate: false });
+        this._map.panBy([next.x * scale - curr.x, next.y * scale - curr.y], { animate: false });
         this._map.setZoom(next.zoom);
       } else {
         this._traversalCall = 1;
         this._map.panBy([next.x - curr.x, next.y - curr.y]);
       }
       
-      // Sync updated history properties to element
-      (this.el as any)._history = this._history;
+      // Update controls immediately (don't wait for moveend)
+      this._updateNavigationControls();
+      
+      // Sync to element
       (this.el as any)._historyIndex = this._historyIndex;
     }
   }
 
   /**
-   * Allows the user to reload/reset the map's location to it's initial location
+   * Allows the user to reload/reset the map's location to its initial location
+   * and reset the history to the initial state
    */
   reload() {
-    let initialLocation = this._history.shift();
-    let mapLocation = this._map.getPixelBounds().getCenter();
+    if (this._history.length === 0) return;
+    
+    let initialLocation = this._history[0]; // Get initial location
     let curr = {
       zoom: this._map.getZoom(),
-      x: mapLocation.x,
-      y: mapLocation.y
+      x: this._map.getPixelBounds().getCenter().x,
+      y: this._map.getPixelBounds().getCenter().y
     };
-
-    this._map.contextMenu.toggleContextMenuItem('Back', 'disabled'); // back contextmenu item
-    this._map.contextMenu.toggleContextMenuItem('Forward', 'disabled'); // forward contextmenu item
-    this._map.contextMenu.toggleContextMenuItem('Reload', 'disabled'); // reload contextmenu item
-    this._reloadButton?.disable();
-
-    this._history = [initialLocation];
-    this._historyIndex = 0;
     
-    // Sync updated history properties to element for MapML controls
-    (this.el as any)._history = this._history;
-    (this.el as any)._historyIndex = this._historyIndex;
-
+    // Reset history completely - this is the key change
+    this._history = [initialLocation]; // Keep only the initial location
+    this._historyIndex = 0;             // Set to the only remaining entry
+  
+    // Set traversal call count based on operations needed
     if (initialLocation.zoom !== curr.zoom) {
-      this._traversalCall = 2; // ignores the next 2 moveend events
-
-      let currScale = this._map.options.crs.scale(curr.zoom); // gets the scale of the current zoom level
-      let initScale = this._map.options.crs.scale(initialLocation.zoom); // gets the scale of the initial location's zoom
-
+      this._traversalCall = 2; // panBy + setZoom
+      let currScale = this._map.options.crs.scale(curr.zoom);
+      let initScale = this._map.options.crs.scale(initialLocation.zoom);
       let scale = currScale / initScale;
-
-      this._map.panBy(
-        [
-          initialLocation.x * scale - curr.x,
-          initialLocation.y * scale - curr.y
-        ],
-        { animate: false }
-      );
+      this._map.panBy([initialLocation.x * scale - curr.x, initialLocation.y * scale - curr.y], { animate: false });
       this._map.setZoom(initialLocation.zoom);
     } else {
-      // if it's on the same zoom level as the initial location, no need to calculate scales
-      this._traversalCall = 1;
+      this._traversalCall = 1; // panBy only
       this._map.panBy([initialLocation.x - curr.x, initialLocation.y - curr.y]);
     }
+    
+    // Update controls immediately - now with reset history state
+    this._updateNavigationControls();
+    
+    // Sync reset history to element
+    (this.el as any)._history = this._history;
+    (this.el as any)._historyIndex = this._historyIndex;
+    
     this._map.getContainer().focus();
   }
 
@@ -886,6 +882,40 @@ export class GcdsMap {
     URL.revokeObjectURL(url);
   }
 
+  /**
+   * Zoom the map to a specific location and zoom level
+   * @param lat - Latitude coordinate
+   * @param lon - Longitude coordinate 
+   * @param zoom - Zoom level (optional, defaults to current zoom)
+   */
+  zoomTo(lat: number, lon: number, zoom?: number): void {
+    // Ensure map is initialized before attempting to zoom
+    if (!this._map) {
+      console.warn('Map is not initialized. Cannot zoom to location.');
+      return;
+    }
+    
+    // Convert zoom to number if provided, otherwise use current zoom
+    const targetZoom = (zoom !== undefined && Number.isInteger(+zoom)) ? +zoom : this.zoom;
+    
+    // Create LatLng object for the target location
+    const location = new LatLng(+lat, +lon);
+    
+    // Set the map view to the new location and zoom
+    this._map.setView(location, targetZoom);
+    
+    // Update the component properties to reflect the new state
+    // This matches the behavior in the original mapml-viewer.js
+    // this.zoom = targetZoom;
+    // this.lat = location.lat;
+    // this.lon = location.lng;
+
+    // The moveend event will fire automatically and:
+    // 1. Call _updateMapCenter() to sync lat/lon/zoom props
+    // 2. Call _addToHistory() to update the history stack
+    // 3. Update context menu button states
+  }
+
   async whenProjectionDefined(projection: string) {
     // Mirror the original whenProjectionDefined logic
     return new Promise((resolve, reject) => {
@@ -895,6 +925,58 @@ export class GcdsMap {
         reject(new Error('Projection ' + projection + ' is not defined'));
       }
     });
+  }
+
+  /**
+   * Promise-based method to wait until map is ready
+   * Returns a promise that resolves when the map is fully initialized
+   */
+  @Method()
+  async whenReady(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      let interval: any, failureTimer: any;
+      if ((this.el as any)._map) {
+        resolve();
+      } else {
+        let viewer = this.el as any;
+        interval = setInterval(testForMap, 200, viewer);
+        failureTimer = setTimeout(mapNotDefined, 5000);
+      }
+      
+      function testForMap(viewer: any) {
+        if (viewer._map) {
+          clearInterval(interval);
+          clearTimeout(failureTimer);
+          resolve();
+        }
+      }
+      
+      function mapNotDefined() {
+        clearInterval(interval);
+        clearTimeout(failureTimer);
+        reject('Timeout reached waiting for map to be ready');
+      }
+    });
+  }
+
+  /**
+   * Promise-based method to wait until all layers are ready
+   * Returns a promise that resolves when all child layers are fully initialized
+   */
+  @Method()
+  async whenLayersReady(): Promise<PromiseSettledResult<void>[]> {
+    let layersReady: Promise<void>[] = [];
+    
+    // Get all map-layer child elements
+    const layers = this.el.querySelectorAll('map-layer');
+    for (let i = 0; i < layers.length; i++) {
+      const layer = layers[i];
+      if ((layer as any).whenReady) {
+        layersReady.push((layer as any).whenReady());
+      }
+    }
+    
+    return Promise.allSettled(layersReady);
   }
 
   render() {

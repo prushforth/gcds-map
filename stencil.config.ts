@@ -14,6 +14,12 @@ export const config: Config = {
           src: 'components/gcds-map/assets',
           dest: 'assets',
           warn: true
+        },
+        // Copy test HTML files to build output so they're accessible via dev server
+        {
+          src: 'components/**/test/*.html',
+          dest: 'test',
+          warn: false
         }
       ],
     },
@@ -37,6 +43,12 @@ export const config: Config = {
           src: 'components/gcds-map/assets',
           dest: 'build/assets',
           warn: true
+        },
+        // Copy test HTML files to build output so they're accessible via dev server
+        {
+          src: 'components/**/test/*.html',
+          dest: 'test',
+          warn: false
         }
       ],
     },

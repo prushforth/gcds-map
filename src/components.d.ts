@@ -30,6 +30,14 @@ export namespace Components {
           * @default false
          */
         "static"?: boolean;
+        /**
+          * Promise-based method to wait until all layers are ready Returns a promise that resolves when all child layers are fully initialized
+         */
+        "whenLayersReady": () => Promise<PromiseSettledResult<void>[]>;
+        /**
+          * Promise-based method to wait until map is ready Returns a promise that resolves when the map is fully initialized
+         */
+        "whenReady": () => Promise<void>;
         "width"?: string;
         /**
           * @default 0
