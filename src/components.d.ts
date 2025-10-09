@@ -9,9 +9,17 @@ export namespace Components {
     interface GcdsMap {
         "_controlslist"?: string;
         /**
+          * Navigate back in map history
+         */
+        "back": () => Promise<void>;
+        /**
           * @default false
          */
         "controls": boolean;
+        /**
+          * Allows user to move forward in history
+         */
+        "forward": () => Promise<void>;
         "height"?: string;
         /**
           * @default 0
@@ -27,9 +35,21 @@ export namespace Components {
          */
         "projection"?: string;
         /**
+          * Allows the user to reload/reset the map's location to its initial location and reset the history to the initial state
+         */
+        "reload": () => Promise<void>;
+        /**
           * @default false
          */
         "static"?: boolean;
+        /**
+          * Toggle debug overlay on the map
+         */
+        "toggleDebug": () => Promise<void>;
+        /**
+          * Open the map source in a new window
+         */
+        "viewSource": () => Promise<void>;
         /**
           * Promise-based method to wait until all layers are ready Returns a promise that resolves when all child layers are fully initialized
          */
@@ -43,6 +63,13 @@ export namespace Components {
           * @default 0
          */
         "zoom"?: number;
+        /**
+          * Zoom the map to a specific location and zoom level
+          * @param lat - Latitude coordinate
+          * @param lon - Longitude coordinate
+          * @param zoom - Zoom level (optional, defaults to current zoom)
+         */
+        "zoomTo": (lat: number, lon: number, zoom?: number) => Promise<void>;
     }
     interface MapLayer {
         "checked"?: boolean;
