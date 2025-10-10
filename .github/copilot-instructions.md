@@ -37,6 +37,7 @@ taskQueue: 'async', // Required for MapML async operations
 ```
 
 ## Development Workflows
+- do not use flattery like:     "You're abosolutely right!" etc.  Just be direct and to the point.
 
 ### Building & Testing
 ```bash

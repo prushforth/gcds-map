@@ -73,13 +73,11 @@ export namespace Components {
     }
     interface MapLayer {
         "checked"?: boolean;
-        "getOuterHTML": () => Promise<string>;
         "label"?: string;
         "media"?: string;
         "opacity"?: number;
         "src"?: string;
         "whenReady": () => Promise<void>;
-        "zoomTo": () => Promise<void>;
     }
 }
 declare global {
