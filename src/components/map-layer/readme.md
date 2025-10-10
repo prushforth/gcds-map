@@ -49,7 +49,6 @@ The `map-layer` component must be used within a `gcds-map` component:
 | Property  | Attribute | Description | Type      | Default     |
 | --------- | --------- | ----------- | --------- | ----------- |
 | `checked` | `checked` |             | `boolean` | `undefined` |
-| `label`   | `label`   |             | `string`  | `undefined` |
 | `media`   | `media`   |             | `string`  | `undefined` |
 | `opacity` | `opacity` |             | `number`  | `undefined` |
 | `src`     | `src`     |             | `string`  | `undefined` |
@@ -57,27 +56,7 @@ The `map-layer` component must be used within a `gcds-map` component:
 
 ## Methods
 
-### `getOuterHTML() => Promise<string>`
-
-
-
-#### Returns
-
-Type: `Promise<string>`
-
-
-
 ### `whenReady() => Promise<void>`
-
-
-
-#### Returns
-
-Type: `Promise<void>`
-
-
-
-### `zoomTo() => Promise<void>`
 
 
 

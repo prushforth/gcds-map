@@ -68,7 +68,6 @@ export var createLayerControlHTML = async function () {
     removeControlButton,
     'click',
     (e) => {
-      console.log('Layer removal button clicked', { target: e.target, mapEl, layerEl: this });
       let fieldset = 0,
         elem,
         root;

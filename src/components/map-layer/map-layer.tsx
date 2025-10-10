@@ -25,7 +25,6 @@ export class MapLayerStencil {
 
   // Core properties matching BaseLayerElement observedAttributes
   @Prop({ reflect: true, mutable: true }) src?: string;
-  @Prop({ reflect: true, mutable: true }) label?: string;
   @Prop({ reflect: true, mutable: true }) checked?: boolean;
   // Note: hidden is a standard HTML attribute, handled via attributeChangedCallback
   @Prop({ reflect: true, mutable: true }) opacity?: number;
@@ -42,9 +41,11 @@ export class MapLayerStencil {
   // Watchers for attribute changes - these automatically don't fire during initial load
   @Watch('src')
   srcChanged(newValue: string, oldValue: string) {
-    if (newValue !== oldValue) {
-      console.log('Source changed:', newValue);
-      // Implementation will be added later
+    if (this._hasConnected && oldValue !== newValue) {
+      this._onRemove();
+      if (this.el.isConnected) {
+        this._onAdd();
+      }
     }
   }
   @Watch('checked')
@@ -92,8 +93,29 @@ export class MapLayerStencil {
   private _changeHandler?: () => void;
   private _boundCreateLayerControlHTML?: () => any;
 
+  // Computed properties matching layer.js getters  
+  get srcValue(): string {
+    return this.el.hasAttribute('src') ? this.el.getAttribute('src') : '';
+  }
 
-  // Computed properties matching layer.js getters
+  set srcValue(val: string) {
+    // Update the Stencil prop directly instead of manipulating DOM attribute
+    // This avoids circular updates during rendering
+    this.src = val;
+  }
+
+  get label(): string {
+    if (this._layer) return this._layer.getName();
+    else return this.el.hasAttribute('label') ? this.el.getAttribute('label') : '';
+  }
+
+  set label(val: string) {
+    if (val) {
+      this.el.setAttribute('label', val);
+      if (this._layer) this._layer.setName(val);
+    }
+  }
+
   get extent() {
     // calculate the bounds of all content, return it.
     if (this._layer) {
@@ -210,6 +232,22 @@ export class MapLayerStencil {
       writable: true,
       configurable: true
     });
+
+    // Expose src property on DOM element for MapML compatibility
+    Object.defineProperty(this.el, 'src', {
+      get: () => this.srcValue,
+      set: (val: string) => this.srcValue = val,
+      configurable: true,
+      enumerable: true
+    });
+
+    // Expose label property on DOM element for MapML compatibility
+    Object.defineProperty(this.el, 'label', {
+      get: () => this.label,
+      set: (val: string) => this.label = val,
+      configurable: true,
+      enumerable: true
+    });
     
     const doConnected = this._onAdd.bind(this);
     const doRemove = this._onRemove.bind(this);
@@ -234,7 +272,7 @@ export class MapLayerStencil {
     new Promise<void>((resolve, reject) => {
       this.el.addEventListener(
         'changestyle',
-        function (e: any) {
+        (e: any) => {
           e.stopPropagation();
           // if user changes the style in layer control
           if (e.detail) {

@@ -42,7 +42,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/mapElement.html');
+    await page.goto('/test/gcds-map/mapElement.html');
   });
 
   test.afterAll(async function () {

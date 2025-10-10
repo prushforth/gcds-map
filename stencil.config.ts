@@ -15,11 +15,14 @@ export const config: Config = {
           dest: 'assets',
           warn: true
         },
-        // Copy test HTML files to build output so they're accessible via dev server
+        // Copy test HTML and mapml files to build output so they're accessible via dev server
         {
-          src: 'components/**/test/*.html',
-          dest: 'test',
-          warn: false
+          src: 'components/gcds-map/test/*.{html,mapml}',
+          dest: 'test/gcds-map'
+        },
+        {
+          src: 'components/map-layer/test/*.{html,mapml}',
+          dest: 'test/map-layer'
         }
       ],
     },
@@ -44,11 +47,14 @@ export const config: Config = {
           dest: 'build/assets',
           warn: true
         },
-        // Copy test HTML files to build output so they're accessible via dev server
+        // Copy test HTML and mapml files to build output so they're accessible via dev server
         {
-          src: 'components/**/test/*.html',
-          dest: 'test',
-          warn: false
+          src: 'components/gcds-map/test/*.{html,mapml}',
+          dest: 'test/gcds-map'
+        },
+        {
+          src: 'components/map-layer/test/*.{html,mapml}',
+          dest: 'test/map-layer'
         }
       ],
     },

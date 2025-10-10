@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Adding Static Attribute to gcds-map', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/test/staticAttribute.html');
+    await page.goto('/test/gcds-map/staticAttribute.html');
     
     // Wait for the gcds-map component to be hydrated and ready
     const map = await page.locator('gcds-map');

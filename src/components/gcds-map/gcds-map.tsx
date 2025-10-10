@@ -380,8 +380,42 @@ export class GcdsMap {
         enumerable: true
       });
       
-      // Note: Public methods (reload, back, forward, zoomTo, toggleDebug, viewSource, whenReady, whenLayersReady) 
-      // are automatically exposed by @Method() decorator - no manual exposure needed
+      // Expose public synchronous methods on element for MapML compatibility
+      Object.defineProperty(this.el, 'zoomTo', {
+        value: (lat: number, lon: number, zoom?: number) => this.zoomTo(lat, lon, zoom),
+        writable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(this.el, 'back', {
+        value: () => this.back(),
+        writable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(this.el, 'forward', {
+        value: () => this.forward(),
+        writable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(this.el, 'reload', {
+        value: () => this.reload(),
+        writable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(this.el, 'toggleDebug', {
+        value: () => this.toggleDebug(),
+        writable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(this.el, 'viewSource', {
+        value: () => this.viewSource(),
+        writable: true,
+        configurable: true
+      });
 
       // Expose internal methods needed by MapML controls and context menu items
       (this.el as any)._toggleFullScreen = () => this._toggleFullScreen();
@@ -656,7 +690,6 @@ export class GcdsMap {
   /**
    * Toggle debug overlay on the map
    */
-  @Method()
   toggleDebug() {
     if (this._debug) {
       this._debug.remove();
@@ -773,7 +806,6 @@ export class GcdsMap {
   /**
    * Navigate back in map history
    */
-  @Method()
   back() {
     if (this._historyIndex <= 0) return;
     
@@ -804,7 +836,6 @@ export class GcdsMap {
   /**
    * Allows user to move forward in history
    */
-  @Method()
   forward() {
     let history = this._history;
     let curr = history[this._historyIndex];
@@ -843,7 +874,6 @@ export class GcdsMap {
    * Allows the user to reload/reset the map's location to its initial location
    * and reset the history to the initial state
    */
-  @Method()
   reload() {
     if (this._history.length === 0) return;
     
@@ -891,7 +921,6 @@ export class GcdsMap {
   /**
    * Open the map source in a new window
    */
-  @Method()
   viewSource() {
     let blob = new Blob([this._source], { type: 'text/plain' }),
       url = URL.createObjectURL(blob);
@@ -905,7 +934,6 @@ export class GcdsMap {
    * @param lon - Longitude coordinate 
    * @param zoom - Zoom level (optional, defaults to current zoom)
    */
-  @Method()
   zoomTo(lat: number, lon: number, zoom?: number): void {
     // Ensure map is initialized before attempting to zoom
     if (!this._map) {

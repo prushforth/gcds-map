@@ -21,6 +21,31 @@
 | `zoom`          | `zoom`         |             | `number`  | `0`         |
 
 
+## Methods
+
+### `whenLayersReady() => Promise<PromiseSettledResult<void>[]>`
+
+Promise-based method to wait until all layers are ready
+Returns a promise that resolves when all child layers are fully initialized
+
+#### Returns
+
+Type: `Promise<PromiseSettledResult<void>[]>`
+
+
+
+### `whenReady() => Promise<void>`
+
+Promise-based method to wait until map is ready
+Returns a promise that resolves when the map is fully initialized
+
+#### Returns
+
+Type: `Promise<void>`
+
+
+
+
 ----------------------------------------------
 
 *Built with [StencilJS](https://stenciljs.com/)*
