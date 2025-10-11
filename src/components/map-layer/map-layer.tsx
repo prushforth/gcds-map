@@ -93,17 +93,6 @@ export class MapLayerStencil {
   private _changeHandler?: () => void;
   private _boundCreateLayerControlHTML?: () => any;
 
-  // Computed properties matching layer.js getters  
-  get srcValue(): string {
-    return this.el.hasAttribute('src') ? this.el.getAttribute('src') : '';
-  }
-
-  set srcValue(val: string) {
-    // Update the Stencil prop directly instead of manipulating DOM attribute
-    // This avoids circular updates during rendering
-    this.src = val;
-  }
-
   get label(): string {
     if (this._layer) return this._layer.getName();
     else return this.el.hasAttribute('label') ? this.el.getAttribute('label') : '';
@@ -231,14 +220,6 @@ export class MapLayerStencil {
       value: () => this.getOuterHTML(),
       writable: true,
       configurable: true
-    });
-
-    // Expose src property on DOM element for MapML compatibility
-    Object.defineProperty(this.el, 'src', {
-      get: () => this.srcValue,
-      set: (val: string) => this.srcValue = val,
-      configurable: true,
-      enumerable: true
     });
 
     // Expose label property on DOM element for MapML compatibility
