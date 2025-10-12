@@ -51,7 +51,7 @@ export class GcdsMap {
   @Prop({ mutable: true }) lat?: number = 0;
   @Prop({ mutable: true }) lon?: number = 0;
   @Prop({ mutable: true }) zoom?: number = 0;
-  @Prop() projection?: string = 'OSMTILE';
+  @Prop({ reflect: true, mutable: true }) projection?: string = 'OSMTILE';
   @Prop({ reflect: true }) width?: string;
   @Prop({ reflect: true }) height?: string;
   @Prop({ reflect: true, attribute: 'controls' }) controls: boolean = false;
@@ -144,11 +144,64 @@ export class GcdsMap {
   // attributes does not change the map position/zoom. These attributes are only 
   // updated by map events to reflect the current state for external observers.
   @Watch('projection')
-  async projectionChanged(newValue: string) {
-    if (newValue) {
+  async projectionChanged(newValue: string, oldValue: string) {
+    if (newValue && this._map && this._map.options.projection !== newValue) {
+      const reconnectLayers = () => {
+        // save map location and zoom
+        let lat = this.lat;
+        let lon = this.lon;
+        let zoom = this.zoom;
+        // saving the lat, lon and zoom is necessary because Leaflet seems
+        // to try to compensate for the change in the scales for each zoom
+        // level in the crs by changing the zoom level of the map when
+        // you set the map crs. So, we save the current view for use below
+        // when all the layers' reconnections have settled.
+        // leaflet doesn't like this: https://github.com/Leaflet/Leaflet/issues/2553
+        this._map.options.crs = (window as any).M[newValue];
+        this._map.options.projection = newValue;
+        let layersReady: Promise<void>[] = [];
+        this._map.announceMovement?.disable();
+        
+        // Get all map-layer and layer- elements and reconnect them
+        const layers = this.el.querySelectorAll('map-layer,layer-');
+        for (let layer of Array.from(layers)) {
+          (layer as any).removeAttribute('disabled');
+          let reAttach = this.el.removeChild(layer);
+          this.el.appendChild(reAttach);
+          if ((reAttach as any).whenReady) {
+            layersReady.push((reAttach as any).whenReady());
+          }
+        }
+        
+        return Promise.allSettled(layersReady).then(() => {
+          // use the saved map location to ensure it is correct after
+          // changing the map CRS. Specifically affects projection
+          // upgrades, e.g. https://maps4html.org/experiments/custom-projections/BNG/
+          // see leaflet bug: https://github.com/Leaflet/Leaflet/issues/2553
+          this.zoomTo(lat, lon, zoom);
+          if ((window as any).M.options.announceMovement) this._map.announceMovement?.enable();
+          // required to delay until map-extent.disabled is correctly set
+          // which happens as a result of map-layer._validateDisabled()
+          // which happens so much we have to delay until the calls are
+          // completed
+          setTimeout(() => {
+            this.el.dispatchEvent(new CustomEvent('map-projectionchange'));
+          }, 0);
+        });
+      };
+
+      const connect = reconnectLayers.bind(this);
       try {
         await this.whenProjectionDefined(newValue);
-        // Projection changed successfully
+        await connect();
+        if (this._map && this._map.options.projection !== oldValue) {
+          // this doesn't completely work either
+          this._resetHistory();
+        }
+        if (this._debug) {
+          // Toggle debug twice to refresh it with new projection
+          for (let i = 0; i < 2; i++) this.toggleDebug();
+        }
       } catch {
         throw new Error('Undefined projection: ' + newValue);
       }

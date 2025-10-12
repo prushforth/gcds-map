@@ -41,7 +41,7 @@ export class MapLayerStencil {
   // Watchers for attribute changes - these automatically don't fire during initial load
   @Watch('src')
   srcChanged(newValue: string, oldValue: string) {
-    if (this._hasConnected && oldValue !== newValue) {
+    if (oldValue !== newValue) {
       this._onRemove();
       if (this.el.isConnected) {
         this._onAdd();
@@ -75,19 +75,18 @@ export class MapLayerStencil {
   }
   @Watch('opacity')
   opacityChanged(newValue: number, oldValue: number) {
-    if (this._hasConnected && oldValue !== newValue && this._layer) {
+    if (oldValue !== newValue && this._layer) {
       this._opacity = newValue;
       this._layer.changeOpacity(newValue);
     }
   }
   @Watch('media')
   mediaChanged(newValue: string, oldValue: string) {
-    if (this._hasConnected && oldValue !== newValue) {
+    if (oldValue !== newValue) {
       this._registerMediaQuery(newValue);
     }
   }
   private loggedMessages: Set<unknown>;
-  private _hasConnected: boolean = false;
   private _observer?: MutationObserver;
   private _mql?: MediaQueryList;
   private _changeHandler?: () => void;
@@ -175,6 +174,12 @@ export class MapLayerStencil {
     delete this._layerControl;
     delete this._layerControlHTML;
     delete this._fetchError;
+    
+    // Clean up DOM element properties exposed for MapML compatibility
+    delete (this.el as any)._layer;
+    delete (this.el as any)._layerControl;
+    delete (this.el as any)._layerControlHTML;
+    delete (this.el as any)._fetchError;
 
     this.el.shadowRoot.innerHTML = '';
     if (this.src) this.el.innerHTML = '';
@@ -182,7 +187,6 @@ export class MapLayerStencil {
 
   connectedCallback() {
     if (this.el.hasAttribute('data-moving')) return;
-    this._hasConnected = true;
     this._boundCreateLayerControlHTML = createLayerControlHTML.bind(this.el);
     
     // Expose synchronous methods on DOM element for MapML compatibility

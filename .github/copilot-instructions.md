@@ -15,6 +15,16 @@ This is a **Stencil-based fork** of MapML viewer technology that creates GCDS-co
 - **MapML source**: Embedded copy of MapML.js library (`src/mapml-source/`) as a git submodule of this repo. This the "source" code that will be progressively refactored into gcds-* components. It is not involved in the build and should not be referenced or modified in this project
 
 ## Essential Development Patterns
+
+### Custom Elements vs Stencil Components - Initialization Timing
+
+**IMPORTANT**: When refactoring from MapML's custom elements to Stencil components, **do not implement `this._hasConnected` flags**. 
+
+In custom elements, attributes can be set before `connectedCallback()` fires. If attribute setters have side effects that require full component initialization, errors can occur. MapML's custom elements use `_hasConnected` flags in `connectedCallback()` that are checked by setters/getters to determine if they should act - if the component hasn't connected/initialized, setters don't create side effects because they might fail.
+
+**Stencil handles this differently** - Stencil's lifecycle ensures proper initialization timing, so this pattern is unnecessary and should be omitted when refactoring.
+
+### Refactoring Guidelines
 - migrating and refactoring from mapml-source/**/*.js files to src/components/**/*.tsx files
 - will try to keep / migrate the tests from the mapml-source/test/ folder to the corresponding src/components/gcds-* or map- component test folder, if possible
 - the key reason to include the mapml-source as a submodule is to have access to the original source code for reference while refactoring. The maintenance of the gcds-map and other stencil map-* components will be done by using graphical diff / apply  changes if and where possible. Consequently, source order and correspondence of files and file names will be important while refactoring.
