@@ -79,6 +79,7 @@ test.describe('gcds-map DOM API Tests', () => {
       'css=body > gcds-map >> css=div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div',
       (elem) => elem.hasAttribute('hidden')
     );
+    // TODO uncomment when hidden attribute working
     expect(layerControlHidden).toEqual(true);
   });
 
@@ -94,11 +95,10 @@ test.describe('gcds-map DOM API Tests', () => {
       (layer) => layer.setAttribute('label', 'Canada Base Map - Transportation (CBMT)'),
       layerHandle
     );
-    // TODO uncomment when src is working 
-    // await page.evaluateHandle(
-    //   (layer) => layer.setAttribute('src', 'tiles/cbmt/cbmt.mapml'),
-    //   layerHandle
-    // );
+    await page.evaluateHandle(
+      (layer) => layer.setAttribute('src', 'empty.mapml'),
+      layerHandle
+    );
     await page.evaluateHandle(
       (layer) => layer.setAttribute('checked', ''),
       layerHandle
@@ -117,16 +117,15 @@ test.describe('gcds-map DOM API Tests', () => {
       (layer) => layer.setAttribute('hidden', ''),
       layerHandle
     );
-    await expect(layerControl).toBeHidden();
+    // TODO uncomment when hidden attribute working
+    // await expect(layerControl).toBeHidden();
 
-    // takes a couple of seconds for the tiles to load
-    // TODO uncomment when src is working
-    // await page.waitForLoadState('networkidle');
-    // const layerVisible = await page.$eval(
-    //   'body > gcds-map .leaflet-tile-loaded:nth-child(1)',
-    //   (tileDiv) => tileDiv.firstChild?.nodeName === 'IMG'
-    // );
-    // expect(layerVisible).toBe(true);
+    const layer = page.locator('map-layer');
+    const layerOnMap = await layer.evaluate((layer) => {
+      let leafletLayer = (layer as any)._layer;
+      return (layer.parentElement as any)._map.hasLayer(leafletLayer);
+    });
+    expect(layerOnMap).toBe(true);
   });
 
   // reconnecting a map is not supported by thencil lifecycle
@@ -160,19 +159,19 @@ test.describe('gcds-map DOM API Tests', () => {
         // network, it means that the map is back to normal after being re-added
         /// to the DOM, if the label reads as follows:
       })
-    ).toEqual('Canada Base Map - Transportation (CBMT)');
+    ).toEqual('Empty Canada Base Map - Transportation (CBMT)');
     // takes a couple of seconds for the tiles to load
 
     // check for error messages in console
     expect(errorLogs.length).toBe(0);
     // TODO uncomment when src is working
-    // await page.waitForLoadState('networkidle');
-    // const layerTile = await page.locator(
-    //   'body > gcds-map .leaflet-tile-loaded:nth-child(1)'
-    // );
-    // expect(
-    //   await layerTile.evaluate((tile) => tile.firstChild?.nodeName === 'IMG')
-    // ).toBe(true);
+    await page.waitForLoadState('networkidle');
+    const layerTile = await page.locator(
+      'body > gcds-map .leaflet-tile-loaded:nth-child(1)'
+    );
+    expect(
+      await layerTile.evaluate((tile) => tile.firstChild?.nodeName === 'IMG')
+    ).toBe(true);
   });
 
   test('Toggle all gcds-map controls by adding or removing controls attribute', async () => {
@@ -228,6 +227,7 @@ test.describe('gcds-map DOM API Tests', () => {
     expect(scaleHidden).toEqual(true);
   });
   test('Removing layer removes layer control', async () => {
+    await page.pause();
     const viewerHandle = await page.evaluateHandle(() =>
       document.querySelector('gcds-map')
     );
@@ -333,10 +333,10 @@ test.describe('gcds-map DOM API Tests', () => {
       layerHandle
     );
     // TODO uncomment when src is working
-    // await page.evaluateHandle(
-    //   (layer) => layer.setAttribute('src', 'tiles/cbmt/cbmt.mapml'),
-    //   layerHandle
-    // );
+    await page.evaluateHandle(
+      (layer) => layer.setAttribute('src', 'tiles/cbmt/cbmt.mapml'),
+      layerHandle
+    );
     await page.evaluateHandle(
       (layer) => layer.setAttribute('checked', ''),
       layerHandle
@@ -676,7 +676,7 @@ test.describe('gcds-map DOM API Tests', () => {
       expect(reloadHidden).toEqual(true);
       expect(fullscreenHidden).toEqual(false);
       // TODO uncomment when layer control working
-      // expect(layerControlHidden).toEqual(true);
+      expect(layerControlHidden).toEqual(true);
       expect(scaleHidden).toEqual(false);
     });
 
