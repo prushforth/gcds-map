@@ -27,14 +27,13 @@ export class MapLayerStencil {
   @Prop({ reflect: true, mutable: true }) src?: string;
   @Prop({ reflect: true, mutable: true }) checked?: boolean;
   // Note: hidden is a standard HTML attribute, handled via attributeChangedCallback
-  @Prop({ reflect: true, mutable: true }) opacity?: number;
+  @Prop({ mutable: true }) opacity?: number;
   @Prop({ reflect: true, mutable: true }) media?: string;
 
   // Internal state
   @State() _layer: any;
   @State() _layerControl: any;
   @State() _layerControlHTML: any;
-  @State() _opacity: number = 1.0;
   @State() disabled: boolean = false;
   @State() _fetchError: boolean = false;
 
@@ -67,7 +66,7 @@ export class MapLayerStencil {
       }
       
       // Update the layer control checkbox to match the checked state
-      const checkbox = (this.el as any).__layerControlCheckbox;
+      const checkbox = (this.el as any)._layerControlCheckbox;
       if (checkbox) {
         checkbox.checked = newValue;
       }
@@ -76,10 +75,14 @@ export class MapLayerStencil {
   @Watch('opacity')
   opacityChanged(newValue: number, oldValue: number) {
     if (oldValue !== newValue && this._layer) {
-      this._opacity = newValue;
-      this._layer.changeOpacity(newValue);
+      (this.el as any)._opacity = newValue;
+      // Only reflect to attribute if user explicitly set opacity
+      if (this.el.hasAttribute('opacity')) {
+        this.el.setAttribute('opacity', newValue.toString());
+      }
     }
   }
+
   @Watch('media')
   mediaChanged(newValue: string, oldValue: string) {
     if (oldValue !== newValue) {
@@ -87,6 +90,7 @@ export class MapLayerStencil {
     }
   }
   private loggedMessages: Set<unknown>;
+  private _opacity: number = 1.0;
   private _observer?: MutationObserver;
   private _mql?: MediaQueryList;
   private _changeHandler?: () => void;
@@ -131,7 +135,7 @@ export class MapLayerStencil {
   // Note: Stencil handles constructor automatically, but we can use componentWillLoad for initialization
   componentWillLoad() {
     // Mirror the original constructor logic
-    this._opacity = this.opacity || 1.0;
+    this._opacity = this.opacity !== undefined ? this.opacity : 1.0;
     // by keeping track of console.log, we can avoid overwhelming the console
     this.loggedMessages = new Set();
   }
@@ -189,6 +193,24 @@ export class MapLayerStencil {
     if (this.el.hasAttribute('data-moving')) return;
     this._boundCreateLayerControlHTML = createLayerControlHTML.bind(this.el);
     
+    // Expose _opacity property on DOM element (internal opacity state)
+    Object.defineProperty(this.el, '_opacity', {
+      get: () => this._opacity,
+      set: (val: number) => {
+        if (val !== this._opacity) {
+          this._opacity = val;
+          // Update the Stencil opacity prop to trigger attribute reflection
+          this.opacity = val;
+          // Update Leaflet layer
+          if (this._layer) {
+            this._layer.changeOpacity(val);
+          }
+        }
+      },
+      configurable: true,
+      enumerable: true
+    });
+
     // Expose synchronous methods on DOM element for MapML compatibility
     Object.defineProperty(this.el, 'zoomTo', {
       value: () => this.zoomTo(),
@@ -665,11 +687,11 @@ export class MapLayerStencil {
   }
   // disable/italicize layer control elements based on the map-layer.disabled property
   private toggleLayerControlDisabled() {
-    let input = (this.el as any).__layerControlCheckbox,
-      label = (this.el as any).__layerControlLabel,
-      opacityControl = (this.el as any).__opacityControl,
-      opacitySlider = (this.el as any).__opacitySlider,
-      styleControl = (this.el as any).__styles;
+    let input = (this.el as any)._layerControlCheckbox,
+      label = (this.el as any)._layerControlLabel,
+      opacityControl = (this.el as any)._opacityControl,
+      opacitySlider = (this.el as any)._opacitySlider,
+      styleControl = (this.el as any)._styles;
     if (this.disabled) {
       if (input) input.disabled = true;
       if (opacitySlider) opacitySlider.disabled = true;
