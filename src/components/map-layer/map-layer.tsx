@@ -74,11 +74,16 @@ export class MapLayerStencil {
   }
   @Watch('opacity')
   opacityChanged(newValue: number, oldValue: number) {
+    // This watcher handles programmatic changes to the opacity property
     if (oldValue !== newValue && this._layer) {
-      (this.el as any)._opacity = newValue;
-      // Only reflect to attribute if user explicitly set opacity
-      if (this.el.hasAttribute('opacity')) {
-        this.el.setAttribute('opacity', newValue.toString());
+      this._opacity = newValue;
+      this._layer.changeOpacity(newValue);
+      // Always reflect to attribute when opacity property changes
+      this.el.setAttribute('opacity', newValue.toString());
+      // Update opacity slider if it exists
+      const opacitySlider = (this.el as any)._opacitySlider;
+      if (opacitySlider) {
+        opacitySlider.value = newValue.toString();
       }
     }
   }
@@ -199,12 +204,17 @@ export class MapLayerStencil {
       set: (val: number) => {
         if (val !== this._opacity) {
           this._opacity = val;
-          // Update the Stencil opacity prop to trigger attribute reflection
-          this.opacity = val;
-          // Update Leaflet layer
+          // Update Leaflet layer directly when called from slider
           if (this._layer) {
             this._layer.changeOpacity(val);
           }
+          // Update opacity slider if it exists (to keep slider in sync)
+          const opacitySlider = (this.el as any)._opacitySlider;
+          if (opacitySlider) {
+            opacitySlider.value = val.toString();
+          }
+          // Note: We don't update the Stencil property or attribute here
+          // This allows slider changes to update _opacity without touching the attribute
         }
       },
       configurable: true,
@@ -252,6 +262,20 @@ export class MapLayerStencil {
     Object.defineProperty(this.el, 'label', {
       get: () => this.label,
       set: (val: string) => this.label = val,
+      configurable: true,
+      enumerable: true
+    });
+    
+    // Expose opacity property on DOM element to match original MapML behavior
+    Object.defineProperty(this.el, 'opacity', {
+      get: () => {
+        // Use ?? since 0 is falsy, || would return rhs in that case
+        return +(this._opacity ?? this.el.getAttribute('opacity'));
+      },
+      set: (val: number) => {
+        if (+val > 1 || +val < 0) return;
+        this.opacity = val;
+      },
       configurable: true,
       enumerable: true
     });

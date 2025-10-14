@@ -157,7 +157,7 @@ export var createLayerControlHTML = async function () {
   opacity.setAttribute('type', 'range');
   opacity.setAttribute('min', '0');
   opacity.setAttribute('max', '1.0');
-  opacity.setAttribute('value', this._layer._container.style.opacity || '1.0');
+  opacity.setAttribute('value', this._opacity || '1.0');
   opacity.setAttribute('step', '0.1');
   opacity.setAttribute(
     'aria-labelledby',
@@ -166,10 +166,11 @@ export var createLayerControlHTML = async function () {
 
   const changeOpacity = function (e) {
     if (e && e.target && e.target.value >= 0 && e.target.value <= 1.0) {
+      // Call the layer's changeOpacity method which updates internal state but not attribute
       this._layer.changeOpacity(e.target.value);
     }
   };
-  opacity.value = this._layer._container.style.opacity || '1.0';
+  opacity.value = this._opacity || '1.0';
   opacity.addEventListener('change', changeOpacity.bind(this));
 
   fieldset.setAttribute('aria-grabbed', 'false');
