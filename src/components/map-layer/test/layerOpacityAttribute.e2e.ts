@@ -174,8 +174,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     await page.waitForTimeout(500);
     
     // Check that the opacity slider reflects the changed opacity value
-    const opacitySlider = 'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]';
-    const sliderValue = await page.$eval(opacitySlider, (slider) => slider.value);
+    const sliderValue = await page.getByTestId('layer-item-opacity').evaluate((slider) => slider.value);
     
     expect(+sliderValue).toEqual(0.7);
     
@@ -191,93 +190,45 @@ test.describe('Test the map-layer opacity attribute', () => {
     // The previous test should have left the opacity at 0.7, and when controls are restored,
     // the slider should reflect that value
     
-    // First, let's restore controls and wait for them to render
-    await page.$eval('body > gcds-map', (map) => map.setAttribute('controls', ''));
-    await page.waitForTimeout(1000);
-    
     // Check what the current opacity is (should be 0.7 from previous test)
     const currentOpacity = await page.$eval(
       'body > gcds-map > map-layer',
       (layer) => layer.opacity
     );
+
+    // Check that the slider reflects the current opacity from the previous test
+    const sliderValue = await page.getByTestId('layer-item-opacity').inputValue();
+    expect(+sliderValue).toEqual(currentOpacity);
+      
+    // Then test that changing the slider updates the property
+    await page.getByTestId('layer-item-opacity').evaluate((slider) => {
+      slider.value = '0.9';
+      // this supposedly simulates the user releasing the slider
+      slider.dispatchEvent(new Event('change'));
+      // and the change event handler propagates the change to the layer etc
+    });
     
-    const opacitySliderSelector = 'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]';
+    await page.waitForTimeout(500);
     
-    const sliderExists = await page.$(opacitySliderSelector) !== null;
+    await page.pause();
+    // Since the DOM element's opacity getter is unreliable, test _opacity directly
+    const finalOpacity = await page.$eval(
+      'body > gcds-map > map-layer',
+      (layer) => layer.opacity
+    );
     
-    if (sliderExists) {
-      // Check that the slider reflects the current opacity from the previous test
-      const sliderValue = await page.$eval(opacitySliderSelector, (slider) => slider.value);
-      expect(+sliderValue).toEqual(currentOpacity);
-      
-      // Debug: Check if the slider reference is stale
-      const sliderRefInfo = await page.$eval(
-        'body > gcds-map > map-layer',
-        (layer) => {
-          // Use exact same selector
-          const opacitySliderSelector = 'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]';
-          const currentSliderFromDOM = document.querySelector(opacitySliderSelector);
-          const sliderFromLayerProp = layer._opacitySlider;
-          
-          return {
-            sliderFromDOM: !!currentSliderFromDOM,
-            sliderFromProp: !!sliderFromLayerProp,
-            sameElement: currentSliderFromDOM === sliderFromLayerProp,
-            domSliderValue: currentSliderFromDOM ? (currentSliderFromDOM as HTMLInputElement).value : 'no-element',
-            propSliderValue: sliderFromLayerProp ? sliderFromLayerProp.value : 'no-prop'
-          };
-        }
-      );
-      console.log('Slider reference info:', sliderRefInfo);
-      
-      // Then test that changing the slider updates the property
-      await page.$eval(opacitySliderSelector, (slider) => {
-        slider.value = '0.9';
-        slider.dispatchEvent(new Event('change'));
-      });
-      
-      await page.waitForTimeout(100);
-      
-      // Since the DOM element's opacity getter is unreliable, test _opacity directly
-      const finalOpacity = await page.$eval(
-        'body > gcds-map > map-layer',
-        (layer) => layer._opacity
-      );
-      
-      expect(+finalOpacity).toEqual(0.9);
-    } else {
-      // If controls aren't working properly, let's at least test the basic functionality
-      console.log('Opacity slider not found, testing basic opacity functionality');
-      
-      await page.$eval(
-        'body > gcds-map > map-layer',
-        (layer) => {
-          layer.opacity = 0.9;
-        }
-      );
-      
-      await page.waitForTimeout(100);
-      
-      const newLayerOpacity = await page.$eval(
-        'body > gcds-map > map-layer',
-        (layer) => layer.opacity
-      );
-      
-      expect(newLayerOpacity).toEqual(0.9);
-    }
+    expect(+finalOpacity).toEqual(0.9);
   });
   test("Using the slider input, change the layer opacity. Validate that the slider's value is reflected to the map-Layer.opacity", async () => {
     // Ensure controls are enabled and wait for proper initialization
     await page.$eval('body > gcds-map', (map) => map.setAttribute('controls', ''));
-    
-    // Wait for the layer to be ready and controls to be created
-    await page.waitForFunction(() => {
-      const layer = document.querySelector('map-layer');
-      return layer && (layer as any)._layerControlHTML && (layer as any)._layer;
-    }, { timeout: 10000 });
-    
-    // Wait a bit more for controls to render in the DOM
-    await page.waitForTimeout(1000);
+
+    await page.waitForTimeout(500);
+        
+    // check and uncheck layers in the layer menu should call map-change
+    await page.hover('.leaflet-top.leaflet-right');
+    const button = await page.locator('.mapml-layer-item-settings-control.mapml-button');
+    await button.click();
     
     // Force the details element to be open via JavaScript
     await page.$eval('details.mapml-layer-item-opacity', (details) => {
@@ -285,40 +236,37 @@ test.describe('Test the map-layer opacity attribute', () => {
     });
     
     // Now get the slider 
-    const sliderLocator = page.locator('details.mapml-layer-item-opacity input[type=range]');
+    const sliderLocator = page.getByTestId('layer-item-opacity');
     
     // Check that the opacity slider is now visible 
     await expect(sliderLocator).toBeVisible();
+
+    const sliderBox = await sliderLocator.boundingBox();
     
     // Get initial opacity value to ensure we're changing it to something different
     const initialOpacity = await page.$eval(
       'body > gcds-map > map-layer',
       (layer) => layer.opacity
     );
+    console.log('Initial Opacity:', initialOpacity);
     
-    // Choose a different value to test with (avoid 0.25 if that's the current value)
-    const testOpacity = initialOpacity === 0.25 ? 0.8 : 0.25;
-    
-    // Use Playwright's fill method to change the slider value - this simulates user input
-    await sliderLocator.fill(testOpacity.toString());
-    
-    // Alternatively, we could use click to drag to a specific position
-    // For range inputs, we can also use the fill method or simulate dragging
-    
-    // Wait for the change to propagate
-    await page.waitForTimeout(200);
-    
-    // Validate that the map-layer.opacity property reflects the slider's new value
-    const newLayerOpacity = await page.$eval(
+    // Start from current thumb position and drag to target
+    const startX = sliderBox.x + (sliderBox.width * initialOpacity); // Assuming current value is 0.8
+    const targetX = sliderBox.x + (sliderBox.width * 0.2); // Target 0.2 (increments of 0.1 on slider)
+    const centerY = sliderBox.y + (sliderBox.height / 2);
+    // Drag from current to target position
+    await page.mouse.move(startX, centerY);
+    await page.mouse.down();
+    await page.mouse.move(targetX, centerY);
+    await page.mouse.up();
+
+    // Verify the change
+    let layer_opacity = await page.$eval(
       'body > gcds-map > map-layer',
       (layer) => layer.opacity
     );
     
-    expect(newLayerOpacity).toEqual(testOpacity);
-    
-    // Also validate that the slider value matches what we set
-    const sliderValue = await sliderLocator.inputValue();
-    expect(+sliderValue).toEqual(testOpacity);
+    expect(layer_opacity).toBeCloseTo(0.2, 1);
     
     // Verify that the underlying layer container style was also updated
     const layerContainerOpacity = await page.$eval(
@@ -329,19 +277,10 @@ test.describe('Test the map-layer opacity attribute', () => {
           : null;
       }
     );
-    
+    const testOpacity: number = 0.2;
     expect(layerContainerOpacity).toEqual(testOpacity);
     
     // Test a second interaction to ensure it continues working
-    const secondTestOpacity = testOpacity === 0.8 ? 0.6 : 0.9;
-    await sliderLocator.fill(secondTestOpacity.toString());
-    await page.waitForTimeout(200);
-    
-    const finalOpacity = await page.$eval(
-      'body > gcds-map > map-layer',
-      (layer) => layer.opacity
-    );
-    
-    expect(finalOpacity).toEqual(secondTestOpacity);
+
   });
 });

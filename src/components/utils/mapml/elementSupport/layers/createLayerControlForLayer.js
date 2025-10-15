@@ -36,6 +36,7 @@ export var createLayerControlHTML = async function () {
     settingsControlPath2 = SVG.create('path'),
     extentsFieldset = DomUtil.create('fieldset', 'mapml-layer-grouped-extents'),
     mapEl = this.parentNode;
+    opacity.setAttribute('data-testid', 'layer-item-opacity');
 
   // append the paths in svg for the remove layer and toggle icons
   svgSettingsControlIcon.setAttribute('viewBox', '0 0 24 24');
@@ -131,6 +132,7 @@ export var createLayerControlHTML = async function () {
   input.defaultChecked = this.checked;
   input.type = 'checkbox';
   input.setAttribute('class', 'leaflet-control-layers-selector');
+  input.setAttribute('data-testid', 'layer-item-checkbox');
   layerItemName.layer = this._layer;
   const changeCheck = function () {
     this.checked = !this.checked;
