@@ -27,12 +27,12 @@ export class MapLayerStencil {
   @Prop({ reflect: true, mutable: true }) src?: string;
   @Prop({ reflect: true, mutable: true }) checked?: boolean;
   // Note: hidden is a standard HTML attribute, handled via attributeChangedCallback
-  @Prop({ mutable: true }) opacity?: number;
+  @Prop({ mutable: true }) opacity?: number = 1;
+  @Prop({ mutable: true }) _opacity?: number;
   @Prop({ reflect: true, mutable: true }) media?: string;
   
-  // Custom opacity getter that prefers _opacity over attribute
   get opacityValue(): number {
-    return +(this._opacity ?? this.opacity ?? this.el?.getAttribute('opacity') ?? 1.0);
+    return this._opacity ?? this.opacity ?? 1.0;
   }
 
   // Internal state
@@ -76,14 +76,14 @@ export class MapLayerStencil {
       }
     }
   }
-  @Watch('opacity')
+  @Watch('_opacity')
   opacityChanged(newValue: number, oldValue: number) {
     // This watcher handles programmatic changes to the opacity property
     if (oldValue !== newValue && this._layer) {
       this._opacity = newValue;
       this._layer.changeOpacity(newValue);
-      // Always reflect to attribute when opacity property changes
-      this.el.setAttribute('opacity', newValue.toString());
+      // reflect to map-layer opacity attribute when opacity property changes
+      // this.el.setAttribute('opacity', newValue.toString());
       // Update opacity slider if it exists
       if (this._opacitySlider) {
         this._opacitySlider.value = newValue.toString();
@@ -98,7 +98,6 @@ export class MapLayerStencil {
     }
   }
   private loggedMessages: Set<unknown>;
-  private _opacity: number = 1.0;
   private _observer?: MutationObserver;
   private _mql?: MediaQueryList;
   private _changeHandler?: () => void;
@@ -109,8 +108,8 @@ export class MapLayerStencil {
   private _layerControlLabel?: HTMLElement;
   private _opacityControl?: HTMLElement;
   private _opacitySlider?: HTMLInputElement;
-  private _layerItemSettingsHTML?: HTMLElement; // Reserved for future refactoring
-  private _propertiesGroupAnatomy?: HTMLElement; // Reserved for future refactoring
+  //private _layerItemSettingsHTML?: HTMLElement; // Reserved for future refactoring
+  //private _propertiesGroupAnatomy?: HTMLElement; // Reserved for future refactoring
   private _styles?: HTMLElement;
 
   get label(): string {
@@ -152,7 +151,6 @@ export class MapLayerStencil {
   // Note: Stencil handles constructor automatically, but we can use componentWillLoad for initialization
   componentWillLoad() {
     // Mirror the original constructor logic
-    this._opacity = this.opacity !== undefined ? this.opacity : 1.0;
     // by keeping track of console.log, we can avoid overwhelming the console
     this.loggedMessages = new Set();
   }
@@ -207,8 +205,8 @@ export class MapLayerStencil {
     this._layerControlLabel = undefined;
     this._opacityControl = undefined;
     this._opacitySlider = undefined;
-    this._layerItemSettingsHTML = undefined;
-    this._propertiesGroupAnatomy = undefined;
+    //this._layerItemSettingsHTML = undefined;
+    //this._propertiesGroupAnatomy = undefined;
     this._styles = undefined;
 
     this.el.shadowRoot.innerHTML = '';
@@ -225,19 +223,20 @@ export class MapLayerStencil {
       set: (val: number) => {
         if (val !== this._opacity) {
           this._opacity = val;
-          // Update the MapLayer's container style directly
-          if (this._layer && this._layer._container) {
-            this._layer._container.style.opacity = val;
-          }
-          // Update the internal _opacity without triggering the Stencil property watcher
-          // This keeps slider changes separate from programmatic property changes
-          // Update opacity slider if it exists (to keep slider in sync)
-          const opacitySlider = (this.el as any)._opacitySlider;
-          opacitySlider.value = val;
-
-          // Note: We don't update the Stencil property or attribute here
-          // This allows slider changes to update _opacity without touching the attribute
         }
+      },
+      configurable: true,
+      enumerable: true
+    });
+    // Expose opacity getter/setter on DOM element using the component's opacityValue
+    Object.defineProperty(this.el, 'opacity', {
+      get: () => {
+        return this.opacityValue;
+      },
+      set: (val: number) => {
+        if (+val > 1 || +val < 0) return;
+        this._opacity = val;
+        this._layer?.changeOpacity(val);
       },
       configurable: true,
       enumerable: true
@@ -284,20 +283,6 @@ export class MapLayerStencil {
     Object.defineProperty(this.el, 'label', {
       get: () => this.label,
       set: (val: string) => this.label = val,
-      configurable: true,
-      enumerable: true
-    });
-    
-    // Expose opacity getter/setter on DOM element using the component's opacityValue
-    const componentRef = this;
-    Object.defineProperty(this.el, 'opacity', {
-      get: () => {
-        return componentRef.opacityValue;
-      },
-      set: (val: number) => {
-        if (+val > 1 || +val < 0) return;
-        componentRef.opacity = val;
-      },
       configurable: true,
       enumerable: true
     });
@@ -377,7 +362,7 @@ export class MapLayerStencil {
           .then(() => {
             this._layer = (MapLayerModule as any).mapLayer(new URL(this.src, base).href, this.el, {
               projection: this.getProjection(),
-              opacity: this.opacity
+              opacity: this.opacityValue
             });
             // Expose _layer on DOM element for MapML compatibility
             (this.el as any)._layer = this._layer;
@@ -416,7 +401,7 @@ export class MapLayerStencil {
           .then(() => {
             this._layer = (MapLayerModule as any).mapLayer(null, this.el, {
               projection: this.getProjection(),
-              opacity: this.opacity
+              opacity: this.opacityValue
             });
             // Expose _layer on DOM element for MapML compatibility
             (this.el as any)._layer = this._layer;
@@ -892,8 +877,8 @@ export class MapLayerStencil {
         this._layerControlLabel = (this.el as any)._layerControlLabel;
         this._opacityControl = (this.el as any)._opacityControl;
         this._opacitySlider = (this.el as any)._opacitySlider;
-        this._layerItemSettingsHTML = (this.el as any)._layerItemSettingsHTML;
-        this._propertiesGroupAnatomy = (this.el as any)._propertiesGroupAnatomy;
+        // this._layerItemSettingsHTML = (this.el as any)._layerItemSettingsHTML;
+        // this._propertiesGroupAnatomy = (this.el as any)._propertiesGroupAnatomy;
         this._styles = (this.el as any)._styles;
         
         // Ensure opacity slider is synced with current opacity value

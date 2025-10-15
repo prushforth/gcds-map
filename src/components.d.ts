@@ -45,8 +45,12 @@ export namespace Components {
         "zoom"?: number;
     }
     interface MapLayer {
+        "_opacity"?: number;
         "checked"?: boolean;
         "media"?: string;
+        /**
+          * @default 1
+         */
         "opacity"?: number;
         "src"?: string;
         "whenReady": () => Promise<void>;
@@ -102,8 +106,12 @@ declare namespace LocalJSX {
         "zoom"?: number;
     }
     interface MapLayer {
+        "_opacity"?: number;
         "checked"?: boolean;
         "media"?: string;
+        /**
+          * @default 1
+         */
         "opacity"?: number;
         "src"?: string;
     }

@@ -166,12 +166,7 @@ export var createLayerControlHTML = async function () {
 
   const changeOpacity = function (e) {
     if (e && e.target && e.target.value >= 0 && e.target.value <= 1.0) {
-      // Update the element's _opacity which will handle MapLayer updates
-      this._opacity = e.target.value;
-      
-      // Ensure the _opacitySlider reference points to the current slider
-      // This handles cases where controls were toggled and references became stale
-      this._opacitySlider = e.target;
+      this._layer.changeOpacity(e.target.value);
     }
   };
   opacity.value = this._opacity || '1.0';
