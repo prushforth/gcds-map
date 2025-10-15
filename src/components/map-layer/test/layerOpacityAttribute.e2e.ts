@@ -28,10 +28,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     expect(layer_opacity).toEqual(+opacity_attribute_value);
   });
   test('Layer control opacity slider reflected to map-layer.opacity property', async () => {
-    let opacity_slider_value = await page.$eval(
-      'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]',
-      (input) => input.value
-    );
+    let opacity_slider_value = await page.getByTestId('layer-item-opacity').inputValue();
     let layer_opacity = await page.$eval(
       'body > gcds-map > map-layer',
       (layer) => layer.opacity
@@ -39,10 +36,10 @@ test.describe('Test the map-layer opacity attribute', () => {
     expect(layer_opacity).toEqual(+opacity_slider_value);
   });
   test('Changing layer control opacity slider updates map-layer.opacity', async () => {
-    const opacitySlider = 'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]';
+    const opacitySlider = page.getByTestId('layer-item-opacity');
     
     // Set slider to a specific value
-    await page.$eval(opacitySlider, (slider) => {
+    await opacitySlider.evaluate((slider) => {
       slider.value = '0.3';
       slider.dispatchEvent(new Event('change'));
     });
@@ -59,7 +56,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     expect(layerOpacity).toEqual(0.3);
   });
   test('Changing layer control opacity slider does not update map-layer opacity attribute', async () => {
-    const opacitySlider = 'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]';
+    const opacitySlider = page.getByTestId('layer-item-opacity');
     
     // Get initial attribute value
     const initialAttribute = await page.$eval(
@@ -68,7 +65,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     );
     
     // Set slider to a different value
-    await page.$eval(opacitySlider, (slider) => {
+    await opacitySlider.evaluate((slider) => {
       slider.value = '0.5';
       slider.dispatchEvent(new Event('change'));
     });
@@ -93,7 +90,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     expect(layerOpacity).toEqual(0.5);
   });
   test('Changing map-layer.opacity value updates the layer control opacity slider value', async () => {
-    const opacitySlider = 'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div:nth-child(2) > details > input[type=range]';
+    const opacitySlider = page.getByTestId('layer-item-opacity');
     
     // Set the layer opacity property programmatically
     await page.$eval(
@@ -107,7 +104,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     await page.waitForTimeout(100);
     
     // Check that the slider value was updated
-    const sliderValue = await page.$eval(opacitySlider, (slider) => slider.value);
+    const sliderValue = await opacitySlider.inputValue();
     
     expect(+sliderValue).toEqual(0.6);
   });
