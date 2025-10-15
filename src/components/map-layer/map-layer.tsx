@@ -26,7 +26,7 @@ export class MapLayerStencil {
   // Core properties matching BaseLayerElement observedAttributes
   @Prop({ reflect: true, mutable: true }) src?: string;
   @Prop({ reflect: true, mutable: true }) checked?: boolean;
-  // Note: hidden is a standard HTML attribute, handled via attributeChangedCallback
+  @Prop({ reflect: true, mutable: true }) hidden: boolean = false;
   @Prop({ mutable: true }) opacity?: number = 1;
   @Prop({ mutable: true }) _opacity?: number;
   @Prop({ reflect: true, mutable: true }) media?: string;
@@ -90,13 +90,34 @@ export class MapLayerStencil {
       }
     }
   }
-
   @Watch('media')
   mediaChanged(newValue: string, oldValue: string) {
     if (oldValue !== newValue) {
       this._registerMediaQuery(newValue);
     }
   }
+  @Watch('hidden')
+  hiddenChanged(newValue: boolean, oldValue: boolean) {
+    // Only process hidden changes after the layer is fully initialized
+    // During initial load, this will be handled in _attachedToMap()
+    if (oldValue !== newValue && this._layer && this._layerControl) {
+      this._applyHiddenState(newValue);
+    }
+  }
+  
+  private _applyHiddenState(isHidden: boolean) {
+    if (!this._layer || !this._layerControl) return;
+    
+    if (isHidden) {
+      // Hidden was set to true - remove from layer control
+      this._layerControl.removeLayer(this._layer);
+    } else {
+      // Hidden was set to false - add back to layer control and validate
+      this._layerControl.addOrUpdateOverlay(this._layer, this.label);
+      this._validateDisabled();
+    }
+  }
+
   private loggedMessages: Set<unknown>;
   private _observer?: MutationObserver;
   private _mql?: MediaQueryList;
@@ -283,6 +304,21 @@ export class MapLayerStencil {
     Object.defineProperty(this.el, 'label', {
       get: () => this.label,
       set: (val: string) => this.label = val,
+      configurable: true,
+      enumerable: true
+    });
+
+    // Expose hidden property on DOM element for MapML compatibility
+    // The @Watch('hidden') decorator handles the side effects
+    Object.defineProperty(this.el, 'hidden', {
+      get: () => this.el.hasAttribute('hidden'),
+      set: (val: boolean) => {
+        if (val) {
+          this.el.setAttribute('hidden', '');
+        } else {
+          this.el.removeAttribute('hidden');
+        }
+      },
       configurable: true,
       enumerable: true
     });
@@ -594,7 +630,7 @@ export class MapLayerStencil {
     }
     
     // If controls option is enabled, insert the layer into the overlays array
-    if ((mapEl as any)._layerControl && !this.el.hasAttribute('hidden')) {
+    if ((mapEl as any)._layerControl && !this.hidden) {
       this._layerControl.addOrUpdateOverlay(this._layer, this.label);
     }
 

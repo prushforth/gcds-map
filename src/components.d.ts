@@ -47,6 +47,10 @@ export namespace Components {
     interface MapLayer {
         "_opacity"?: number;
         "checked"?: boolean;
+        /**
+          * @default false
+         */
+        "hidden": boolean;
         "media"?: string;
         /**
           * @default 1
@@ -108,6 +112,10 @@ declare namespace LocalJSX {
     interface MapLayer {
         "_opacity"?: number;
         "checked"?: boolean;
+        /**
+          * @default false
+         */
+        "hidden"?: boolean;
         "media"?: string;
         /**
           * @default 1

@@ -46,12 +46,14 @@ The `map-layer` component must be used within a `gcds-map` component:
 
 ## Properties
 
-| Property  | Attribute | Description | Type      | Default     |
-| --------- | --------- | ----------- | --------- | ----------- |
-| `checked` | `checked` |             | `boolean` | `undefined` |
-| `media`   | `media`   |             | `string`  | `undefined` |
-| `opacity` | `opacity` |             | `number`  | `undefined` |
-| `src`     | `src`     |             | `string`  | `undefined` |
+| Property   | Attribute  | Description | Type      | Default     |
+| ---------- | ---------- | ----------- | --------- | ----------- |
+| `_opacity` | `_opacity` |             | `number`  | `undefined` |
+| `checked`  | `checked`  |             | `boolean` | `undefined` |
+| `hidden`   | `hidden`   |             | `boolean` | `false`     |
+| `media`    | `media`    |             | `string`  | `undefined` |
+| `opacity`  | `opacity`  |             | `number`  | `1`         |
+| `src`      | `src`      |             | `string`  | `undefined` |
 
 
 ## Methods
