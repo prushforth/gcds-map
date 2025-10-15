@@ -29,6 +29,11 @@ export class MapLayerStencil {
   // Note: hidden is a standard HTML attribute, handled via attributeChangedCallback
   @Prop({ mutable: true }) opacity?: number;
   @Prop({ reflect: true, mutable: true }) media?: string;
+  
+  // Custom opacity getter that prefers _opacity over attribute
+  get opacityValue(): number {
+    return +(this._opacity ?? this.opacity ?? this.el?.getAttribute('opacity') ?? 1.0);
+  }
 
   // Internal state
   @State() _layer: any;
@@ -66,9 +71,8 @@ export class MapLayerStencil {
       }
       
       // Update the layer control checkbox to match the checked state
-      const checkbox = (this.el as any)._layerControlCheckbox;
-      if (checkbox) {
-        checkbox.checked = newValue;
+      if (this._layerControlCheckbox) {
+        this._layerControlCheckbox.checked = newValue;
       }
     }
   }
@@ -81,9 +85,8 @@ export class MapLayerStencil {
       // Always reflect to attribute when opacity property changes
       this.el.setAttribute('opacity', newValue.toString());
       // Update opacity slider if it exists
-      const opacitySlider = (this.el as any)._opacitySlider;
-      if (opacitySlider) {
-        opacitySlider.value = newValue.toString();
+      if (this._opacitySlider) {
+        this._opacitySlider.value = newValue.toString();
       }
     }
   }
@@ -100,6 +103,15 @@ export class MapLayerStencil {
   private _mql?: MediaQueryList;
   private _changeHandler?: () => void;
   private _boundCreateLayerControlHTML?: () => any;
+  
+  // Layer control element references (synced from DOM element properties)
+  private _layerControlCheckbox?: HTMLInputElement;
+  private _layerControlLabel?: HTMLElement;
+  private _opacityControl?: HTMLElement;
+  private _opacitySlider?: HTMLInputElement;
+  private _layerItemSettingsHTML?: HTMLElement; // Reserved for future refactoring
+  private _propertiesGroupAnatomy?: HTMLElement; // Reserved for future refactoring
+  private _styles?: HTMLElement;
 
   get label(): string {
     if (this._layer) return this._layer.getName();
@@ -189,6 +201,15 @@ export class MapLayerStencil {
     delete (this.el as any)._layerControl;
     delete (this.el as any)._layerControlHTML;
     delete (this.el as any)._fetchError;
+    
+    // Clean up layer control element references
+    this._layerControlCheckbox = undefined;
+    this._layerControlLabel = undefined;
+    this._opacityControl = undefined;
+    this._opacitySlider = undefined;
+    this._layerItemSettingsHTML = undefined;
+    this._propertiesGroupAnatomy = undefined;
+    this._styles = undefined;
 
     this.el.shadowRoot.innerHTML = '';
     if (this.src) this.el.innerHTML = '';
@@ -204,15 +225,16 @@ export class MapLayerStencil {
       set: (val: number) => {
         if (val !== this._opacity) {
           this._opacity = val;
-          // Update Leaflet layer directly when called from slider
-          if (this._layer) {
-            this._layer.changeOpacity(val);
+          // Update the MapLayer's container style directly
+          if (this._layer && this._layer._container) {
+            this._layer._container.style.opacity = val;
           }
+          // Update the internal _opacity without triggering the Stencil property watcher
+          // This keeps slider changes separate from programmatic property changes
           // Update opacity slider if it exists (to keep slider in sync)
           const opacitySlider = (this.el as any)._opacitySlider;
-          if (opacitySlider) {
-            opacitySlider.value = val.toString();
-          }
+          opacitySlider.value = val;
+
           // Note: We don't update the Stencil property or attribute here
           // This allows slider changes to update _opacity without touching the attribute
         }
@@ -266,15 +288,15 @@ export class MapLayerStencil {
       enumerable: true
     });
     
-    // Expose opacity property on DOM element to match original MapML behavior
+    // Expose opacity getter/setter on DOM element using the component's opacityValue
+    const componentRef = this;
     Object.defineProperty(this.el, 'opacity', {
       get: () => {
-        // Use ?? since 0 is falsy, || would return rhs in that case
-        return +(this._opacity ?? this.el.getAttribute('opacity'));
+        return componentRef.opacityValue;
       },
       set: (val: number) => {
         if (+val > 1 || +val < 0) return;
-        this.opacity = val;
+        componentRef.opacity = val;
       },
       configurable: true,
       enumerable: true
@@ -711,11 +733,11 @@ export class MapLayerStencil {
   }
   // disable/italicize layer control elements based on the map-layer.disabled property
   private toggleLayerControlDisabled() {
-    let input = (this.el as any)._layerControlCheckbox,
-      label = (this.el as any)._layerControlLabel,
-      opacityControl = (this.el as any)._opacityControl,
-      opacitySlider = (this.el as any)._opacitySlider,
-      styleControl = (this.el as any)._styles;
+    let input = this._layerControlCheckbox,
+      label = this._layerControlLabel,
+      opacityControl = this._opacityControl,
+      opacitySlider = this._opacitySlider,
+      styleControl = this._styles;
     if (this.disabled) {
       if (input) input.disabled = true;
       if (opacitySlider) opacitySlider.disabled = true;
@@ -862,6 +884,24 @@ export class MapLayerStencil {
         this._layerControlHTML = result;
         // Expose _layerControlHTML on DOM element for MapML compatibility
         (this.el as any)._layerControlHTML = this._layerControlHTML;
+        
+        // Sync all layer control properties created by createLayerControlForLayer
+        // These properties are set on the DOM element by the bound function and need to be
+        // available on both the element and the component for future refactoring
+        this._layerControlCheckbox = (this.el as any)._layerControlCheckbox;
+        this._layerControlLabel = (this.el as any)._layerControlLabel;
+        this._opacityControl = (this.el as any)._opacityControl;
+        this._opacitySlider = (this.el as any)._opacitySlider;
+        this._layerItemSettingsHTML = (this.el as any)._layerItemSettingsHTML;
+        this._propertiesGroupAnatomy = (this.el as any)._propertiesGroupAnatomy;
+        this._styles = (this.el as any)._styles;
+        
+        // Ensure opacity slider is synced with current opacity value
+        if (this._opacitySlider && this._opacity !== undefined) {
+          this._opacitySlider.value = this._opacity.toString();
+        }
+        
+
       });
     }
   }

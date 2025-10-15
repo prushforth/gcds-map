@@ -394,7 +394,7 @@ export class GcdsMap {
 
       // Make map accessible for debugging
       (this.el as any)._map = this._map;
-      (window as any).__debugMap = this._map;
+      (window as any)._debugMap = this._map;
       
       // Expose component history properties on element for MapML control compatibility
       (this.el as any)._history = this._history;
