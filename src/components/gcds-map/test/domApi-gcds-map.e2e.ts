@@ -118,7 +118,7 @@ test.describe('gcds-map DOM API Tests', () => {
       layerHandle
     );
     // TODO uncomment when hidden attribute working
-    // await expect(layerControl).toBeHidden();
+    await expect(layerControl).toBeHidden();
 
     const layer = page.locator('map-layer');
     const layerOnMap = await layer.evaluate((layer) => {
@@ -334,7 +334,7 @@ test.describe('gcds-map DOM API Tests', () => {
     );
     // TODO uncomment when src is working
     await page.evaluateHandle(
-      (layer) => layer.setAttribute('src', 'tiles/cbmt/cbmt.mapml'),
+      (layer) => layer.setAttribute('src', 'empty.mapml'),
       layerHandle
     );
     await page.evaluateHandle(
