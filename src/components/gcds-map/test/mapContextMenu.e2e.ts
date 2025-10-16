@@ -709,7 +709,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     expect(reloadBtnDisabled).toEqual(false);
   });
 
-  test.only('Layer Context menu, Pressing enter on contextmenu focuses on checkbox element', async () => {
+  test('Layer Context menu, Pressing enter on contextmenu focuses on checkbox element', async () => {
     const map = await page.getByTestId('firstmap');
     await map.click();
     for (let i = 0; i < 5; i++) {
@@ -719,7 +719,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(300);
     const aHandle = await page.evaluateHandle(() =>
-      document.querySelector('.mapml-web-map')
+      document.querySelector('gcds-map')
     );
     const nextHandle = await page.evaluateHandle(
       (doc) => doc.shadowRoot,
@@ -738,7 +738,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     expect(name).toEqual('INPUT');
   });
 
-  test.only('Layer Context menu, Opening contextmenu focuses on first layer contextmenu', async () => {
+  test('Layer Context menu, Opening contextmenu focuses on first layer contextmenu', async () => {
     await page.keyboard.press('Shift+F10');
     const aHandle = await page.evaluateHandle(() =>
       document.querySelector('gcds-map')
@@ -760,7 +760,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     expect(name).toEqual('Zoom To Layer (Z)');
   });
 
-  test.only('Layer Context menu, escaping from the contextmenu takes you back to the checkbox element', async () => {
+  test('Layer Context menu, escaping from the contextmenu takes you back to the checkbox element', async () => {
     await page.keyboard.press('Tab');
     await page.keyboard.press('Escape');
     const aHandle = await page.evaluateHandle(() =>
@@ -783,7 +783,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     expect(name).toEqual('INPUT');
   });
 
-  test.only('Layer Context menu, Pressing space on checkbox button toggles layer', async () => {
+  test('Layer Context menu, Pressing space on checkbox button toggles layer', async () => {
     await page.keyboard.press('Space');
     const layerCheck = await page.$eval('body > gcds-map', (map) => {
       return map.layers[0].checked;
@@ -791,7 +791,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     expect(layerCheck).toEqual(false);
   });
 
-  test.only('Checking Context Menu Items Names In Order', async () => {
+  test('Checking Context Menu Items Names In Order', async () => {
     let back = await page.$eval(
       'div > div.mapml-contextmenu > button:nth-child(1)',
       (btn) => btn.textContent
