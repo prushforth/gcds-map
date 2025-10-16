@@ -10,7 +10,7 @@ import { createLayerControlHTML } from '../utils/mapml/elementSupport/layers/cre
   tag: 'map-layer',
   shadow: true
 })
-export class MapLayerStencil {
+export class GcdsMapLayer {
   /*
    * MapML Compatibility: The following properties are exposed on this.el for MapML compatibility:
    * - _layer: The MapML layer instance

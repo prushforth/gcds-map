@@ -22,7 +22,6 @@ import { locale, localeFr } from '../../generated/locale.js';
 // import { HTMLWebMapElement } from '../web-map/web-map.js';
 // import { HTMLMapAreaElement } from '../map-area/map-area.js';
 
-// TODO: Uncomment when implementing controls
 import { layerControl } from '../utils/mapml/control/LayerControl.js';
 // due to Stencil bundling shenanigans, the import here doesn't happen 
 // (maybe because it's not actually called anywhere - the attribution control
@@ -1014,7 +1013,7 @@ export class GcdsMap {
     // 2. Call _addToHistory() to update the history stack
     // 3. Update context menu button states
   }
-
+  @Method()
   async whenProjectionDefined(projection: string) {
     // Mirror the original whenProjectionDefined logic
     return new Promise((resolve, reject) => {

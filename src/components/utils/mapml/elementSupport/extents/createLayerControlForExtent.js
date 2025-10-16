@@ -49,7 +49,7 @@ export var createLayerControlExtentHTML = function () {
   svgExtentControlIcon.appendChild(extentControlPath1);
   svgExtentControlIcon.appendChild(extentControlPath2);
 
-  let mapSelects = this.querySelectorAll('map-select');
+  let mapSelects = this.el.querySelectorAll('map-select');
   if (mapSelects.length) {
     var frag = document.createDocumentFragment();
     for (var i = 0; i < mapSelects.length; i++) {
@@ -70,7 +70,7 @@ export var createLayerControlExtentHTML = function () {
   removeExtentButton.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.remove();
+    this.el.remove();
   });
 
   let extentsettingsButton = DomUtil.create(

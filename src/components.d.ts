@@ -5,6 +5,8 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { Element } from "@stencil/core";
+export { Element } from "@stencil/core";
 export namespace Components {
     interface GcdsMap {
         "_controlslist"?: string;
@@ -34,6 +36,7 @@ export namespace Components {
           * Promise-based method to wait until all layers are ready Returns a promise that resolves when all child layers are fully initialized
          */
         "whenLayersReady": () => Promise<PromiseSettledResult<void>[]>;
+        "whenProjectionDefined": (projection: string) => Promise<unknown>;
         /**
           * Promise-based method to wait until map is ready Returns a promise that resolves when the map is fully initialized
          */
@@ -43,6 +46,31 @@ export namespace Components {
           * @default 0
          */
         "zoom"?: number;
+    }
+    interface MapExtent {
+        "_opacity"?: number;
+        /**
+          * @default false
+         */
+        "checked"?: boolean;
+        /**
+          * @default false
+         */
+        "disabled"?: boolean;
+        "getOuterHTML": () => Promise<string>;
+        /**
+          * @default false
+         */
+        "hidden": boolean;
+        "label"?: string;
+        /**
+          * @default 1
+         */
+        "opacity"?: number;
+        "units": string;
+        "whenLinksReady": () => Promise<PromiseSettledResult<any>[]>;
+        "whenReady": () => Promise<void>;
+        "zoomTo": () => Promise<void>;
     }
     interface MapLayer {
         "_opacity"?: number;
@@ -59,6 +87,24 @@ export namespace Components {
         "src"?: string;
         "whenReady": () => Promise<void>;
     }
+    interface MapLink {
+        "disabled"?: boolean;
+        "getBounds": () => Promise<{ min: { x: number; y: number; }; max: { x: number; y: number; }; }>;
+        "getZoomBounds": () => Promise<{ minZoom: number; maxZoom: number; minNativeZoom: number; maxNativeZoom: number; }>;
+        "href"?: string;
+        "hreflang"?: string;
+        "media"?: string;
+        "projection"?: string;
+        "rel"?: string;
+        "tms"?: boolean;
+        "tref"?: string;
+        /**
+          * @default 'image/*'
+         */
+        "type"?: string;
+        "whenReady": () => Promise<void>;
+        "zoomTo": () => Promise<void>;
+    }
 }
 declare global {
     interface HTMLGcdsMapElement extends Components.GcdsMap, HTMLStencilElement {
@@ -67,15 +113,29 @@ declare global {
         prototype: HTMLGcdsMapElement;
         new (): HTMLGcdsMapElement;
     };
+    interface HTMLMapExtentElement extends Components.MapExtent, HTMLStencilElement {
+    }
+    var HTMLMapExtentElement: {
+        prototype: HTMLMapExtentElement;
+        new (): HTMLMapExtentElement;
+    };
     interface HTMLMapLayerElement extends Components.MapLayer, HTMLStencilElement {
     }
     var HTMLMapLayerElement: {
         prototype: HTMLMapLayerElement;
         new (): HTMLMapLayerElement;
     };
+    interface HTMLMapLinkElement extends Components.MapLink, HTMLStencilElement {
+    }
+    var HTMLMapLinkElement: {
+        prototype: HTMLMapLinkElement;
+        new (): HTMLMapLinkElement;
+    };
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
+        "map-extent": HTMLMapExtentElement;
         "map-layer": HTMLMapLayerElement;
+        "map-link": HTMLMapLinkElement;
     }
 }
 declare namespace LocalJSX {
@@ -109,6 +169,27 @@ declare namespace LocalJSX {
          */
         "zoom"?: number;
     }
+    interface MapExtent {
+        "_opacity"?: number;
+        /**
+          * @default false
+         */
+        "checked"?: boolean;
+        /**
+          * @default false
+         */
+        "disabled"?: boolean;
+        /**
+          * @default false
+         */
+        "hidden"?: boolean;
+        "label"?: string;
+        /**
+          * @default 1
+         */
+        "opacity"?: number;
+        "units": string;
+    }
     interface MapLayer {
         "_opacity"?: number;
         "checked"?: boolean;
@@ -123,9 +204,25 @@ declare namespace LocalJSX {
         "opacity"?: number;
         "src"?: string;
     }
+    interface MapLink {
+        "disabled"?: boolean;
+        "href"?: string;
+        "hreflang"?: string;
+        "media"?: string;
+        "projection"?: string;
+        "rel"?: string;
+        "tms"?: boolean;
+        "tref"?: string;
+        /**
+          * @default 'image/*'
+         */
+        "type"?: string;
+    }
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
+        "map-extent": MapExtent;
         "map-layer": MapLayer;
+        "map-link": MapLink;
     }
 }
 export { LocalJSX as JSX };
@@ -133,7 +230,9 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
+            "map-extent": LocalJSX.MapExtent & JSXBase.HTMLAttributes<HTMLMapExtentElement>;
             "map-layer": LocalJSX.MapLayer & JSXBase.HTMLAttributes<HTMLMapLayerElement>;
+            "map-link": LocalJSX.MapLink & JSXBase.HTMLAttributes<HTMLMapLinkElement>;
         }
     }
 }

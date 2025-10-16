@@ -79,7 +79,6 @@ test.describe('gcds-map DOM API Tests', () => {
       'css=body > gcds-map >> css=div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div',
       (elem) => elem.hasAttribute('hidden')
     );
-    // TODO uncomment when hidden attribute working
     expect(layerControlHidden).toEqual(true);
   });
 
@@ -117,7 +116,6 @@ test.describe('gcds-map DOM API Tests', () => {
       (layer) => layer.setAttribute('hidden', ''),
       layerHandle
     );
-    // TODO uncomment when hidden attribute working
     await expect(layerControl).toBeHidden();
 
     const layer = page.locator('map-layer');
@@ -164,7 +162,6 @@ test.describe('gcds-map DOM API Tests', () => {
 
     // check for error messages in console
     expect(errorLogs.length).toBe(0);
-    // TODO uncomment when src is working
     await page.waitForLoadState('networkidle');
     const layerTile = await page.locator(
       'body > gcds-map .leaflet-tile-loaded:nth-child(1)'
@@ -332,7 +329,6 @@ test.describe('gcds-map DOM API Tests', () => {
       (layer) => layer.setAttribute('label', 'CBMT'),
       layerHandle
     );
-    // TODO uncomment when src is working
     await page.evaluateHandle(
       (layer) => layer.setAttribute('src', 'empty.mapml'),
       layerHandle
@@ -675,7 +671,6 @@ test.describe('gcds-map DOM API Tests', () => {
       expect(zoomHidden).toEqual(true);
       expect(reloadHidden).toEqual(true);
       expect(fullscreenHidden).toEqual(false);
-      // TODO uncomment when layer control working
       expect(layerControlHidden).toEqual(true);
       expect(scaleHidden).toEqual(false);
     });
