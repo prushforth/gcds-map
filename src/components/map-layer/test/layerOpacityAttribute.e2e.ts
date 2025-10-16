@@ -245,8 +245,7 @@ test.describe('Test the map-layer opacity attribute', () => {
       'body > gcds-map > map-layer',
       (layer) => layer.opacity
     );
-    console.log('Initial Opacity:', initialOpacity);
-    
+   
     // Start from current thumb position and drag to target
     const startX = sliderBox.x + (sliderBox.width * initialOpacity); // Assuming current value is 0.8
     const targetX = sliderBox.x + (sliderBox.width * 0.2); // Target 0.2 (increments of 0.1 on slider)
