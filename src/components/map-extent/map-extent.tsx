@@ -62,7 +62,8 @@ export class GcdsMapExtent {
         .whenReady()
         .then(() => {
           this._handleChange();
-          this._calculateBounds();
+          // TODO uncomment when extent bounds calculation is available
+          // this._calculateBounds();
           if (this._layerControlCheckbox) {
             this._layerControlCheckbox.checked = this.checked;
           }
@@ -240,9 +241,7 @@ export class GcdsMapExtent {
     // Initialize default values and bind handlers
     this._opacity = this.opacityValue;
     this._changeHandler = this._handleChange.bind(this);
-    // this.parentNode.host returns the map-layer element when parentNode is
-    // the shadow root
-    this.parentLayer = this.getLayerEl();
+    this.parentLayer = (this.el as any).parentLayer = this.getLayerEl();
     if (
       this.el.hasAttribute('data-moving') ||
       this.parentLayer?.hasAttribute('data-moving')
