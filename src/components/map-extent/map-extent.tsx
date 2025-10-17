@@ -106,15 +106,14 @@ export class GcdsMapExtent {
       .whenReady()
       .then(() => {
         let extentsRootFieldset = this.parentLayer._propertiesGroupAnatomy;
-        let position = Array.from(
-          this.parentLayer.src
-            ? this.parentLayer.shadowRoot.querySelectorAll(
-                ':host > map-extent:not([hidden])'
-              )
-            : this.parentLayer.querySelectorAll(
-                ':scope > map-extent:not([hidden])'
-              )
-        ).indexOf(this.el);
+        // Get all map-extent elements and filter by component property, not DOM attribute
+        const allExtents = this.parentLayer.src
+          ? Array.from(this.parentLayer.shadowRoot.querySelectorAll(':host > map-extent'))
+          : Array.from(this.parentLayer.querySelectorAll(':scope > map-extent'));
+        
+        // Filter visible extents using component property
+        const visibleExtents = allExtents.filter(extent => !(extent as any).hidden);
+        let position = visibleExtents.indexOf(this.el);
         
         if (isHidden) {
           // Hidden was set to true - remove from layer control (hide from user)
@@ -453,13 +452,15 @@ export class GcdsMapExtent {
   _validateLayerControlContainerHidden() {
     let extentsFieldset = this.parentLayer._propertiesGroupAnatomy;
     if (!extentsFieldset) return;
-    const numberOfVisibleSublayers = (
-      this.parentLayer.src
-        ? this.parentLayer.shadowRoot.querySelectorAll(
-            ':host > map-extent:not([hidden])'
-          )
-        : this.parentLayer.querySelectorAll(':scope > map-extent:not([hidden])')
-    ).length;
+    
+    // Get all map-extent elements (not just non-hidden ones)
+    const allExtents = this.parentLayer.src
+      ? Array.from(this.parentLayer.shadowRoot.querySelectorAll(':host > map-extent'))
+      : Array.from(this.parentLayer.querySelectorAll(':scope > map-extent'));
+    
+    // Count visible extents using component property, not DOM attribute
+    const numberOfVisibleSublayers = allExtents.filter(extent => !(extent as any).hidden).length;
+    
     if (numberOfVisibleSublayers === 0) {
       extentsFieldset.setAttribute('hidden', '');
     } else {

@@ -129,8 +129,8 @@ export class GcdsMapLayer {
   private _layerControlLabel?: HTMLElement;
   private _opacityControl?: HTMLElement;
   private _opacitySlider?: HTMLInputElement;
-  //private _layerItemSettingsHTML?: HTMLElement; // Reserved for future refactoring
-  //private _propertiesGroupAnatomy?: HTMLElement; // Reserved for future refactoring
+  // private _layerItemSettingsHTML?: HTMLElement; 
+  // private _propertiesGroupAnatomy?: HTMLElement; 
   private _styles?: HTMLElement;
 
   get label(): string {
@@ -226,8 +226,8 @@ export class GcdsMapLayer {
     this._layerControlLabel = undefined;
     this._opacityControl = undefined;
     this._opacitySlider = undefined;
-    //this._layerItemSettingsHTML = undefined;
-    //this._propertiesGroupAnatomy = undefined;
+    // this._layerItemSettingsHTML = undefined;
+    // this._propertiesGroupAnatomy = undefined;
     this._styles = undefined;
 
     this.el.shadowRoot.innerHTML = '';
