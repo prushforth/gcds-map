@@ -34,6 +34,22 @@ Type: `Promise<PromiseSettledResult<void>[]>`
 
 
 
+### `whenProjectionDefined(projection: string) => Promise<unknown>`
+
+
+
+#### Parameters
+
+| Name         | Type     | Description |
+| ------------ | -------- | ----------- |
+| `projection` | `string` |             |
+
+#### Returns
+
+Type: `Promise<unknown>`
+
+
+
 ### `whenReady() => Promise<void>`
 
 Promise-based method to wait until map is ready
