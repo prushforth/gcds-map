@@ -996,6 +996,7 @@ label.mapml-layer-item-toggle {
   
   /* Critical MapML defaults that must be available immediately */
   display: inline-block;
+  background-color: white;
   /* Use CSS custom properties for responsive sizing - fallback to defaults if not set */
   height: var(--map-height, 150px);        
   width: var(--map-width, 300px);         
@@ -1004,6 +1005,11 @@ label.mapml-layer-item-toggle {
   border-style: inset;
 }
 
+
+/* Ensure white background persists in fullscreen */
+:host(.mapml-fullscreen-on) {
+  background-color: white;
+}
 /* Ensure container fills the host element */
 .mapml-map-container {
   width: 100%;
