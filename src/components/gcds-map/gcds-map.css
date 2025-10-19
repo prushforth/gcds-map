@@ -1005,7 +1005,6 @@ label.mapml-layer-item-toggle {
   border-style: inset;
 }
 
-
 /* Ensure white background persists in fullscreen */
 :host(.mapml-fullscreen-on) {
   background-color: white;
