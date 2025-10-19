@@ -23,6 +23,10 @@ export const config: Config = {
         {
           src: 'components/map-layer/test/*.{html,mapml}',
           dest: 'test/map-layer'
+        },
+        {
+          src: 'components/map-layer/test/events/*.{html,mapml}',
+          dest: 'test/map-layer/events'
         }
       ],
     },
@@ -55,6 +59,10 @@ export const config: Config = {
         {
           src: 'components/map-layer/test/*.{html,mapml}',
           dest: 'test/map-layer'
+        },
+        {
+          src: 'components/map-layer/test/events/*.{html,mapml}',
+          dest: 'test/map-layer/events'
         }
       ],
     },
