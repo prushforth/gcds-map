@@ -22,37 +22,7 @@
 
 ## Methods
 
-### `getBounds() => Promise<{ min: { x: number; y: number; }; max: { x: number; y: number; }; }>`
-
-
-
-#### Returns
-
-Type: `Promise<{ min: { x: number; y: number; }; max: { x: number; y: number; }; }>`
-
-
-
-### `getZoomBounds() => Promise<{ minZoom: number; maxZoom: number; minNativeZoom: number; maxNativeZoom: number; }>`
-
-
-
-#### Returns
-
-Type: `Promise<{ minZoom: number; maxZoom: number; minNativeZoom: number; maxNativeZoom: number; }>`
-
-
-
 ### `whenReady() => Promise<void>`
-
-
-
-#### Returns
-
-Type: `Promise<void>`
-
-
-
-### `zoomTo() => Promise<void>`
 
 
 

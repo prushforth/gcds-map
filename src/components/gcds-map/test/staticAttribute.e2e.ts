@@ -13,6 +13,7 @@ test.describe('Adding Static Attribute to gcds-map', () => {
   test('Setting Static Attribute to gcds-map', async ({ page }) => {
     // Setting static attribute in the gcds-map tag
     await page.$eval('body > gcds-map', (viewer: any) => (viewer.static = true));
+    await page.waitForTimeout(250);
     let attribute = await page.$eval('body > gcds-map', (viewer) =>
       viewer.hasAttribute('static')
     );
@@ -47,7 +48,7 @@ test.describe('Adding Static Attribute to gcds-map', () => {
       'body > gcds-map',
       (viewer: any) => viewer._zoomControl && viewer._zoomControl._disabled
     );
-    await page.pause()
+
     expect(drag).toEqual(false);
     expect(touchZoom).toEqual(false);
     expect(doubleClickZoom).toEqual(false);

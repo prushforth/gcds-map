@@ -9,11 +9,11 @@
 
 | Property             | Attribute  | Description | Type      | Default     |
 | -------------------- | ---------- | ----------- | --------- | ----------- |
+| `_label`             | `_label`   |             | `string`  | `undefined` |
 | `_opacity`           | `_opacity` |             | `number`  | `undefined` |
 | `checked`            | `checked`  |             | `boolean` | `false`     |
 | `disabled`           | `disabled` |             | `boolean` | `false`     |
 | `hidden`             | `hidden`   |             | `boolean` | `false`     |
-| `label`              | `label`    |             | `string`  | `undefined` |
 | `opacity`            | `opacity`  |             | `number`  | `1`         |
 | `units` _(required)_ | `units`    |             | `string`  | `undefined` |
 
@@ -41,16 +41,6 @@ Type: `Promise<PromiseSettledResult<any>[]>`
 
 
 ### `whenReady() => Promise<void>`
-
-
-
-#### Returns
-
-Type: `Promise<void>`
-
-
-
-### `zoomTo() => Promise<void>`
 
 
 

@@ -48,6 +48,7 @@ export namespace Components {
         "zoom"?: number;
     }
     interface MapExtent {
+        "_label"?: string;
         "_opacity"?: number;
         /**
           * @default false
@@ -62,7 +63,6 @@ export namespace Components {
           * @default false
          */
         "hidden": boolean;
-        "label"?: string;
         /**
           * @default 1
          */
@@ -70,7 +70,19 @@ export namespace Components {
         "units": string;
         "whenLinksReady": () => Promise<PromiseSettledResult<any>[]>;
         "whenReady": () => Promise<void>;
-        "zoomTo": () => Promise<void>;
+    }
+    interface MapInput {
+        "axis"?: string;
+        "max"?: string;
+        "min"?: string;
+        "name": string;
+        "position"?: string;
+        "rel"?: string;
+        "step"?: string;
+        "type": string;
+        "units"?: string;
+        "value"?: string;
+        "whenReady": () => Promise<void>;
     }
     interface MapLayer {
         "_opacity"?: number;
@@ -89,8 +101,6 @@ export namespace Components {
     }
     interface MapLink {
         "disabled"?: boolean;
-        "getBounds": () => Promise<{ min: { x: number; y: number; }; max: { x: number; y: number; }; }>;
-        "getZoomBounds": () => Promise<{ minZoom: number; maxZoom: number; minNativeZoom: number; maxNativeZoom: number; }>;
         "href"?: string;
         "hreflang"?: string;
         "media"?: string;
@@ -103,7 +113,6 @@ export namespace Components {
          */
         "type"?: string;
         "whenReady": () => Promise<void>;
-        "zoomTo": () => Promise<void>;
     }
 }
 declare global {
@@ -118,6 +127,12 @@ declare global {
     var HTMLMapExtentElement: {
         prototype: HTMLMapExtentElement;
         new (): HTMLMapExtentElement;
+    };
+    interface HTMLMapInputElement extends Components.MapInput, HTMLStencilElement {
+    }
+    var HTMLMapInputElement: {
+        prototype: HTMLMapInputElement;
+        new (): HTMLMapInputElement;
     };
     interface HTMLMapLayerElement extends Components.MapLayer, HTMLStencilElement {
     }
@@ -134,6 +149,7 @@ declare global {
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
         "map-extent": HTMLMapExtentElement;
+        "map-input": HTMLMapInputElement;
         "map-layer": HTMLMapLayerElement;
         "map-link": HTMLMapLinkElement;
     }
@@ -170,6 +186,7 @@ declare namespace LocalJSX {
         "zoom"?: number;
     }
     interface MapExtent {
+        "_label"?: string;
         "_opacity"?: number;
         /**
           * @default false
@@ -183,12 +200,23 @@ declare namespace LocalJSX {
           * @default false
          */
         "hidden"?: boolean;
-        "label"?: string;
         /**
           * @default 1
          */
         "opacity"?: number;
         "units": string;
+    }
+    interface MapInput {
+        "axis"?: string;
+        "max"?: string;
+        "min"?: string;
+        "name": string;
+        "position"?: string;
+        "rel"?: string;
+        "step"?: string;
+        "type": string;
+        "units"?: string;
+        "value"?: string;
     }
     interface MapLayer {
         "_opacity"?: number;
@@ -221,6 +249,7 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
         "map-extent": MapExtent;
+        "map-input": MapInput;
         "map-layer": MapLayer;
         "map-link": MapLink;
     }
@@ -231,6 +260,7 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
             "map-extent": LocalJSX.MapExtent & JSXBase.HTMLAttributes<HTMLMapExtentElement>;
+            "map-input": LocalJSX.MapInput & JSXBase.HTMLAttributes<HTMLMapInputElement>;
             "map-layer": LocalJSX.MapLayer & JSXBase.HTMLAttributes<HTMLMapLayerElement>;
             "map-link": LocalJSX.MapLink & JSXBase.HTMLAttributes<HTMLMapLinkElement>;
         }

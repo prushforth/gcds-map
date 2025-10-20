@@ -28,7 +28,9 @@ In custom elements, attributes can be set before `connectedCallback()` fires. If
 - migrating and refactoring from mapml-source/**/*.js files to src/components/**/*.tsx files
 - will try to keep / migrate the tests from the mapml-source/test/ folder to the corresponding src/components/gcds-* or map- component test folder, if possible
 - the key reason to include the mapml-source as a submodule is to have access to the original source code for reference while refactoring. The maintenance of the gcds-map and other stencil map-* components will be done by using graphical diff / apply  changes if and where possible. Consequently, source order and correspondence of files and file names will be important while refactoring.
-
+- when refactoring a test from mapml-source/test/ to src/components/gcds-*/test/, you have to potentially modify the stencil.config.ts copy task to include the new test files, so that they are copied to the www/test/ folder during build for e2e testing.
+- when refactoring test files, you need to replace mapml-viewer with gcds-map in the test html files, and potentially modify any test code that references mapml-viewer to reference gcds-map instead.
+- the <script src="mapml.js"> tag in the test html files should also be updated to load the gcds-map component instead of mapml-viewer.
 
 ### "Set Once" Property Design
 **CRITICAL**: Some map properties ( lat, lon, zoom) are passed to `gcds-map` during initial construction but **never allowed to be updated afterward** (they are written to as the map changes view, though). This design:

@@ -14,12 +14,17 @@ declare const M: any;
 export class GcdsMapExtent {
     @Element() el: HTMLElement;
   @Prop({ mutable: true, reflect: true }) checked?: boolean = false;
-  @Prop({ mutable: true, reflect: true }) label?: string;
+  @Prop({ mutable: true }) _label?: string;
   @Prop({ mutable: true }) opacity?: number = 1;
   @Prop({ mutable: true }) _opacity?: number;
   @Prop({ reflect: true, mutable: true }) hidden: boolean = false;
   @Prop({ mutable: false, reflect: true }) units!: string;
   @Prop({ mutable: true, reflect: true }) disabled?: boolean = false;
+
+  // Internal getter for use within component
+  get label(): string {
+    return this._label || this.mapEl?.locale?.dfExtent || 'Sub-layer';
+  }
 
   get opacityValue(): number {
     return this._opacity ?? this.opacity ?? 1.0;
@@ -46,12 +51,12 @@ export class GcdsMapExtent {
     }
   }
 
-  @Watch('label')
-  labelChanged(newValue: string) {
+  @Watch('_label')
+  labelChanged() {
     if (this._layerControlHTML) {
       this._layerControlHTML.querySelector(
         '.mapml-extent-item-name'
-      ).innerHTML = newValue || this.mapEl?.locale?.dfExtent || 'Extent';
+      ).innerHTML = this.label;
     }
   }
 
@@ -212,8 +217,7 @@ export class GcdsMapExtent {
     return outerLayer;
   }
 
-  @Method()
-  async zoomTo() {
+  zoomTo() {
     let extent = this.extent;
     let map = this.getMapEl()._map,
       xmin = extent.topLeft.pcrs.horizontal,
@@ -251,6 +255,29 @@ export class GcdsMapExtent {
     (this.el as any).getMapEl = this.getMapEl.bind(this);
     (this.el as any).getLayerEl = this.getLayerEl.bind(this);
     (this.el as any).getLayerControlHTML = this.getLayerControlHTML.bind(this);
+    (this.el as any).zoomTo = this.zoomTo.bind(this);
+    
+    // Add label getter/setter on element for MapML compatibility
+    Object.defineProperty(this.el, 'label', {
+      get: () => {
+        return this.el.hasAttribute('label')
+          ? this.el.getAttribute('label')
+          : this.mapEl?.locale?.dfExtent || 'Sub-layer';
+      },
+      set: (val: string) => {
+        if (val) {
+          this.el.setAttribute('label', val);
+          // Update internal prop to trigger watcher
+          this._label = val;
+        }
+      },
+      configurable: true
+    });
+    
+    // Initialize _label from attribute if present
+    if (this.el.hasAttribute('label')) {
+      this._label = this.el.getAttribute('label');
+    }
     
     if (!this.mapEl) return;
 
@@ -276,6 +303,8 @@ export class GcdsMapExtent {
       zIndex: this.position,
       extentEl: this.el
     });
+    // Publish to element for MapML compatibility
+    (this.el as any)._extentLayer = this._extentLayer;
     // this._layerControlHTML is the fieldset for the extent in the LayerControl
     // Create layer control HTML and ensure it's captured on the component instance
     const layerControlHTML = createLayerControlExtentHTML.call(this);
@@ -283,13 +312,19 @@ export class GcdsMapExtent {
     
     // Also ensure the DOM element reference is synced (MapML compatibility)
     (this.el as any)._layerControlHTML = layerControlHTML;
-    // this._calculateBounds();
+    // Wait for map-link elements to be ready before calculating bounds
+    await this.whenLinksReady();
+    this._calculateBounds();
+
+    // Handle initial checked state - add extent layer to parent if checked
+    this._handleChange();
+
     // instead of children using parents' whenReady which can be cyclic,
     // when this element is ready, run stuff that is only available after
     // initialization
-//    this._runMutationObserver(this.el.children);
+    this._runMutationObserver(this.el.children);
     // make sure same thing happens when children are added
-//    this._bindMutationObserver();
+    this._bindMutationObserver();
   }
   /*
    * Set up a function to watch additions of child elements of map-extent
@@ -306,7 +341,7 @@ export class GcdsMapExtent {
       }
     });
     // childList observes immediate children only (not grandchildren etc)
-    this._observer.observe(this, {
+    this._observer.observe(this.el, {
       childList: true
     });
   }

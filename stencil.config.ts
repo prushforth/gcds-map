@@ -27,6 +27,15 @@ export const config: Config = {
         {
           src: 'components/map-layer/test/events/*.{html,mapml}',
           dest: 'test/map-layer/events'
+        },
+        {
+          src: 'components/map-extent/test/*.{html,mapml}',
+          dest: 'test/map-extent'
+        },
+        // Copy shared test data directory recursively
+        {
+          src: 'components/test/data',
+          dest: 'test/data'
         }
       ],
     },
@@ -63,6 +72,15 @@ export const config: Config = {
         {
           src: 'components/map-layer/test/events/*.{html,mapml}',
           dest: 'test/map-layer/events'
+        },
+        {
+          src: 'components/map-extent/test/*.{html,mapml}',
+          dest: 'test/map-extent'
+        },
+        // Copy shared test data directory recursively
+        {
+          src: 'components/test/data',
+          dest: 'test/data'
         }
       ],
     },
