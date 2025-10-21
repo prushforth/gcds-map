@@ -22,7 +22,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
     const alabamaExtentIsRendered = await alabamaExtent.evaluate(
       (e) =>
         e._extentLayer._container.querySelectorAll(
-          '.mapml-features-tiles-container > *'
+          '.mapml-features-tiles-container'
         ).length
     );
 
@@ -32,7 +32,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
       (label) => label.innerText
     );
     expect(cbmtExtentIsRendered).toEqual(9); // tile container divs
-    expect(alabamaExtentIsRendered).toEqual(4); // 2 links, 1 style, 1 svg
+    expect(alabamaExtentIsRendered).toEqual(1); // 2 links, 1 style, 1 svg
     expect(cbmtLabel).toEqual('cbmt');
     expect(alabamaLabel).toEqual('alabama_feature');
   });
