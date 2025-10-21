@@ -168,6 +168,13 @@ export class MapLink {
     (this.el as any).getZoomBounds = this.getZoomBounds.bind(this);
     (this.el as any).getBounds = this.getBounds.bind(this);
     (this.el as any).isVisible = this.isVisible.bind(this);
+    
+    // Expose extent property on DOM element for MapML compatibility
+    Object.defineProperty(this.el, 'extent', {
+      get: () => this.extent,
+      configurable: true,
+      enumerable: true
+    });
 
     switch (this.rel?.toLowerCase()) {
       case 'tile':

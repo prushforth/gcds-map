@@ -257,6 +257,14 @@ export class GcdsMapExtent {
     (this.el as any).getLayerControlHTML = this.getLayerControlHTML.bind(this);
     (this.el as any).zoomTo = this.zoomTo.bind(this);
     
+    // Add extent getter on element for MapML compatibility
+    Object.defineProperty(this.el, 'extent', {
+      get: () => {
+        return this.extent;
+      },
+      configurable: true
+    });
+    
     // Add label getter/setter on element for MapML compatibility
     Object.defineProperty(this.el, 'label', {
       get: () => {

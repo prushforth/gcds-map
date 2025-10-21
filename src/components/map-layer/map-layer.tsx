@@ -323,6 +323,13 @@ export class GcdsMapLayer {
       enumerable: true
     });
     
+    // Expose extent property on DOM element for MapML compatibility
+    Object.defineProperty(this.el, 'extent', {
+      get: () => this.extent,
+      configurable: true,
+      enumerable: true
+    });
+    
     const doConnected = this._onAdd.bind(this);
     const doRemove = this._onRemove.bind(this);
     const registerMediaQuery = this._registerMediaQuery.bind(this);

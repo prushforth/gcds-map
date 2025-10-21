@@ -432,6 +432,13 @@ export class GcdsMap {
         enumerable: true
       });
       
+      // Expose extent property on element for MapML compatibility
+      Object.defineProperty(this.el, 'extent', {
+        get: () => this.extent,
+        configurable: true,
+        enumerable: true
+      });
+      
       // Expose public synchronous methods on element for MapML compatibility
       Object.defineProperty(this.el, 'zoomTo', {
         value: (lat: number, lon: number, zoom?: number) => this.zoomTo(lat, lon, zoom),
