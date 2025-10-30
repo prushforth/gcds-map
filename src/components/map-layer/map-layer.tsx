@@ -1,4 +1,4 @@
-import { Component, Prop, State, Element, Watch, Method } from '@stencil/core';
+import { Component, Prop, Element, Watch, Method } from '@stencil/core';
 import { setOptions, DomUtil, bounds, point } from 'leaflet';
 import { Util } from '../utils/mapml/Util.js';
 import * as MapLayerModule from '../utils/mapml/layers/MapLayer.js';
@@ -35,12 +35,18 @@ export class GcdsMapLayer {
     return this._opacity ?? this.opacity ?? 1.0;
   }
 
-  // Internal state
-  @State() _layer: any;
-  @State() _layerControl: any;
-  @State() _layerControlHTML: any;
-  @State() disabled: boolean = false;
-  @State() _fetchError: boolean = false;
+  _layer: any;
+  _layerControl: any;
+  _layerControlHTML: any;
+  _layerItemSettingsHTML: any;
+  _propertiesGroupAnatomy: any;
+  disabled: boolean = false;
+  _fetchError: boolean = false;
+  // the layer registry is a semi-private Map stored on each map-link and map-layer element
+  // structured as follows: position -> {layer: layerInstance, count: number}
+  // where layer is either a MapTileLayer or a MapFeatureLayer, 
+  // and count is the number of tiles or features in that layer
+  _layerRegistry: Map<number, { layer: any; count: number }> = new Map();
 
   // Watchers for attribute changes - these automatically don't fire during initial load
   @Watch('src')
@@ -232,6 +238,7 @@ export class GcdsMapLayer {
 
     this.el.shadowRoot.innerHTML = '';
     if (this.src) this.el.innerHTML = '';
+    this._layerRegistry.clear();
   }
 
   connectedCallback() {
@@ -335,7 +342,9 @@ export class GcdsMapLayer {
       configurable: true,
       enumerable: true
     });
-    
+
+    (this.el as any)._layerRegistry = this._layerRegistry;
+
     const doConnected = this._onAdd.bind(this);
     const doRemove = this._onRemove.bind(this);
     const registerMediaQuery = this._registerMediaQuery.bind(this);
@@ -926,8 +935,8 @@ export class GcdsMapLayer {
         this._layerControlLabel = (this.el as any)._layerControlLabel;
         this._opacityControl = (this.el as any)._opacityControl;
         this._opacitySlider = (this.el as any)._opacitySlider;
-        // this._layerItemSettingsHTML = (this.el as any)._layerItemSettingsHTML;
-        // this._propertiesGroupAnatomy = (this.el as any)._propertiesGroupAnatomy;
+        this._layerItemSettingsHTML = (this.el as any)._layerItemSettingsHTML;
+        this._propertiesGroupAnatomy = (this.el as any)._propertiesGroupAnatomy;
         this._styles = (this.el as any)._styles;
         
         // Ensure opacity slider is synced with current opacity value

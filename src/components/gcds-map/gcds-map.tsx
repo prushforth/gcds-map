@@ -1,4 +1,4 @@
-import { Component, Prop, Element, State, Watch, Method } from '@stencil/core';
+import { Component, Prop, Element, Watch, Method } from '@stencil/core';
 import {
   map,
   LatLng,
@@ -58,12 +58,11 @@ export class GcdsMap {
   @Prop({ reflect: true, attribute: 'controlslist' }) _controlslist?: string;
   @Prop({ mutable: true }) locale?: any;
 
-  // Internal state properties that mirror the original
-  @State() _controlsList: DOMTokenList;
-  @State() _source: string;
-  @State() _history: any[] = [];
-  @State() _historyIndex: number = -1;
-  @State() _traversalCall: number | false = false;
+  _controlsList: DOMTokenList;
+  _source: string;
+  _history: any[] = [];
+  _historyIndex: number = -1;
+  _traversalCall: number | false = false;
 
   // Private properties that mirror the original (will be set in componentDidLoad)
   private _map: any;

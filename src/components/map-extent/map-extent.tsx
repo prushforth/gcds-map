@@ -1,4 +1,4 @@
-import { Component, Prop, State, Element, Watch, Method } from '@stencil/core';
+import { Component, Prop, Element, Watch, Method } from '@stencil/core';
 import { bounds as Lbounds, point as Lpoint } from 'leaflet';
 
 import { Util } from '../utils/mapml/Util.js';
@@ -30,19 +30,18 @@ export class GcdsMapExtent {
     return this._opacity ?? this.opacity ?? 1.0;
   }
 
-  // State properties
-  @State() mapEl: any;
-  @State() parentLayer: any;
-  @State() _map: any;
-  @State() _extentLayer: any;
-  @State() _layerControlHTML: any;
-  @State() _layerControlCheckbox: any;
-  @State() _layerControlLabel: any;
-  @State() _opacityControl: any;
-  @State() _opacitySlider: any;
-  @State() _selectdetails: any;
-  @State() _observer: any;
-  @State() _changeHandler: any;
+  mapEl: any;
+  parentLayer: any;
+  _map: any;
+  _extentLayer: any;
+  _layerControlHTML: any;
+  _layerControlCheckbox: any;
+  _layerControlLabel: any;
+  _opacityControl: any;
+  _opacitySlider: any;
+  _selectdetails: any;
+  _observer: any;
+  _changeHandler: any;
 
   @Watch('units')
   unitsChanged(newValue: string, oldValue: string) {
@@ -256,6 +255,7 @@ export class GcdsMapExtent {
     (this.el as any).getLayerEl = this.getLayerEl.bind(this);
     (this.el as any).getLayerControlHTML = this.getLayerControlHTML.bind(this);
     (this.el as any).zoomTo = this.zoomTo.bind(this);
+    (this.el as any)._validateDisabled = this._validateDisabled.bind(this);
     
     // Add extent getter on element for MapML compatibility
     Object.defineProperty(this.el, 'extent', {

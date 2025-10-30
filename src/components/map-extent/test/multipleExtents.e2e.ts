@@ -405,7 +405,7 @@ test.describe('Multiple Extents Bounds Tests', () => {
   });
 });
 
-test.describe('Multiple Extents Reordering and ZIndices Tests', () => {
+test.describe('Multiple Extents Reordering and zIndex Tests', () => {
   let page;
   let context;
   test.beforeAll(async function () {

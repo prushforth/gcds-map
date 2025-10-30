@@ -139,7 +139,7 @@ export var createLayerControlExtentHTML = function () {
   extentItemNameSpan.id =
     'mapml-extent-item-name-{' + stamp(extentItemNameSpan) + '}';
   extent.setAttribute('aria-labelledby', extentItemNameSpan.id);
-  extentItemNameSpan.extent = this;
+  extentItemNameSpan.extent = this.el;
 
   extent.ontouchstart = extent.onmousedown = (downEvent) => {
     if (

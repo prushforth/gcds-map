@@ -1,4 +1,4 @@
-import { Component, Element, Prop, Watch, Method, State } from '@stencil/core';
+import { Component, Element, Prop, Watch, Method } from '@stencil/core';
 import { bounds, point, extend } from 'leaflet';
 
 import { MapFeatureLayer } from '../utils/mapml/layers/MapFeatureLayer.js';
@@ -20,14 +20,13 @@ export class MapFeature {
   @Prop({ reflect: true, mutable: true }) min?: number;
   @Prop({ reflect: true, mutable: true }) max?: number;
 
-  // Internal state
-  @State() _featureLayer: any;
-  @State() _geometry: any;
-  @State() _groupEl: any;
-  @State() _observer: MutationObserver;
-  @State() _parentEl: any;
-  @State() _initialZoom: number;
-  @State() _getFeatureExtent: any;
+  _featureLayer: any;
+  _geometry: any;
+  _groupEl: any;
+  _observer: MutationObserver;
+  _parentEl: any;
+  _initialZoom: number;
+  _getFeatureExtent: any;
 
   @Watch('zoom')
   zoomChanged(newValue: number, oldValue: number) {
@@ -174,29 +173,10 @@ export class MapFeature {
     (this.el as any).blur = this.blur.bind(this);
     (this.el as any).mapml2geojson = this.mapml2geojson.bind(this);
 
-    // Expose properties on DOM element for MapML compatibility
-    Object.defineProperty(this.el, '_featureLayer', {
-      get: () => this._featureLayer,
-      set: (val: any) => {
-        this._featureLayer = val;
-      },
-      configurable: true,
-      enumerable: true
-    });
-
     Object.defineProperty(this.el, 'zoom', {
         get: () => this.zoomValue,
         configurable: true,
         enumerable: true
-    });
-
-    Object.defineProperty(this.el, '_geometry', {
-      get: () => this._geometry,
-      set: (val: any) => {
-        this._geometry = val;
-      },
-      configurable: true,
-      enumerable: true
     });
 
     Object.defineProperty(this.el, 'extent', {
@@ -222,6 +202,18 @@ export class MapFeature {
       this._createOrGetFeatureLayer();
     }
 
+    // Expose properties on DOM element for MapML compatibility
+    Object.defineProperty(this.el, '_featureLayer', {
+      get: () => this._featureLayer,
+      configurable: true,
+      enumerable: true
+    });
+
+    Object.defineProperty(this.el, '_geometry', {
+      get: () => this._geometry,
+      configurable: true,
+      enumerable: true
+    });
     // use observer to monitor the changes in mapFeature's subtree
     this._observer = new MutationObserver((mutationList) => {
       for (let mutation of mutationList) {
@@ -260,6 +252,14 @@ export class MapFeature {
         this._featureLayer.remove();
         this._featureLayer = null;
         delete this._featureLayer;
+      }
+    }
+    // Clean up the layer registry if not data-moving
+    const entry = this?._parentEl?._layerRegistry?.get(this.position);
+    if (entry) {
+      entry.count--;
+      if (entry.count === 0) {
+        this._parentEl._layerRegistry.delete(this.position);
       }
     }
   }
@@ -309,19 +309,16 @@ export class MapFeature {
     this._setUpEvents();
   }
 
-  isFirst(): boolean {
-    const prevSibling = this.el.previousElementSibling;
-    if (!prevSibling) {
-      return true;
-    }
-    return this.el.nodeName !== prevSibling.nodeName;
-  }
 
   getPrevious(): any {
     if (this.isFirst()) {
       return null;
     }
     return this.el.previousElementSibling;
+  }
+
+  isFirst(): boolean {
+    return !this._parentEl._layerRegistry.has(this.position);
   }
 
   _createOrGetFeatureLayer() {
@@ -335,8 +332,8 @@ export class MapFeature {
           ? this._parentEl._templatedLayer
           : this._parentEl._layer;
 
+        const parentElement = this._parentEl;
         if (this.isFirst() && parentLayer) {
-          const parentElement = this._parentEl;
 
           let map = parentElement.getMapEl()._map;
 
@@ -374,13 +371,21 @@ export class MapFeature {
             })
           });
 
+          // Add this position to the parent's _layerRegistry with layer reference and count = 1
+          parentElement._layerRegistry.set(this.position, { layer: this._featureLayer, count: 1 });
+
           this.addFeature(this._featureLayer);
 
           // add MapFeatureLayer to appropriate parent layer
           parentLayer.addLayer(this._featureLayer);
         } else {
-          // get the previous feature's layer
-          this._featureLayer = (this.getPrevious() as any)?._featureLayer;
+          // get the previously registered FeatureLayer for this position
+          const entry = parentElement._layerRegistry.get(this.position);
+          this._featureLayer = entry?.layer;
+          if (entry) {
+            entry.count++;
+          }
+          
           if (this._featureLayer) {
             this.addFeature(this._featureLayer);
           }

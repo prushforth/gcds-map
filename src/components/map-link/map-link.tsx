@@ -1,4 +1,4 @@
-import { Component, Element, Prop, Watch, Method, State } from '@stencil/core';
+import { Component, Element, Prop, Watch, Method } from '@stencil/core';
 import {
   bounds,
   point,
@@ -32,16 +32,19 @@ export class MapLink {
   @Prop({ reflect: true }) projection?: string;
   @Prop({ reflect: true, mutable: true }) disabled?: boolean;
 
-  // Internal state
-  @State() _templatedLayer: any;
-  @State() _templateVars: any;
-  @State() _alternate: boolean;
-  @State() _styleOption: any;
-  @State() _stylesheetHost: any;
-  @State() _pmtilesRules: any;
-  @State() _mql: any;
-  @State() _changeHandler: any;
-
+  _templatedLayer: any;
+  _templateVars: any;
+  _alternate: boolean;
+  _styleOption: any;
+  _stylesheetHost: any;
+  _pmtilesRules: any;
+  _mql: any;
+  _changeHandler: any;
+  // the layer registry is a semi-private Map stored on each map-link and map-layer element
+  // structured as follows: position -> {layer: layerInstance, count: number}
+  // where layer is either a MapTileLayer or a MapFeatureLayer, 
+  // and count is the number of tiles or features in that layer
+  _layerRegistry: Map<number, { layer: any; count: number }> = new Map();
   parentExtent: any;
   mapEl: any;
   zoomInput: any;
@@ -159,6 +162,8 @@ export class MapLink {
     )
       return;
 
+    (this.el as any)._layerRegistry = this._layerRegistry;
+
     // Publish MapML compatibility methods on element
     // Note: Methods decorated with @Method() (whenReady) 
     // are automatically available on the element
@@ -222,6 +227,7 @@ export class MapLink {
       default:
         break;
     }
+    this._layerRegistry.clear();
   }
 
   _disableLink() {
