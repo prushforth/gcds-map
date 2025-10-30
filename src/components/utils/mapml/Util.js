@@ -765,7 +765,7 @@ export const Util = {
   //    for geojson2mapml
   // _updateExtent: [min x, min y, max x, max y], x, y -> [min x, min y, max x, max y]
   _updateExtent: function (bboxExtent, x, y) {
-    if (bboxExtent === {}) {
+    if (!bboxExtent || Object.keys(bboxExtent).length === 0) {
       return bboxExtent;
     }
     bboxExtent[0] = Math.min(x, bboxExtent[0]);

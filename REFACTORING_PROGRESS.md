@@ -9,6 +9,10 @@ This file tracks which MapML.js files have been refactored into GCDS components.
 - [ ] `src/mapml-source/src/map-layer.js` → `src/components/map-layer/map-layer.tsx` ✅ 
 - [ ] `src/mapml-source/src/map-extent.js` → `src/components/map-extent/map-extent.tsx` ✅
 - [ ] `src/mapml-source/src/map-link.js` → `src/components/map-link/map-link.tsx` ✅
+- [ ] `src/mapml-source/src/map-feature.js` → `src/components/map-feature/map-feature.tsx` ✅
+- [ ] `src/mapml-source/src/map-geometry.js` → `src/components/map-geometry/map-geometry.tsx` ✅
+- [ ] `src/mapml-source/src/map-properties.js` → `src/components/map-properties/map-properties.tsx` ✅
+- [ ] `map-featurecaption` → `src/components/map-featurecaption/map-featurecaption.tsx` ✅
 
 ### Tests
 - [ ] `src/mapml-source/test/e2e/core/mapElement.test.js` → `src/components/gcds-map/test/`
@@ -20,11 +24,8 @@ This file tracks which MapML.js files have been refactored into GCDS components.
 ### Components
 - [ ] `src/mapml-source/src/map-area.js`
 - [ ] `src/mapml-source/src/map-caption.js`
-- [ ] `src/mapml-source/src/map-feature.js`
-- [ ] `src/mapml-source/src/map-geometry.js`
 - [ ] `src/mapml-source/src/map-input.js`
 - [ ] `src/mapml-source/src/map-meta.js`
-- [ ] `src/mapml-source/src/map-properties.js`
 - [ ] `src/mapml-source/src/map-select.js`
 - [ ] `src/mapml-source/src/map-span.js`
 - [ ] `src/mapml-source/src/map-style.js`

@@ -71,6 +71,17 @@ export namespace Components {
         "whenLinksReady": () => Promise<PromiseSettledResult<any>[]>;
         "whenReady": () => Promise<void>;
     }
+    interface MapFeature {
+        "max"?: number;
+        "min"?: number;
+        "whenReady": () => Promise<void>;
+        "zoom"?: number;
+    }
+    interface MapFeaturecaption {
+    }
+    interface MapGeometry {
+        "cs"?: string;
+    }
     interface MapInput {
         "axis"?: string;
         "max"?: string;
@@ -114,6 +125,8 @@ export namespace Components {
         "type"?: string;
         "whenReady": () => Promise<void>;
     }
+    interface MapProperties {
+    }
 }
 declare global {
     interface HTMLGcdsMapElement extends Components.GcdsMap, HTMLStencilElement {
@@ -127,6 +140,24 @@ declare global {
     var HTMLMapExtentElement: {
         prototype: HTMLMapExtentElement;
         new (): HTMLMapExtentElement;
+    };
+    interface HTMLMapFeatureElement extends Components.MapFeature, HTMLStencilElement {
+    }
+    var HTMLMapFeatureElement: {
+        prototype: HTMLMapFeatureElement;
+        new (): HTMLMapFeatureElement;
+    };
+    interface HTMLMapFeaturecaptionElement extends Components.MapFeaturecaption, HTMLStencilElement {
+    }
+    var HTMLMapFeaturecaptionElement: {
+        prototype: HTMLMapFeaturecaptionElement;
+        new (): HTMLMapFeaturecaptionElement;
+    };
+    interface HTMLMapGeometryElement extends Components.MapGeometry, HTMLStencilElement {
+    }
+    var HTMLMapGeometryElement: {
+        prototype: HTMLMapGeometryElement;
+        new (): HTMLMapGeometryElement;
     };
     interface HTMLMapInputElement extends Components.MapInput, HTMLStencilElement {
     }
@@ -146,12 +177,22 @@ declare global {
         prototype: HTMLMapLinkElement;
         new (): HTMLMapLinkElement;
     };
+    interface HTMLMapPropertiesElement extends Components.MapProperties, HTMLStencilElement {
+    }
+    var HTMLMapPropertiesElement: {
+        prototype: HTMLMapPropertiesElement;
+        new (): HTMLMapPropertiesElement;
+    };
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
         "map-extent": HTMLMapExtentElement;
+        "map-feature": HTMLMapFeatureElement;
+        "map-featurecaption": HTMLMapFeaturecaptionElement;
+        "map-geometry": HTMLMapGeometryElement;
         "map-input": HTMLMapInputElement;
         "map-layer": HTMLMapLayerElement;
         "map-link": HTMLMapLinkElement;
+        "map-properties": HTMLMapPropertiesElement;
     }
 }
 declare namespace LocalJSX {
@@ -206,6 +247,16 @@ declare namespace LocalJSX {
         "opacity"?: number;
         "units": string;
     }
+    interface MapFeature {
+        "max"?: number;
+        "min"?: number;
+        "zoom"?: number;
+    }
+    interface MapFeaturecaption {
+    }
+    interface MapGeometry {
+        "cs"?: string;
+    }
     interface MapInput {
         "axis"?: string;
         "max"?: string;
@@ -246,12 +297,18 @@ declare namespace LocalJSX {
          */
         "type"?: string;
     }
+    interface MapProperties {
+    }
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
         "map-extent": MapExtent;
+        "map-feature": MapFeature;
+        "map-featurecaption": MapFeaturecaption;
+        "map-geometry": MapGeometry;
         "map-input": MapInput;
         "map-layer": MapLayer;
         "map-link": MapLink;
+        "map-properties": MapProperties;
     }
 }
 export { LocalJSX as JSX };
@@ -260,9 +317,13 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
             "map-extent": LocalJSX.MapExtent & JSXBase.HTMLAttributes<HTMLMapExtentElement>;
+            "map-feature": LocalJSX.MapFeature & JSXBase.HTMLAttributes<HTMLMapFeatureElement>;
+            "map-featurecaption": LocalJSX.MapFeaturecaption & JSXBase.HTMLAttributes<HTMLMapFeaturecaptionElement>;
+            "map-geometry": LocalJSX.MapGeometry & JSXBase.HTMLAttributes<HTMLMapGeometryElement>;
             "map-input": LocalJSX.MapInput & JSXBase.HTMLAttributes<HTMLMapInputElement>;
             "map-layer": LocalJSX.MapLayer & JSXBase.HTMLAttributes<HTMLMapLayerElement>;
             "map-link": LocalJSX.MapLink & JSXBase.HTMLAttributes<HTMLMapLinkElement>;
+            "map-properties": LocalJSX.MapProperties & JSXBase.HTMLAttributes<HTMLMapPropertiesElement>;
         }
     }
 }

@@ -57,7 +57,7 @@ export class GcdsMapLayer {
     if (this._layer) {
       
       // Get the parent map element
-      const mapEl = this.el.closest('gcds-map') as HTMLElement;
+      const mapEl = this.getMapEl();
       if (mapEl && (mapEl as any)._map) {
         const leafletMap = (mapEl as any)._map;
         
@@ -296,6 +296,12 @@ export class GcdsMapLayer {
     
     Object.defineProperty(this.el, 'getOuterHTML', {
       value: () => this.getOuterHTML(),
+      writable: true,
+      configurable: true
+    });
+    
+    Object.defineProperty(this.el, 'getMapEl', {
+      value: () => this.getMapEl(),
       writable: true,
       configurable: true
     });

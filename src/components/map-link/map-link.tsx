@@ -334,9 +334,9 @@ export class MapLink {
       if (this._stylesheetHost._layer) {
         this._stylesheetHost._layer.renderStyles(this);
       } else if (this._stylesheetHost._templatedLayer) {
-        this._stylesheetHost._templatedLayer.renderStyles(this);
+        this._stylesheetHost._templatedLayer.renderStyles(this.el);
       } else if (this._stylesheetHost._extentLayer) {
-        this._stylesheetHost._extentLayer.renderStyles(this);
+        this._stylesheetHost._extentLayer.renderStyles(this.el);
       }
     }
   }

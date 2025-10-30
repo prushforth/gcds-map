@@ -553,7 +553,7 @@ export class GcdsMapExtent {
 
     // initialize zoom bounds from this.scope > map-meta
     let zoomBounds = this.el.querySelector(':scope > map-meta[name=zoom][content]')
-      ? Util.getZoomBoundsFromMeta(this) // TODO rewrite this pile of doo doo
+      ? Util.getZoomBoundsFromMeta(this.el) // TODO rewrite this pile of doo doo
       : undefined;
 
     // bounds should be able to be calculated unconditionally, not depend on map-extent.checked

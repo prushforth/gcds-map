@@ -45,7 +45,7 @@
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-typescript": "^7.27.1",
     "@playwright/test": "^1.54.0",
-    "@stencil/core": "^4.27.1",
+    "@stencil/core": "^4.38.2",
     "@stencil/playwright": "^0.2.1",
     "@storybook/addon-actions": "^8.0.9",
     "@storybook/addon-essentials": "^8.0.9",
@@ -77,7 +77,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@stencil/core": "4.35.1",
     "@storybook/addon-a11y": "^8.0.9",
     "@storybook/addons": "^7.6.17",
     "@storybook/test": "^8.0.9",

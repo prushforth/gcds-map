@@ -185,7 +185,7 @@ export var createLayerControlExtentHTML = function () {
         let x = moveEvent.clientX,
           y = moveEvent.clientY,
           root =
-            mapEl.tagName === 'MAPML-VIEWER'
+            mapEl.tagName === 'GCDS-MAP'
               ? mapEl.shadowRoot
               : mapEl.querySelector('.mapml-web-map').shadowRoot,
           elementAt = root.elementFromPoint(x, y),

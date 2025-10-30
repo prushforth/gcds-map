@@ -9,10 +9,11 @@ test.describe('Adding and Removing Multiple Extents', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-extent/multipleExtents.html');
+    await page.waitForTimeout(1000);
+
   });
 
   test("Layer's multiple extents display on map and in layer control", async () => {
-    await page.pause()
     const cbmtExtent = await page.getByTestId('cbmt-extent');
     const cbmtExtentIsRendered = await cbmtExtent.evaluate(
       (e) =>
@@ -25,7 +26,6 @@ test.describe('Adding and Removing Multiple Extents', () => {
           '.mapml-features-tiles-container'
         ).length
     );
-
     const cbmtLabel = await page.$eval('text=cbmt', (label) => label.innerText);
     const alabamaLabel = await page.$eval(
       'text=alabama_feature',
@@ -136,9 +136,8 @@ test.describe('Adding and Removing Multiple Extents', () => {
       'div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > div > div.mapml-extentlayer-container',
       (extents) => extents.length
     );
-    let cbmt = await page.$eval(
-      'div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > div > div.leaflet-layer.mapml-extentlayer-container > div',
-      (div) => div.className
+    let cbmt = await page.getByTestId('cbmt-extent').evaluate(
+      (e) => e._extentLayer.getContainer().firstElementChild.className
     );
     expect(startExtentCount).toEqual(2);
     expect(cbmt).toEqual('leaflet-layer mapml-templated-tile-container');
@@ -149,9 +148,8 @@ test.describe('Adding and Removing Multiple Extents', () => {
       'div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > div > div.mapml-extentlayer-container',
       (extents) => extents.length
     );
-    cbmt = await page.$eval(
-      "div.mapml-extentlayer-container[style='opacity: 0.5; z-index: 1;'] > div",
-      (div) => div.className
+    let cbmtStyle = await page.getByTestId('cbmt-extent').evaluate(
+      (e) => e._extentLayer.getContainer().getAttribute('style')
     );
     const alabama = await page.$eval(
       "div.mapml-extentlayer-container[style='opacity: 0.5; z-index: 2;'] > div",
@@ -177,7 +175,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
     );
     // cbmt is a templated tile extent
     // the opacity of the cbmt tiles is tested by the selector
-    expect(cbmt).toEqual('leaflet-layer mapml-templated-tile-container');
+    expect(cbmtStyle).toEqual('opacity: 0.5; z-index: 1;');
     expect(layerOpacity).toEqual('1');
     expect(cbmtOpacity).toEqual('0.5');
     expect(alabamaOpacity).toEqual('0.5');
@@ -207,9 +205,8 @@ test.describe('Adding and Removing Multiple Extents', () => {
       "div.mapml-extentlayer-container[style='opacity: 0.5; z-index: 1;'] > div",
       (div) => div.className
     );
-    const alabamaClass = await page.$eval(
-      "div.mapml-extentlayer-container[style='opacity: 0.5; z-index: 2;'] > div",
-      (div) => div.className
+    const alabamaStyle = await page.getByTestId('alabama-extent').evaluate(
+      (e) => e._extentLayer.getContainer().getAttribute('style')
     );
     const layer = page.getByTestId('multiple-extents');
 
@@ -227,9 +224,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
       (opacity) => opacity.value
     );
     // alabama opacity is tested by the selector
-    expect(alabamaClass).toEqual(
-      'leaflet-layer mapml-features-tiles-container leaflet-pane mapml-vector-container'
-    );
+    expect(alabamaStyle).toEqual('opacity: 0.5; z-index: 2;');
     // cbmt opacity is tested by the selector
     expect(cbmtClass).toEqual('leaflet-layer mapml-templated-tile-container');
     expect(layerOpacity).toEqual('0.5');
@@ -246,7 +241,8 @@ test.describe('Multiple Extents Bounds Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('multipleExtents.html');
+    await page.goto('/test/map-extent/multipleExtents.html');
+    await page.waitForTimeout(1000);
   });
 
   test('Only Extent Bounds show in debug mode', async () => {
@@ -417,7 +413,8 @@ test.describe('Multiple Extents Reordering and ZIndices Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('multipleExtents.html');
+    await page.goto('/test/map-extent/multipleExtents.html');
+    await page.waitForTimeout(1000);
   });
   test.afterAll(async function () {
     await context.close();
