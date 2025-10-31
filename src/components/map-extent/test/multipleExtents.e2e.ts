@@ -8,7 +8,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/multipleExtents.html');
+    await page.goto('/test/map-extent//test/map-extent/multipleExtents.html');
     await page.waitForTimeout(1000);
 
   });
@@ -241,7 +241,7 @@ test.describe('Multiple Extents Bounds Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/multipleExtents.html');
+    await page.goto('/test/map-extent//test/map-extent/multipleExtents.html');
     await page.waitForTimeout(1000);
   });
 
@@ -413,7 +413,7 @@ test.describe('Multiple Extents Reordering and zIndex Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/multipleExtents.html');
+    await page.goto('/test/map-extent//test/map-extent/multipleExtents.html');
     await page.waitForTimeout(1000);
   });
   test.afterAll(async function () {

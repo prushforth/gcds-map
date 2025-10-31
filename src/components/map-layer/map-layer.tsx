@@ -270,7 +270,12 @@ export class GcdsMapLayer {
       enumerable: true
     });
 
-    // Expose synchronous methods on DOM element for MapML compatibility
+    Object.defineProperty(this.el, 'whenElemsReady', {
+      value: () => this.whenElemsReady(),
+      writable: true,
+      configurable: true
+    })
+
     Object.defineProperty(this.el, 'zoomTo', {
       value: () => this.zoomTo(),
       writable: true,
@@ -987,6 +992,25 @@ export class GcdsMapLayer {
         reject('Timeout reached waiting for layer to be ready');
       }
     });
+  }
+  /**
+   * Wait for all map-extent and map-feature elements to be ready.
+   * Returns a promise that resolves when all are settled.
+   */
+  @Method()
+  async whenElemsReady(): Promise<PromiseSettledResult<unknown>[]> {
+    let elemsReady: Promise<unknown>[] = [];
+    // Use shadowRoot if src is set, otherwise use this.el
+    let target = this.src ? this.el.shadowRoot : this.el;
+    if (!target) return [];
+    const extents = Array.from(target.querySelectorAll('map-extent'));
+    const features = Array.from(target.querySelectorAll('map-feature'));
+    for (let elem of [...extents, ...features]) {
+      if (typeof (elem as any).whenReady === 'function') {
+        elemsReady.push((elem as any).whenReady());
+      }
+    }
+    return Promise.allSettled(elemsReady);
   }
 
   render() {

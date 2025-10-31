@@ -382,7 +382,7 @@ export class GcdsMap {
         projection: this.projection,
         // query: true,
         contextMenu: true,
-        // announceMovement: M.options.announceMovement,
+        announceMovement: true,
         // featureIndex: true,
         mapEl: this.el,
         crs: (window as any).M[this.projection],
@@ -501,6 +501,7 @@ export class GcdsMap {
       await import('../utils/mapml/control/AttributionButton.js');
       // Load ContextMenu handler to register init hooks
       await import('../utils/mapml/handlers/ContextMenu.js');
+      await import('../utils/mapml/handlers/AnnounceMovement.js');
       // TODO: other controls if needed
     } catch (error) {
       console.error('Failed to load MapML controls:', error);

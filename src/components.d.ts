@@ -108,6 +108,10 @@ export namespace Components {
          */
         "opacity"?: number;
         "src"?: string;
+        /**
+          * Wait for all map-extent and map-feature elements to be ready. Returns a promise that resolves when all are settled.
+         */
+        "whenElemsReady": () => Promise<PromiseSettledResult<unknown>[]>;
         "whenReady": () => Promise<void>;
     }
     interface MapLink {
@@ -125,7 +129,27 @@ export namespace Components {
         "type"?: string;
         "whenReady": () => Promise<void>;
     }
+    interface MapMeta {
+        "content"?: string;
+        "name"?: string;
+    }
     interface MapProperties {
+    }
+    interface MapSelect {
+        "name"?: string;
+        "whenReady": () => Promise<void>;
+    }
+    interface MapSpan {
+    }
+    interface MapStyle {
+        "media"?: string;
+    }
+    interface MapTile {
+        "col"?: number;
+        "row"?: number;
+        "src"?: string;
+        "zoom"?: number;
+        "zoomTo": () => Promise<void>;
     }
 }
 declare global {
@@ -177,11 +201,41 @@ declare global {
         prototype: HTMLMapLinkElement;
         new (): HTMLMapLinkElement;
     };
+    interface HTMLMapMetaElement extends Components.MapMeta, HTMLStencilElement {
+    }
+    var HTMLMapMetaElement: {
+        prototype: HTMLMapMetaElement;
+        new (): HTMLMapMetaElement;
+    };
     interface HTMLMapPropertiesElement extends Components.MapProperties, HTMLStencilElement {
     }
     var HTMLMapPropertiesElement: {
         prototype: HTMLMapPropertiesElement;
         new (): HTMLMapPropertiesElement;
+    };
+    interface HTMLMapSelectElement extends Components.MapSelect, HTMLStencilElement {
+    }
+    var HTMLMapSelectElement: {
+        prototype: HTMLMapSelectElement;
+        new (): HTMLMapSelectElement;
+    };
+    interface HTMLMapSpanElement extends Components.MapSpan, HTMLStencilElement {
+    }
+    var HTMLMapSpanElement: {
+        prototype: HTMLMapSpanElement;
+        new (): HTMLMapSpanElement;
+    };
+    interface HTMLMapStyleElement extends Components.MapStyle, HTMLStencilElement {
+    }
+    var HTMLMapStyleElement: {
+        prototype: HTMLMapStyleElement;
+        new (): HTMLMapStyleElement;
+    };
+    interface HTMLMapTileElement extends Components.MapTile, HTMLStencilElement {
+    }
+    var HTMLMapTileElement: {
+        prototype: HTMLMapTileElement;
+        new (): HTMLMapTileElement;
     };
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
@@ -192,7 +246,12 @@ declare global {
         "map-input": HTMLMapInputElement;
         "map-layer": HTMLMapLayerElement;
         "map-link": HTMLMapLinkElement;
+        "map-meta": HTMLMapMetaElement;
         "map-properties": HTMLMapPropertiesElement;
+        "map-select": HTMLMapSelectElement;
+        "map-span": HTMLMapSpanElement;
+        "map-style": HTMLMapStyleElement;
+        "map-tile": HTMLMapTileElement;
     }
 }
 declare namespace LocalJSX {
@@ -297,7 +356,25 @@ declare namespace LocalJSX {
          */
         "type"?: string;
     }
+    interface MapMeta {
+        "content"?: string;
+        "name"?: string;
+    }
     interface MapProperties {
+    }
+    interface MapSelect {
+        "name"?: string;
+    }
+    interface MapSpan {
+    }
+    interface MapStyle {
+        "media"?: string;
+    }
+    interface MapTile {
+        "col"?: number;
+        "row"?: number;
+        "src"?: string;
+        "zoom"?: number;
     }
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
@@ -308,7 +385,12 @@ declare namespace LocalJSX {
         "map-input": MapInput;
         "map-layer": MapLayer;
         "map-link": MapLink;
+        "map-meta": MapMeta;
         "map-properties": MapProperties;
+        "map-select": MapSelect;
+        "map-span": MapSpan;
+        "map-style": MapStyle;
+        "map-tile": MapTile;
     }
 }
 export { LocalJSX as JSX };
@@ -323,7 +405,12 @@ declare module "@stencil/core" {
             "map-input": LocalJSX.MapInput & JSXBase.HTMLAttributes<HTMLMapInputElement>;
             "map-layer": LocalJSX.MapLayer & JSXBase.HTMLAttributes<HTMLMapLayerElement>;
             "map-link": LocalJSX.MapLink & JSXBase.HTMLAttributes<HTMLMapLinkElement>;
+            "map-meta": LocalJSX.MapMeta & JSXBase.HTMLAttributes<HTMLMapMetaElement>;
             "map-properties": LocalJSX.MapProperties & JSXBase.HTMLAttributes<HTMLMapPropertiesElement>;
+            "map-select": LocalJSX.MapSelect & JSXBase.HTMLAttributes<HTMLMapSelectElement>;
+            "map-span": LocalJSX.MapSpan & JSXBase.HTMLAttributes<HTMLMapSpanElement>;
+            "map-style": LocalJSX.MapStyle & JSXBase.HTMLAttributes<HTMLMapStyleElement>;
+            "map-tile": LocalJSX.MapTile & JSXBase.HTMLAttributes<HTMLMapTileElement>;
         }
     }
 }

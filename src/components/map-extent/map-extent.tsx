@@ -55,7 +55,7 @@ export class GcdsMapExtent {
     if (this._layerControlHTML) {
       this._layerControlHTML.querySelector(
         '.mapml-extent-item-name'
-      ).innerHTML = this.label;
+      ).textContent = this.label;
     }
   }
 
@@ -320,7 +320,12 @@ export class GcdsMapExtent {
     
     // Also ensure the DOM element reference is synced (MapML compatibility)
     (this.el as any)._layerControlHTML = layerControlHTML;
-    // Wait for map-link elements to be ready before calculating bounds
+    (this.el as any)._layerControlLabel = this._layerControlLabel;
+    (this.el as any)._layerControlCheckbox = this._layerControlCheckbox;
+    (this.el as any)._opacityControl = this._opacityControl;
+    (this.el as any)._opacitySlider = this._opacitySlider;
+    (this.el as any)._selectdetails = this._selectdetails;
+   // Wait for map-link elements to be ready before calculating bounds
     await this.whenLinksReady();
     this._calculateBounds();
 
@@ -342,15 +347,23 @@ export class GcdsMapExtent {
   _bindMutationObserver() {
     this._observer = new MutationObserver((mutationList) => {
       for (let mutation of mutationList) {
+        // Handle attribute removals for 'label'
+        if (mutation.type === 'attributes' && mutation.attributeName === 'label') {
+          if (!this.el.hasAttribute('label')) {
+            this._label = this.mapEl?.locale?.dfExtent || 'Sub-layer';
+          }
+        }
         // the attributes changes should be handled by attributeChangedCallback()
         if (mutation.type === 'childList') {
           this._runMutationObserver(mutation.addedNodes);
         }
       }
     });
-    // childList observes immediate children only (not grandchildren etc)
+    // Observe both childList and attribute changes for 'label'
     this._observer.observe(this.el, {
-      childList: true
+      childList: true,
+      attributes: true,
+      attributeFilter: ['label']
     });
   }
   _runMutationObserver(elementsGroup) {
