@@ -141,7 +141,13 @@ test.describe('Playwright Map Element Tests', () => {
     await expect(
       page.locator('.mapml-debug-vectors.cbmt-inline-layer')
     ).toHaveCount(0);
-    await expect(page.locator('.mapml-debug-vectors')).toHaveCount(3); // only 4 if you have the mapml-extension installed, announceZoom option enabled
+    const map = await page.getByTestId('viewer');
+    const announceMovement = await map.evaluate((map) => map._map.options.announceMovement)
+    if (announceMovement) {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(4);
+    } else {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(3);
+    }
     await page.hover('.leaflet-top.leaflet-right');
     await page.click(
       'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset:nth-child(1) > div:nth-child(1) > label > span'
@@ -149,6 +155,10 @@ test.describe('Playwright Map Element Tests', () => {
     await expect(
       page.locator('.mapml-debug-vectors.cbmt-inline-layer')
     ).toHaveCount(1);
-    await expect(page.locator('.mapml-debug-vectors')).toHaveCount(4);
+    if (announceMovement) {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(5); 
+    } else {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(4);
+    }
   });
 });
