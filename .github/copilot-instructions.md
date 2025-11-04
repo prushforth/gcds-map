@@ -24,6 +24,17 @@ In custom elements, attributes can be set before `connectedCallback()` fires. If
 
 **Stencil handles this differently** - Stencil's lifecycle ensures proper initialization timing, so this pattern is unnecessary and should be omitted when refactoring.
 
+### Publishing Methods on the DOM Element
+
+**IMPORTANT**: Do NOT use `@Method()` decorator for non-async methods that need to be publicly accessible on the DOM element.
+
+- `@Method()` decorator requires methods to be `async` and return a `Promise`
+- For synchronous methods that need to be accessible on the element, publish them manually in `connectedCallback()`:
+  ```typescript
+  (this.el as any).methodName = this.methodName.bind(this);
+  ```
+- Only use `@Method()` for truly async operations that return promises (e.g., `whenReady()`, `whenLinksReady()`)
+
 ### Refactoring Guidelines
 - migrating and refactoring from mapml-source/**/*.js files to src/components/**/*.tsx files
 - will try to keep / migrate the tests from the mapml-source/test/ folder to the corresponding src/components/gcds-* or map- component test folder, if possible

@@ -58,6 +58,17 @@ The `map-layer` component must be used within a `gcds-map` component:
 
 ## Methods
 
+### `whenElemsReady() => Promise<PromiseSettledResult<unknown>[]>`
+
+Wait for all map-extent and map-feature elements to be ready.
+Returns a promise that resolves when all are settled.
+
+#### Returns
+
+Type: `Promise<PromiseSettledResult<unknown>[]>`
+
+
+
 ### `whenReady() => Promise<void>`
 
 

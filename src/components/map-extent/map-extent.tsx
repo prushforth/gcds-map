@@ -256,6 +256,7 @@ export class GcdsMapExtent {
     (this.el as any).getLayerControlHTML = this.getLayerControlHTML.bind(this);
     (this.el as any).zoomTo = this.zoomTo.bind(this);
     (this.el as any)._validateDisabled = this._validateDisabled.bind(this);
+    (this.el as any).getMeta = this.getMeta.bind(this);
     
     // Add extent getter on element for MapML compatibility
     Object.defineProperty(this.el, 'extent', {
@@ -561,7 +562,7 @@ export class GcdsMapExtent {
 
     // initialize bounds from this.scope > map-meta
     let bounds = this.el.querySelector(':scope > map-meta[name=extent][content]')
-      ? Util.getBoundsFromMeta(this) // TODO rewrite this pile of doo doo
+      ? Util.getBoundsFromMeta(this.el) // TODO rewrite this pile of doo doo
       : undefined;
 
     // initialize zoom bounds from this.scope > map-meta

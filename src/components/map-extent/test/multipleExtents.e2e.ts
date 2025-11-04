@@ -8,7 +8,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent//test/map-extent/multipleExtents.html');
+    await page.goto('/test/map-extent/multipleExtents.html');
     await page.waitForTimeout(1000);
 
   });
@@ -241,7 +241,7 @@ test.describe('Multiple Extents Bounds Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent//test/map-extent/multipleExtents.html');
+    await page.goto('/test/map-extent/multipleExtents.html');
     await page.waitForTimeout(1000);
   });
 
@@ -249,13 +249,21 @@ test.describe('Multiple Extents Bounds Tests', () => {
     // this test used to be titled "Both Extent Bounds and Layer Bounds show in debug mode"
     // but since introduction of map-extent element, it was decided to only show
     // the bounds rectangles for the map-link elements
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
+    const map = await page.getByTestId('themap');
+    await map.evaluate((map) => map.toggleDebug());
+    await page.waitForTimeout(500);
 
     // we don't expect the _map.totalBounds to show unless the announceMovement
     // option is enabled on page load, by default it is false.
-    // the bounds expected to show include the "projection center", 4 features,
-    // and 3 map-extents =8
-    await expect(page.locator('.mapml-debug-vectors')).toHaveCount(8);
+    // update: announceMovement is now true by default, so totalBounds will show
+    // the bounds expected to show include the "projection center", totalBounds,
+    // 4 features, and 3 map-extents =9
+    const announceMovement = await map.evaluate((map) => map._map.options.announceMovement);
+    if (announceMovement) {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(9);
+    } else {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(8);
+    }
     await expect(
       page.locator('.mapml-debug-vectors.projection-centre ')
     ).toHaveCount(1);
@@ -280,11 +288,16 @@ test.describe('Multiple Extents Bounds Tests', () => {
     await page.click(
       'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div.mapml-layer-item-settings > fieldset > fieldset:nth-child(2) > div.mapml-layer-item-properties > label > input[type=checkbox]'
     );
-    // reload the debug layer; this should not require cycling
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
-
-    await expect(page.locator('.mapml-debug-vectors')).toHaveCount(3);
+    // reload the debug layer; this  should not require cycling
+    const map = await page.getByTestId('themap');
+    await map.evaluate((map) => map.toggleDebug());
+    await map.evaluate((map) => map.toggleDebug());
+    const announceMovement = await map.evaluate((map) => map._map.options.announceMovement);
+    if (announceMovement) {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(4);
+    } else {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(3);
+    }
     await expect(
       page.locator('.mapml-debug-vectors.projection-centre ')
     ).toHaveCount(1);
@@ -305,10 +318,16 @@ test.describe('Multiple Extents Bounds Tests', () => {
     //    await page.click(
     //      'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div.mapml-layer-item-settings > fieldset > fieldset:nth-child(2) > div.mapml-layer-item-properties > label > input[type=checkbox]'
     //    );
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
+    const map = await page.getByTestId('themap');
+    await map.evaluate((map) => map.toggleDebug());
+    await map.evaluate((map) => map.toggleDebug());
 
-    await expect(page.locator('.mapml-debug-vectors')).toHaveCount(8);
+    const announceMovement = await map.evaluate((map) => map._map.options.announceMovement);
+    if (announceMovement) {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(9);
+    } else {
+      await expect(page.locator('.mapml-debug-vectors')).toHaveCount(8);
+    }
     await expect(
       page.locator('.mapml-debug-vectors.projection-centre ')
     ).toHaveCount(1);
@@ -330,11 +349,14 @@ test.describe('Multiple Extents Bounds Tests', () => {
   test('Layer is disabled in layer control when all extents are out of bounds', async () => {
     // if debug mode is enabled, can't focus on map @ leaflet 1.9.3 see issue #720
     // so turn it off here
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
-    await page.click('gcds-map');
+    const map = await page.getByTestId('themap');
+    await map.evaluate((map) => map.toggleDebug());
+    await map.evaluate((map) => map.toggleDebug());
+    await map.click();
     for (let i = 0; i < 7; i++) {
       await page.keyboard.press('ArrowDown');
     }
+
 
     // layer is still enabled, map-extents that are out of bounds are disabled
     // those that overlap the viewport are enabled
@@ -344,12 +366,26 @@ test.describe('Multiple Extents Bounds Tests', () => {
     // await expect(page.getByText('cbmt')).toBeDisabled();
     await expect(page.getByText('alabama_feature')).toBeEnabled();
     await page.keyboard.press('ArrowDown');
-    await expect(page.getByText('Multiple Extents')).toBeDisabled();
-    await expect(page.getByText('cbmt')).toHaveCSS('font-style', 'italic');
-    await expect(page.getByText('alabama_feature')).toHaveCSS(
-      'font-style',
-      'italic'
-    );
+    const announceMovement = await map.evaluate((map) => map._map.options.announceMovement);
+    if (announceMovement) {
+      // when announceMovement is true, the map bounces back when it reaches
+      // the total bounds of all layers, so one of the extents is still in bounds
+      // while the other is out of bounds and hence disabled
+      await expect(page.getByText('Multiple Extents')).toBeEnabled();
+      await expect(page.getByText('cbmt')).toHaveCSS('font-style', 'italic');
+      await expect(page.getByText('alabama_feature')).toHaveCSS(
+        'font-style',
+        'normal'
+      );
+    } else {
+      // when announceMovement is false, the map continues panning out of bounds
+      await expect(page.getByText('Multiple Extents')).toBeDisabled();
+      await expect(page.getByText('cbmt')).toHaveCSS('font-style', 'italic');
+      await expect(page.getByText('alabama_feature')).toHaveCSS(
+        'font-style',
+        'italic'
+      );
+    } 
   });
 
   test('Extent is individually disabled in layer control when out of bounds', async () => {
@@ -413,7 +449,7 @@ test.describe('Multiple Extents Reordering and zIndex Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent//test/map-extent/multipleExtents.html');
+    await page.goto('/test/map-extent/multipleExtents.html');
     await page.waitForTimeout(1000);
   });
   test.afterAll(async function () {

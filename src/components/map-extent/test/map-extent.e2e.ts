@@ -9,6 +9,7 @@ test.describe('map-extent tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-extent/map-extent.html');
+    await page.waitForTimeout(1000);
   });
   test('Basic hidden functionality and API', async () => {
     const extent = await page.getByTestId('ext1');
@@ -56,6 +57,10 @@ test.describe('map-extent tests', () => {
   });
 
   test('hidden DOM order maintained when unhiding', async () => {
+    // this template used to contain a map-extent units="foo", but
+    // that caused an error to be thrown during map-extent.connectedCallback
+    // that interfered with this test, so it was moved to its own template
+    // (template3) and that is used in the test on line 163 ish.
     const t = await page.getByTestId('template');
     await t.evaluate((t) => {
       let extents = t.content.cloneNode(true);
@@ -86,23 +91,30 @@ test.describe('map-extent tests', () => {
     });
     // no hidden extents
     expect(unhiddenMapExtentCount).toBe(3);
-
-    const orderOfDOMExtentsEqualsLayerControlOrder = await layer.evaluate(
-      (layer) => {
-        let extents = layer.querySelectorAll('map-extent');
-        let match = true;
-        for (let i = 0; i < extents.length; i++) {
-          if (
-            extents[i]._layerControlHTML !==
-            layer._propertiesGroupAnatomy.children[i]
-          ) {
-            match = false;
-            break;
-          }
+    
+    // Wait for all _layerControlHTML elements to be inserted in the correct order
+    await page.waitForFunction(() => {
+      const layer = document.querySelector('map-layer[data-testid="cbmt1"]') as any;
+      if (!layer || layer._propertiesGroupAnatomy.childElementCount !== 3) return false;
+      const extents = layer.querySelectorAll('map-extent');
+      for (let i = 0; i < extents.length; i++) {
+        if ((extents[i] as any)._layerControlHTML !== layer._propertiesGroupAnatomy.children[i]) {
+          return false;
         }
-        return match;
       }
-    );
+      return true;
+    });
+
+    // Verify the order is correct
+    const orderOfDOMExtentsEqualsLayerControlOrder = await layer.evaluate((layer) => {
+      const extents = layer.querySelectorAll('map-extent');
+      for (let i = 0; i < extents.length; i++) {
+        if ((extents[i] as any)._layerControlHTML !== layer._propertiesGroupAnatomy.children[i]) {
+          return false;
+        }
+      }
+      return true;
+    });
     expect(orderOfDOMExtentsEqualsLayerControlOrder).toBe(true);
   });
   test('Basic checked functionality and API', async () => {
@@ -164,10 +176,9 @@ test.describe('map-extent tests', () => {
     await viewer.evaluate((viewer) => {
       const l = document.createElement('map-layer');
       (l as any).label = 'Layer';
-      const e = document
-        .querySelector('template')
-        .content.querySelector('[data-testid=ext4]')
-        .cloneNode(true);
+      const e = (document
+        .querySelector('[data-testid="template3"]') as HTMLTemplateElement)
+        .content.cloneNode(true);
       l.checked = true;
       l.appendChild(e);
       viewer.appendChild(l);
@@ -190,6 +201,7 @@ test.describe('map-extent tests', () => {
       l.appendChild(metaProjection);
       viewer.appendChild(l);
     });
+    await page.waitForTimeout(1000);
     const emptyLayerBounds = await page
       .getByTestId('empty')
       .evaluate((layer) => {
@@ -233,6 +245,7 @@ test.describe('map-extent tests', () => {
           .cloneNode(true);
       initiallyEmptyLayer.appendChild(ext);
     });
+    await page.waitForTimeout(1000);
     const layerWithContentBounds = await viewer.evaluate((v) => {
       let initiallyEmptyLayer = v.querySelector('[data-testid=empty]');
       return {
@@ -255,7 +268,6 @@ test.describe('map-extent tests', () => {
         zmax: content.extent.zoom.maxZoom
       };
     });
-    await page.pause();
     expect(layerWithContentBounds.xmin).not.toEqual(
       cbmtileProjectionBounds.xmin
     );
@@ -329,6 +341,7 @@ test.describe('map-extent tests', () => {
       l.appendChild(metaProjection);
       viewer.appendChild(l);
     });
+    await page.waitForTimeout(1000);
     // get its extent
     const emptyLayerBounds = await page
       .getByTestId('empty')
@@ -359,6 +372,7 @@ test.describe('map-extent tests', () => {
           .cloneNode(true);
       initiallyEmptyLayer.appendChild(ext);
     });
+    await page.waitForTimeout(1000);
     // get initial extent of map-extent
     let mapExtent = page.getByTestId('ext5');
     const initialExtentBounds = await mapExtent.evaluate((me) => {
@@ -394,7 +408,7 @@ test.describe('map-extent tests', () => {
 
     // remove the map-extent
     await mapExtent.evaluate((me) => me.remove());
-
+    await page.waitForTimeout(500);
     // assert that layer extent returns to equal the extent of projection
     const originalLayerExtent = await layer.evaluate((l) => {
       return {
@@ -438,6 +452,7 @@ test.describe('map-extent tests', () => {
 
     // see https://github.com/Maps4HTML/MapML.js/issues/921
     mapExtent = page.getByTestId('ext5');
+    await page.waitForTimeout(1000);
 
     // get the extent of map-extent
     const finalExtentBounds = await mapExtent.evaluate((me) => {
