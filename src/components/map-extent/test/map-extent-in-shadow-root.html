@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>page.goto('/test/map-extent/ in shadow root test</title>
+    <title>map-extent-in-shadow-root</title>
     <meta charset="UTF-8">
     <script type="module" src="/build/gcds-map.esm.js"></script>
     <style>
@@ -35,9 +35,9 @@
   <body>
     <host-element>
       <template shadowrootmode="open">
-        <page.goto('/test/map-extent/ data-testid="viewer" style="height: 500px;width:500px;"  zoom="2" lat="63" lon="-87" controls projection="CBMTILE">
-          <map-layer data-testid="test-layer" label="Remote content" src="data/cbmt.mapml" checked></map-layer>
-        </page.goto('/test/map-extent/>
+        <gcds-map data-testid="viewer" style="height: 500px;width:500px;"  zoom="2" lat="63" lon="-87" controls projection="CBMTILE">
+          <map-layer data-testid="test-layer" label="Remote content" src="/test/data/cbmt.mapml" checked></map-layer>
+        </gcds-map>
       </template>
     </host-element>
   </body>

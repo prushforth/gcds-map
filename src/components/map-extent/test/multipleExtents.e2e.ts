@@ -9,7 +9,7 @@ test.describe('Adding and Removing Multiple Extents', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-extent/multipleExtents.html');
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
   });
 
@@ -242,7 +242,7 @@ test.describe('Multiple Extents Bounds Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-extent/multipleExtents.html');
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
   });
 
   test('Only Extent Bounds show in debug mode', async () => {
@@ -450,7 +450,7 @@ test.describe('Multiple Extents Reordering and zIndex Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-extent/multipleExtents.html');
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
   });
   test.afterAll(async function () {
     await context.close();
@@ -481,13 +481,16 @@ test.describe('Multiple Extents Reordering and zIndex Tests', () => {
 
     // reverse the order of the extent via the layer control
     await page.hover('.leaflet-top.leaflet-right');
+    await page.waitForTimeout(250);
     // get the bounds of the CBMT extent
     await page.click(
       'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div > div > button:nth-child(2)'
     );
+    await page.waitForTimeout(250);
     let control = await page.$(
       'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset:nth-child(1) > div.mapml-layer-item-settings > fieldset > fieldset:nth-child(1)'
     );
+    await page.waitForTimeout(250);
     let controlBBox = await control.boundingBox();
     // drag it down the page one notch / up in the ZIndex order by one
     await page.mouse.move(
@@ -499,6 +502,9 @@ test.describe('Multiple Extents Reordering and zIndex Tests', () => {
       controlBBox.x + controlBBox.width / 2,
       controlBBox.y + controlBBox.height / 2 + 48
     );
+
+  await page.waitForTimeout(250);
+
     // drop it
     await page.mouse.up();
     await page.waitForTimeout(500);

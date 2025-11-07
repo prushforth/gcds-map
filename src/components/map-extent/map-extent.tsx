@@ -42,6 +42,7 @@ export class GcdsMapExtent {
   _selectdetails: any;
   _observer: any;
   _changeHandler: any;
+  _boundsCalculated: boolean = false;
 
   @Watch('units')
   unitsChanged(newValue: string, oldValue: string) {
@@ -66,8 +67,7 @@ export class GcdsMapExtent {
         .whenReady()
         .then(() => {
           this._handleChange();
-          // TODO uncomment when extent bounds calculation is available
-          // this._calculateBounds();
+          this._calculateBounds();
           if (this._layerControlCheckbox) {
             this._layerControlCheckbox.checked = this.checked;
           }
@@ -257,8 +257,15 @@ export class GcdsMapExtent {
     (this.el as any).zoomTo = this.zoomTo.bind(this);
     (this.el as any)._validateDisabled = this._validateDisabled.bind(this);
     (this.el as any).getMeta = this.getMeta.bind(this);
-    
-    // Add extent getter on element for MapML compatibility
+    // this is necessary for true "whenReady" being true because bounds
+    // being established is pretty important.  This is different from MapML.js;
+    // TODO it may be to port this idea back to MapML.js tbd.
+    Object.defineProperty(this.el, '_boundsCalculated', {
+      get: () => this._boundsCalculated,
+      configurable: true,
+      enumerable: true
+    });    
+      // Add extent getter on element for MapML compatibility
     Object.defineProperty(this.el, 'extent', {
       get: () => {
         return this.extent;
@@ -549,6 +556,7 @@ export class GcdsMapExtent {
     if (this.mapEl) {
       this.mapEl.removeEventListener('map-projectionchange', this._changeHandler);
     }
+    this._boundsCalculated = false;
     delete this._extentLayer;
     if (this.parentLayer?._layer) delete this.parentLayer._layer.bounds;
   }
@@ -642,21 +650,22 @@ export class GcdsMapExtent {
       zoomBounds.maxNativeZoom = zoomBounds.maxZoom;
     }
     this._extentLayer.zoomBounds = zoomBounds;
+    this._boundsCalculated = true;
   }
 
   @Method()
   async whenReady() {
     return new Promise<void>((resolve, reject) => {
       let interval, failureTimer;
-     if (this._extentLayer) {
+      if (this._extentLayer && this._boundsCalculated) {
         resolve();
       } else {
-        let extentElement = this;
+        let extentElement = this.el;
         interval = setInterval(testForExtent, 300, extentElement);
         failureTimer = setTimeout(extentNotDefined, 10000);
       }
       function testForExtent(extentElement) {
-        if (extentElement._extentLayer) {
+        if (extentElement._extentLayer && extentElement._boundsCalculated) {
           clearInterval(interval);
           clearTimeout(failureTimer);
           resolve();

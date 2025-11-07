@@ -105,11 +105,11 @@ export class MapInput {
 
   async connectedCallback() {
     try {
-      await (this.el.parentElement as any).whenReady();
-      // TODO this might not be necessary, as map-extent doesn't have a _layer property afaik
-      if (this.el.parentElement.nodeName === 'MAP-EXTENT') {
-        this._layer = (this.el.parentElement as any)._layer;
-      }
+      // await (this.el.parentElement as any).whenReady();
+      // // TODO this might not be necessary, as map-extent doesn't have a _layer property afaik
+      // if (this.el.parentElement.nodeName === 'MAP-EXTENT') {
+      //   this._layer = (this.el.parentElement as any)._layer;
+      // }
 
       switch (this.type) {
         case 'zoom':

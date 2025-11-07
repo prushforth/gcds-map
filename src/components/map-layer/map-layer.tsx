@@ -413,8 +413,12 @@ export class GcdsMapLayer {
             let elements = this.el.shadowRoot.querySelectorAll('*');
             let elementsReady = [];
             for (let i = 0; i < elements.length; i++) {
-              if ((elements[i] as any).whenReady)
-                elementsReady.push((elements[i] as any).whenReady());
+              if ((elements[i] as any).whenReady) {
+                elementsReady.push((elements[i] as any).whenReady().catch(error => {
+                  console.warn(`Element ${elements[i].tagName} failed to become ready:`, error);
+                  return null; // Convert rejection to resolution so layer can still proceed
+                }));
+              }
             }
             return Promise.allSettled(elementsReady);
           })
