@@ -32,10 +32,23 @@ export const config: Config = {
           src: 'components/map-extent/test/*.{html,mapml}',
           dest: 'test/map-extent'
         },
+        {
+          src: 'components/map-link/test/*.{html,mapml}',
+          dest: 'test/map-link'
+        },
+        {
+          src: 'components/map-input/test/*.{html,mapml}',
+          dest: 'test/map-input'
+        },
         // Copy shared test data directory recursively
         {
           src: 'components/test/data',
           dest: 'test/data'
+        },
+        // Copy Leaflet for test imports
+        {
+          src: '../node_modules/leaflet/dist/leaflet-src.esm.js',
+          dest: 'leaflet-src.esm.js'
         }
       ],
     },
@@ -77,10 +90,23 @@ export const config: Config = {
           src: 'components/map-extent/test/*.{html,mapml}',
           dest: 'test/map-extent'
         },
+        {
+          src: 'components/map-link/test/*.{html,mapml}',
+          dest: 'test/map-link'
+        },
+        {
+          src: 'components/map-input/test/*.{html,mapml}',
+          dest: 'test/map-input'
+        },
         // Copy shared test data directory recursively
         {
           src: 'components/test/data',
           dest: 'test/data'
+        },
+        // Copy Leaflet for test imports
+        {
+          src: '../node_modules/leaflet/dist/leaflet-src.esm.js',
+          dest: 'leaflet-src.esm.js'
         }
       ],
     },

@@ -1,12 +1,10 @@
-import { Component, Element, Prop, Watch, Method } from '@stencil/core';
+import { Component, Element, Prop, Method } from '@stencil/core';
 import { Util } from '../utils/mapml/Util';
 import { ZoomInput } from '../utils/mapml/elementSupport/inputs/zoomInput';
 import { HiddenInput } from '../utils/mapml/elementSupport/inputs/hiddenInput';
 import { WidthInput } from '../utils/mapml/elementSupport/inputs/widthInput';
 import { HeightInput } from '../utils/mapml/elementSupport/inputs/heightInput';
 import { LocationInput } from '../utils/mapml/elementSupport/inputs/locationInput';
-
-declare const M: any;
 
 @Component({
   tag: 'map-input',
@@ -32,69 +30,6 @@ export class MapInput {
   _layer: any;
   initialValue?: number;
 
-  @Watch('name')
-  nameChanged(newValue: string, oldValue: string) {
-    if (oldValue !== null && newValue !== oldValue && this.input) {
-      this.input.name = newValue;
-    }
-  }
-
-  @Watch('value')
-  valueChanged(newValue: string, oldValue: string) {
-    if (oldValue !== null && newValue !== oldValue && this.input) {
-      this.input.value = newValue;
-    }
-  }
-
-  @Watch('axis')
-  axisChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.axis = newValue;
-    }
-  }
-
-  @Watch('units')
-  unitsChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.units = newValue;
-    }
-  }
-
-  @Watch('position')
-  positionChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.position = newValue;
-    }
-  }
-
-  @Watch('rel')
-  relChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.rel = newValue;
-    }
-  }
-
-  @Watch('min')
-  minChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.min = newValue;
-    }
-  }
-
-  @Watch('max')
-  maxChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.max = newValue;
-    }
-  }
-
-  @Watch('step')
-  stepChanged(newValue: string, oldValue: string) {
-    if (oldValue !== newValue && this.input) {
-      this.input.step = newValue;
-    }
-  }
-
   getMapEl() {
     return Util.getClosest(this.el, 'gcds-map');
   }
@@ -105,6 +40,10 @@ export class MapInput {
 
   async connectedCallback() {
     try {
+      // Publish methods on element for MapML compatibility
+      (this.el as any).getMapEl = this.getMapEl.bind(this);
+      (this.el as any).getLayerEl = this.getLayerEl.bind(this);
+      
       // await (this.el.parentElement as any).whenReady();
       // // TODO this might not be necessary, as map-extent doesn't have a _layer property afaik
       // if (this.el.parentElement.nodeName === 'MAP-EXTENT') {

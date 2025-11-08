@@ -802,12 +802,12 @@ export class MapLink {
       
       const axes = Util.csToAxes(cs);
       bnds = Util.boundsToPCRSBounds(
-        M.bounds(
-          M.point(
+        bounds(
+          point(
             +content[`top-left-${axes[0]}`],
             +content[`top-left-${axes[1]}`]
           ),
-          M.point(
+          point(
             +content[`bottom-right-${axes[0]}`],
             +content[`bottom-right-${axes[1]}`]
           )
