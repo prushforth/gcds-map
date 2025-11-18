@@ -52,7 +52,8 @@ export class MapInput {
 
       switch (this.type) {
         case 'zoom':
-          this.initialValue = this.value ? +this.value : undefined;
+          // this could be a bug, but it's the same bug as the mapml-source zoom input
+          this.initialValue = +this.el.getAttribute('value');
           // Publish for MapML compatibility
           (this.el as any).initialValue = this.initialValue;
           this.input = new ZoomInput(

@@ -990,7 +990,7 @@ export class MapLink {
       failureTimer = setTimeout(linkNotDefined, 1000);
       
       function testForLinkReady(linkElement: MapLink) {
-        if (linkElement[ready]) {
+        if (linkElement.el[ready]) {
           clearInterval(interval);
           clearTimeout(failureTimer);
           resolve();

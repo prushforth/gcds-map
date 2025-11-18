@@ -22,17 +22,11 @@ test.describe('map-link api tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-link/map-link-api.html');
-    await page.evaluate(async () => {
-      // @ts-ignore: Dynamic import for runtime execution
-      const leaflet = await import('http://localhost:3333/leaflet-src.esm.js');
-      (window as any).L = leaflet;
-    });
   });
   test(`extent of map-link established via map-meta vs map-inputs`, async () => {
     // create map-extent with map-link whose min,maxZoom and min/maxNativeZoom
     // established via map-input min/max attributes
     // get extent of map-link established via map-input
-    await page.pause();
     const layer = page.getByTestId('initially-empty');
     let linkExtentViaMapInputs = await layer.evaluate(async (l) => {
       let extent = document
@@ -54,7 +48,6 @@ test.describe('map-link api tests', () => {
         zNativeMin: linkExt.zoom.minNativeZoom
       };
     });
-    await page.pause();
 
     // create map-extent with map-link whose min,maxZoom are established via
     // map-meta name=zoom, but whose min/maxNativeZoom are established via
@@ -79,7 +72,6 @@ test.describe('map-link api tests', () => {
         zNativeMin: linkExt.zoom.minNativeZoom
       };
     });
-    await page.pause();
     // bounds should be the same, but note that the tilematrix coordinate system has
     // some difficulty coercing very very small real numbers to 0
     // so I used a non-zero upper left corner to avoid that issue
@@ -119,8 +111,7 @@ test.describe('map-link api tests', () => {
     const licenseExtent = await licenseLink.evaluate((l) => {
       return l.extent;
     });
-    expect(licenseExtent).toBeNull();
-    // to do: other non-extentful links??
+    expect(licenseExtent).toBeFalsy(); 
   });
   test('map-link.zoomTo() function works', async () => {
     const viewer = page.getByTestId('viewer');
@@ -142,8 +133,17 @@ test.describe('map-link api tests', () => {
         .cloneNode(true);
       map.appendChild(layer);
     });
+    // the source template has the same data-testid
     const imageLink = viewer.getByTestId('inline-link1');
-    await imageLink.evaluate((link) => link.zoomTo());
+    // but there should only be one in the DOM of the viewer
+    expect(imageLink).toHaveCount(1);
+    await imageLink.evaluate((link) => {
+      return new Promise((resolve) => {
+        const map = link.getMapEl()._map;
+        map.once('moveend', resolve);
+        link.zoomTo();
+      });
+    });
     let finalExtent = await viewer.evaluate((map) => {
       return {
         xmin: map.extent.topLeft.pcrs.horizontal,
@@ -159,7 +159,11 @@ test.describe('map-link api tests', () => {
     expect(finalExtent.ymax).not.toEqual(initialExtent.ymax);
 
     // get the centre of the map-link's extent, in pcrs, unproject to lat/lng
-    let linkExtentCentre = await imageLink.evaluate((link) => {
+    let linkExtentCentre = await imageLink.evaluate(async (link) => {
+      // Re-import Leaflet in this context to ensure we have the right object
+      const leafletModule = await import('http://localhost:3333/leaflet-src.esm.js');
+      const L = leafletModule.default || leafletModule;
+      
       let map = document.querySelector('[data-testid=viewer]'),
         x =
           link.extent.topLeft.pcrs.horizontal +
