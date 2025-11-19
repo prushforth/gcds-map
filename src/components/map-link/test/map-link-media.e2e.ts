@@ -12,7 +12,7 @@ test.describe('map-link media attribute', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('map-link-media.html');
+    await page.goto('/test/map-link/map-link-media.html');
   });
 
   test.afterAll(async function () {
@@ -21,7 +21,7 @@ test.describe('map-link media attribute', () => {
 
   test('map-link is disabled when media attribute does not match', async () => {
     await page.waitForTimeout(500);
-    // const map = page.locator('mapml-viewer');
+    // const map = page.locator('gcds-map');
     const layer = page.locator('map-layer');
     const mapLink = page.locator('map-link').first();
     await expect(layer).not.toHaveAttribute('disabled');
@@ -29,16 +29,16 @@ test.describe('map-link media attribute', () => {
 
     // zoom out so that media attribute no longer matches, features should be disabled
     await page.evaluate(() => {
-      const map = document.querySelector('mapml-viewer');
-      map.zoomTo(map.lat, map.lon, 10);
+      const map = document.querySelector('gcds-map');
+      (map as any).zoomTo(map.lat, map.lon, 10);
     });
     await expect(layer).toHaveAttribute('disabled');
     await expect(mapLink).toHaveAttribute('disabled');
 
     // zoom in so that media attribute matches, features should not be disabled
     await page.evaluate(() => {
-      const map = document.querySelector('mapml-viewer');
-      map.zoomTo(map.lat, map.lon, 15);
+      const map = document.querySelector('gcds-map');
+      (map as any).zoomTo(map.lat, map.lon, 15);
     });
     await expect(layer).not.toHaveAttribute('disabled');
     await expect(mapLink).not.toHaveAttribute('disabled');
@@ -53,8 +53,8 @@ test.describe('map-link media attribute', () => {
 
     // zooming out no longer disables features
     await page.evaluate(() => {
-      const map = document.querySelector('mapml-viewer');
-      map.zoomTo(map.lat, map.lon, 10);
+      const map = document.querySelector('gcds-map');
+      (map as any).zoomTo(map.lat, map.lon, 10);
     });
     await expect(layer).not.toHaveAttribute('disabled');
     await expect(mapLink).not.toHaveAttribute('disabled');
@@ -69,16 +69,16 @@ test.describe('map-link media attribute', () => {
 
     // zoom out so that media attribute no longer matches, features should be disabled
     await page.evaluate(() => {
-      const map = document.querySelector('mapml-viewer');
-      map.zoomTo(map.lat, map.lon, 10);
+      const map = document.querySelector('gcds-map');
+      (map as any).zoomTo(map.lat, map.lon, 10);
     });
     await expect(layer).toHaveAttribute('disabled');
     await expect(mapLink).toHaveAttribute('disabled');
 
     // zoom in so that media attribute matches, features should not be disabled
     await page.evaluate(() => {
-      const map = document.querySelector('mapml-viewer');
-      map.zoomTo(map.lat, map.lon, 15);
+      const map = document.querySelector('gcds-map');
+      (map as any).zoomTo(map.lat, map.lon, 15);
     });
     await expect(layer).not.toHaveAttribute('disabled');
     await expect(mapLink).not.toHaveAttribute('disabled');
@@ -97,8 +97,8 @@ test.describe('map-link media attribute', () => {
 
     // zoom in so that media attribute matches, features should not be disabled
     await page.evaluate(() => {
-      const map = document.querySelector('mapml-viewer');
-      map.zoomTo(map.lat, map.lon, 16);
+      const map = document.querySelector('gcds-map');
+      (map as any).zoomTo(map.lat, map.lon, 16);
     });
     await expect(layer).not.toHaveAttribute('disabled');
     await expect(mapLink).not.toHaveAttribute('disabled');

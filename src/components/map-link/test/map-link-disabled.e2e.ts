@@ -8,7 +8,7 @@ test.describe('map-link disabled', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('map-link-disabled.html');
+    await page.goto('/test/map-link/map-link-disabled.html');
   });
   test.afterAll(async function () {
     await context.close();
@@ -32,7 +32,7 @@ test.describe('map-link disabled', () => {
     //
     // selecting it this way seems unambiguous at least
     const stylesheetLink = page.locator(
-      'map-link[rel=stylesheet][href="restaurants/restaurants.css"]'
+      'map-link[rel=stylesheet][href="/test/data/restaurants/restaurants.css"]'
     );
     await expect(stylesheetLink).not.toHaveAttribute('disabled');
     await expect(viewer).toHaveScreenshot('restaurants_css_style.png', {
@@ -57,7 +57,7 @@ test.describe('map-link disabled', () => {
   test('rel=features disabled attribute', async () => {
     const viewer = page.getByTestId('viewer');
     const stylesheetLink = page.locator(
-      'map-link[rel=stylesheet][href="restaurants/restaurants.css"]'
+      'map-link[rel=stylesheet][href="/test/data/restaurants/restaurants.css"]'
     );
     await expect(stylesheetLink).not.toHaveAttribute('disabled');
     await expect(viewer).toHaveScreenshot('restaurants_css_style.png', {
@@ -77,7 +77,7 @@ test.describe('map-link disabled', () => {
   test('rel=tile disabled attribute', async () => {
     const viewer = page.getByTestId('viewer');
     const stylesheetLink = page.locator(
-      'map-link[rel=stylesheet][href="restaurants/restaurants.css"]'
+      'map-link[rel=stylesheet][href="/test/data/restaurants/restaurants.css"]'
     );
     await expect(stylesheetLink).not.toHaveAttribute('disabled');
     const restaurantsLayer = page.getByTestId('inline_templated_features');

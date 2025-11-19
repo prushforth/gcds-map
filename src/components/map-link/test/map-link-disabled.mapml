@@ -17,7 +17,7 @@
           <map-input name="ymin" type="location" units="pcrs" axis="northing" position="bottom-left"></map-input>
           <map-input name="ymax" type="location" units="pcrs" axis="northing" position="top-left"></map-input>
 
-          <map-link data-testid="query-link" rel="query" tref="restaurants/african.mapml?i={i}&amp;j={j}&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}"></map-link>
+          <map-link data-testid="query-link" rel="query" tref="/test/data/restaurants/african.mapml?i={i}&amp;j={j}&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}"></map-link>
         </map-extent>
 </map-body>
 

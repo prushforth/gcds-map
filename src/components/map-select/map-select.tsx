@@ -14,8 +14,9 @@ export class MapSelect {
 
   connectedCallback() {
     this._createLayerControlForSelect();
-    (this.el as any).selectDetails = this.selectDetails;
-    (this.el as any).htmlSelect = this.htmlSelect;
+    // Publish as lowercase to match MapML source compatibility
+    (this.el as any).selectdetails = this.selectDetails;
+    (this.el as any).htmlselect = this.htmlSelect;
   }
 
   disconnectedCallback() {}
@@ -51,7 +52,8 @@ export class MapSelect {
     for (let i = 0; i < elementAttrNames.length; i++) {
       select.setAttribute(elementAttrNames[i], this.el.getAttribute(elementAttrNames[i])!);
     }
-    const options = this.el.children;
+    // Use querySelectorAll to get actual DOM children (this.el.children is a FakeNodeList in Stencil)
+    const options = this.el.querySelectorAll('map-option');
     for (let i = 0; i < options.length; i++) {
       const option = document.createElement('option');
       const optionAttrNames = options[i].getAttributeNames();

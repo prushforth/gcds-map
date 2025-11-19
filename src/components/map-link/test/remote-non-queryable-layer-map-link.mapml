@@ -42,12 +42,12 @@
           #remote-image-mmz1 with the native zoom bounds of remote-image-z1 
           (NOT the native zoom bounds of #remote-image-z2 which is second in 
           document order, thus ignored [unless referenced via a tref variable] -->
-          <map-link data-testid="remote-link1" rel="image" tref="images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true"></map-link>
+          <map-link data-testid="remote-link1" rel="image" tref="/test/data/images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true"></map-link>
 
           <!-- this guy should have the bounds of the projection, and it should
           have zoom bounds of the map-meta #remote-image-mmz1, and the native
           zoom bounds of #remote-image-z2 -->
-          <map-link data-testid="remote-link2" rel="image" tref="images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin2},{ymin2},{xmax2},{ymax2}&amp;width={w2}&amp;height={h2}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true&amp;zoom={z2}"></map-link>
+          <map-link data-testid="remote-link2" rel="image" tref="/test/data/ images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin2},{ymin2},{xmax2},{ymax2}&amp;width={w2}&amp;height={h2}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true&amp;zoom={z2}"></map-link>
         </map-extent>
         
         <map-extent  units="OSMTILE" hidden="hidden">
@@ -67,7 +67,7 @@
 
           <!-- this guy should have the bounds of the map-meta #remote-image-mm-bounds,
           and the zoom bounds of the projection -->
-          <map-link data-testid="remote-link3" rel="image" tref="images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin3},{ymin3},{xmax3},{ymax3}&amp;width={w3}&amp;height={h3}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true"></map-link>
+          <map-link data-testid="remote-link3" rel="image" tref="/test/data/images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin3},{ymin3},{xmax3},{ymax3}&amp;width={w3}&amp;height={h3}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true"></map-link>
         </map-extent>
 
 </map-body>

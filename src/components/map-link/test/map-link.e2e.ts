@@ -1,5 +1,11 @@
 import { test, expect, chromium } from '@playwright/test';
 
+declare global {
+  interface Window {
+    M: any;
+  }
+}
+
 test.describe('map-link extent tests', () => {
   let page;
   let context;
@@ -8,7 +14,7 @@ test.describe('map-link extent tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('map-link.html');
+    await page.goto('/test/map-link/map-link.html');
   });
 
   const contentLocations = ['inline', 'remote'];
@@ -72,6 +78,7 @@ test.describe('map-link extent tests', () => {
         .getByTestId(`${inlineOrRemote}-image-mmz1`)
         .evaluate((meta) => {
           let content = meta.getAttribute('content');
+          const M = (window as any).M;
           return {
             minZoom: +M.Util._metaContentToObject(content)['min'],
             maxZoom: +M.Util._metaContentToObject(content)['max']
@@ -120,6 +127,7 @@ test.describe('map-link extent tests', () => {
         .getByTestId(`${inlineOrRemote}-image-mmz1`)
         .evaluate((meta) => {
           let content = meta.getAttribute('content');
+          const M = (window as any).M;
           return {
             minZoom: +M.Util._metaContentToObject(content)['min'],
             maxZoom: +M.Util._metaContentToObject(content)['max']
@@ -160,6 +168,7 @@ test.describe('map-link extent tests', () => {
         .getByTestId(`${inlineOrRemote}-image-mm-bounds`)
         .evaluate((meta) => {
           let content = meta.getAttribute('content');
+          const M = (window as any).M;
           return {
             xmin: +M.Util._metaContentToObject(content)['top-left-easting'],
             ymin: +M.Util._metaContentToObject(content)[

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>mapml-viewer in shadow root test</title>
+    <title>gcds-map in shadow root test</title>
     <meta charset="UTF-8">
-    <script type="module" src="mapml.js"></script>
+    <script type="module" src="/build/gcds-map.esm.js"></script>
     <style>
       html {
         height: 100%
@@ -18,7 +18,7 @@
         padding: 0;
       }
       /* styles in here don't affect shadow dom contents */
-       mapml-viewer:defined { 
+       gcds-map:defined { 
          /* Responsive map. */ 
           max-width: 100%;  
           
@@ -35,9 +35,9 @@
   <body>
     <host-element>
       <template shadowrootmode="open">
-        <mapml-viewer data-testid="viewer" style="height: 500px;width:500px;"  zoom="2" lat="63" lon="-87" controls projection="CBMTILE">
-          <map-layer data-testid="test-layer" label="Remote content" src="data/cbmt.mapml" checked></map-layer>
-        </mapml-viewer>
+        <gcds-map data-testid="viewer" style="height: 500px;width:500px;"  zoom="2" lat="63" lon="-87" controls projection="CBMTILE">
+          <map-layer data-testid="test-layer" label="Remote content" src="/test/data/tiles/cbmt/cbmt.mapml" checked></map-layer>
+        </gcds-map>
       </template>
     </host-element>
   </body>

@@ -22,8 +22,8 @@
           <map-input name="ymin" type="location" units="pcrs" axis="northing" position="bottom-left"></map-input>
           <map-input name="ymax" type="location" units="pcrs" axis="northing" position="top-left"></map-input>
 
-          <map-link rel="image" tref="images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true"></map-link>
-          <map-link rel="query" tref="images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetFeatureInfo&amp;i={i}&amp;j={j}&amp;query_layers=FBP_FuelLayer_wBurnScars&amp;layers=FBP_FuelLayer_wBurnScars&amp;info_format=text/html&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}&amp;CRS=EPSG:3857"></map-link>
+          <map-link rel="image" tref="/test/data/images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetMap&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}&amp;layers=FBP_FuelLayer_wBurnScars&amp;CRS=EPSG:3857&amp;format=image/png&amp;transparent=true"></map-link>
+          <map-link rel="query" tref="/test/data/images/toporama_en.jpg?service=WMS&amp;version=1.3.0&amp;request=GetFeatureInfo&amp;i={i}&amp;j={j}&amp;query_layers=FBP_FuelLayer_wBurnScars&amp;layers=FBP_FuelLayer_wBurnScars&amp;info_format=text/html&amp;bbox={xmin},{ymin},{xmax},{ymax}&amp;width={w}&amp;height={h}&amp;CRS=EPSG:3857"></map-link>
         </map-extent>
 </map-body>
 

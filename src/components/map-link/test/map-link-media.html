@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>map-link-media.html</title>
-    <script type="module" src="mapml.js"></script>
+    <script type="module" src="/build/gcds-map.esm.js"></script>
      <style> 
        html, 
        body { 
@@ -19,7 +19,7 @@
        element, such that styles don't apply when fallback content is in use 
        (e.g. when scripting is disabled or when custom/built-in elements isn't 
        supported in the browser). */ 
-       mapml-viewer:defined { 
+       gcds-map:defined { 
          /* Responsive map. */ 
           max-width: 100%;  
           
@@ -34,12 +34,12 @@
        } 
         
        /* Pre-style to avoid FOUC of inline map-layer and fallback content. */ 
-       mapml-viewer:not(:defined) > * { 
+       gcds-map:not(:defined) > * { 
          display: none; 
        } 
        
        /* Pre-style to avoid Layout Shift. */
-       mapml-viewer:not(:defined) {
+       gcds-map:not(:defined) {
          display: inline-block;
          contain: size;
          contain-intrinsic-size: 304px 154px;
@@ -88,13 +88,13 @@
        <style> 
          /* Ensure fallback content (children of the map element) is displayed if 
          custom/built-in elements is supported but javascript is disabled. */ 
-         mapml-viewer:not(:defined) > :not(map-layer) { 
+         gcds-map:not(:defined) > :not(map-layer) { 
            display: initial; 
          } 
          
          /* "Reset" the properties used to pre-style (to avoid Layout Shift) if
          custom/built-in elements is supported but javascript is disabled. */
-         mapml-viewer:not(:defined) {
+         gcds-map:not(:defined) {
            display: initial;
            contain: initial;
            contain-intrinsic-size: initial;
@@ -104,7 +104,7 @@
   </head>
   <body>
     
-    <mapml-viewer data-testid="viewer" projection="OSMTILE" zoom="14" lat="45.406314" lon="-75.6883335" controls style="height: 500px;width:500px;">
+    <gcds-map data-testid="viewer" projection="OSMTILE" zoom="14" lat="45.406314" lon="-75.6883335" controls style="height: 500px;width:500px;">
       <map-layer label="Restaurants" checked="">
         <map-meta name="extent" content="top-left-easting=-8433179, top-left-northing=5689316, bottom-right-easting=-8420968, bottom-right-northing=5683139"></map-meta>
         <map-extent units="OSMTILE" checked="">
@@ -117,9 +117,9 @@
                <map-option value="italian">Italian</map-option>
                <map-option value="mexican">Mexican</map-option>
            </map-select>
-           <map-link data-testid="features-link" media="(11 < map-zoom <= 18)" tref="./restaurants/{cusine}.mapml" rel="features"></map-link>
+           <map-link data-testid="features-link" media="(11 < map-zoom <= 18)" tref="/test/data/restaurants/{cusine}.mapml" rel="features"></map-link>
         </map-extent>
       </map-layer>
-    </mapml-viewer>
+    </gcds-map>
   </body>
 </html>
