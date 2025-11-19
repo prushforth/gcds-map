@@ -8,7 +8,7 @@ import {
 import { Util } from '../utils/mapml/Util.js';
 import { DOMTokenList } from '../utils/mapml/DOMTokenList.js';
 import { locale, localeFr } from '../../generated/locale.js';
-// import { matchMedia } from '../../utils/mapml/elementSupport/viewers/matchMedia.js';
+import { matchMedia } from '../utils/mapml/elementSupport/viewers/matchMedia.js';
 // TODO: Import Stencil component versions when created
 // import { HTMLLayerElement } from '../map-layer/map-layer.js';
 // import { LayerDashElement } from '../layer-/layer-.js';
@@ -34,7 +34,7 @@ import { scaleBar } from '../utils/mapml/control/ScaleBar.js';
 
 import { geolocationButton } from '../utils/mapml/control/GeolocationButton.js';
 import { fullscreenButton } from '../utils/mapml/control/FullscreenButton.js';
-import { debugOverlay } from '../utils/mapml//layers/DebugOverlay.js';
+import { debugOverlay } from '../utils/mapml/layers/DebugOverlay.js';
 // import { crosshair } from '../../utils/mapml/layers/Crosshair.js';
 // import { featureIndexOverlay } from '../../utils/mapml/layers/FeatureIndexOverlay.js';
 
@@ -471,6 +471,14 @@ export class GcdsMap {
 
       Object.defineProperty(this.el, 'viewSource', {
         value: () => this.viewSource(),
+        writable: true,
+        configurable: true
+      });
+
+      // Expose matchMedia method with proper 'this' binding
+      // This ensures 'this' always refers to the custom element when called
+      Object.defineProperty(this.el, 'matchMedia', {
+        value: (...args: any[]) => matchMedia.apply(this.el, args),
         writable: true,
         configurable: true
       });

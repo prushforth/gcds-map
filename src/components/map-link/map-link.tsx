@@ -823,6 +823,18 @@ export class MapLink {
     return bnds;
   }
 
+  getZoomToZoom(bounds, map) {
+    const mapSize = map.getSize();
+    const zoom = map.getBoundsZoom(bounds, false, mapSize);
+    // getBoundsZoom may return a zoom level that is out of bounds for the layer
+    // so we have to constrain it to the layer's zoom bounds.
+    const zoomBounds = this.getZoomBounds();
+    return Math.max(
+      zoomBounds.minZoom,
+      Math.min(zoomBounds.maxZoom, zoom)
+    );
+  }
+
   isVisible(): boolean {
     if (this.disabled) return false;
     let isVisible = false;
@@ -866,10 +878,8 @@ export class MapLink {
     const ymax = extent.topLeft.pcrs.vertical;
     const newBounds = bounds(point(xmin, ymin), point(xmax, ymax));
     const center = map.options.crs.unproject(newBounds.getCenter(true));
-    const maxZoom = extent.zoom.maxZoom;
-    const minZoom = extent.zoom.minZoom;
     
-    map.setView(center, Util.getMaxZoom(newBounds, map, minZoom, maxZoom), {
+    map.setView(center, this.getZoomToZoom(newBounds, map), {
       animate: false
     });
   }

@@ -137,13 +137,18 @@ test.describe('map-link api tests', () => {
     const imageLink = viewer.getByTestId('inline-link1');
     // but there should only be one in the DOM of the viewer
     expect(imageLink).toHaveCount(1);
-    await imageLink.evaluate((link) => {
-      return new Promise((resolve) => {
-        const map = link.getMapEl()._map;
-        map.once('moveend', resolve);
-        link.zoomTo();
-      });
-    });
+await page.pause();
+    await imageLink.evaluate((link) => link.zoomTo());
+
+    await page.waitForFunction(
+      (initial) => {
+        const map = document.querySelector('[data-testid=viewer]');
+        return map.extent.topLeft.pcrs.horizontal !== initial.xmin;
+      },
+      initialExtent,
+      { timeout: 5000 }
+    );
+
     let finalExtent = await viewer.evaluate((map) => {
       return {
         xmin: map.extent.topLeft.pcrs.horizontal,
@@ -161,7 +166,7 @@ test.describe('map-link api tests', () => {
     // get the centre of the map-link's extent, in pcrs, unproject to lat/lng
     let linkExtentCentre = await imageLink.evaluate(async (link) => {
       // Re-import Leaflet in this context to ensure we have the right object
-      const leafletModule = await import('http://localhost:3333/leaflet-src.esm.js');
+      const leafletModule = await import('/leaflet-src.esm.js');
       const L = leafletModule.default || leafletModule;
       
       let map = document.querySelector('[data-testid=viewer]'),

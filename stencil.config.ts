@@ -33,6 +33,14 @@ export const config: Config = {
           dest: 'test/map-extent'
         },
         {
+          src: 'components/map-feature/test/*.{html,mapml}',
+          dest: 'test/map-feature'
+        },
+        {
+          src: 'components/map-style/test/*.{html,mapml}',
+          dest: 'test/map-style'
+        },
+        {
           src: 'components/map-link/test/*.{html,mapml}',
           dest: 'test/map-link'
         },
@@ -93,6 +101,14 @@ export const config: Config = {
         {
           src: 'components/map-extent/test/*.{html,mapml}',
           dest: 'test/map-extent'
+        },
+        {
+          src: 'components/map-feature/test/*.{html,mapml}',
+          dest: 'test/map-feature'
+        },
+        {
+          src: 'components/map-style/test/*.{html,mapml}',
+          dest: 'test/map-style'
         },
         {
           src: 'components/map-link/test/*.{html,mapml}',

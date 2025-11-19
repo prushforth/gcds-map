@@ -12,7 +12,7 @@ test.describe('map-select tests', () => {
   test.afterAll(async function () {
     await context.close();
   });
-  test.only('<map-select> <map-option> attributes are copied to layer control <option> elements', async () => {
+  test('<map-select> <map-option> attributes are copied to layer control <option> elements', async () => {
     // Wait for map to be ready
     await page.waitForTimeout(1000);
     

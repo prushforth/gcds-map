@@ -1,9 +1,9 @@
 <!doctype html>
-<html dir="ltr" lang="en">
+<html dir="ltr" lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
-    <title>Stencil Component Starter</title>
+    <title>&lt;gcds-map&gt; component</title>
 
     <script type="module" src="/build/gcds-map.esm.js"></script>
     <script nomodule src="/build/gcds-map.js"></script>
@@ -32,14 +32,12 @@
 
       <gcds-container size="xl" main-container centered tag="main">
 
-      <gcds-heading tag="h2">Proof of concept for plugin / peer dependency architecture</gcds-heading>
+      <gcds-text>This demo uses gcds components as an npm "peer dependency"</gcds-text>
 
-      <gcds-text>This demo uses gcds components as an npm "peer dependency",and the &lt;component-display&gt; and &lt;gcds-map&gt; plugins</gcds-text>
-
-      <gcds-heading tag="h2">&lt;gcds-map&gt; plugin with &lt;map-layer&gt;</gcds-heading>
+      <gcds-heading tag="h2">&lt;gcds-map&gt; composant « plugin »</gcds-heading>
 
       <gcds-map  lat="45.4215" lon="-75.6972" zoom="10" projection="CBMTILE" controls>
-        <map-layer label="Test Layer"  src="/build/assets/mapml/en/cbmtile/cbmt"  checked opacity="0.8">
+        <map-layer label="Test Layer"  src="/build/assets/mapml/fr/cbmtile/cbmt"  checked opacity="0.8">
 
         </map-layer>
       </gcds-map>
