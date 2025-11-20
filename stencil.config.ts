@@ -52,6 +52,10 @@ export const config: Config = {
           src: 'components/map-select/test/*.{html,mapml}',
           dest: 'test/map-select'
         },
+        {
+          src: 'components/map-a/test/*.{html,mapml}',
+          dest: 'test/map-a'
+        },
         // Copy shared test data directory recursively
         {
           src: 'components/test/data',
@@ -121,6 +125,14 @@ export const config: Config = {
         {
           src: 'components/map-select/test/*.{html,mapml}',
           dest: 'test/map-select'
+        },
+        {
+          src: 'components/map-select/test/*.{html,mapml}',
+          dest: 'test/map-select'
+        },
+        {
+          src: 'components/map-a/test/*.{html,mapml}',
+          dest: 'test/map-a'
         },
         // Copy shared test data directory recursively
         {

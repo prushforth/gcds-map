@@ -47,6 +47,12 @@ export namespace Components {
          */
         "zoom"?: number;
     }
+    interface MapA {
+        "href"?: string;
+        "inplace"?: boolean;
+        "target"?: string;
+        "type"?: string;
+    }
     interface MapExtent {
         "_label"?: string;
         "_opacity"?: number;
@@ -159,6 +165,12 @@ declare global {
         prototype: HTMLGcdsMapElement;
         new (): HTMLGcdsMapElement;
     };
+    interface HTMLMapAElement extends Components.MapA, HTMLStencilElement {
+    }
+    var HTMLMapAElement: {
+        prototype: HTMLMapAElement;
+        new (): HTMLMapAElement;
+    };
     interface HTMLMapExtentElement extends Components.MapExtent, HTMLStencilElement {
     }
     var HTMLMapExtentElement: {
@@ -239,6 +251,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "gcds-map": HTMLGcdsMapElement;
+        "map-a": HTMLMapAElement;
         "map-extent": HTMLMapExtentElement;
         "map-feature": HTMLMapFeatureElement;
         "map-featurecaption": HTMLMapFeaturecaptionElement;
@@ -284,6 +297,12 @@ declare namespace LocalJSX {
           * @default 0
          */
         "zoom"?: number;
+    }
+    interface MapA {
+        "href"?: string;
+        "inplace"?: boolean;
+        "target"?: string;
+        "type"?: string;
     }
     interface MapExtent {
         "_label"?: string;
@@ -378,6 +397,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "gcds-map": GcdsMap;
+        "map-a": MapA;
         "map-extent": MapExtent;
         "map-feature": MapFeature;
         "map-featurecaption": MapFeaturecaption;
@@ -398,6 +418,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "gcds-map": LocalJSX.GcdsMap & JSXBase.HTMLAttributes<HTMLGcdsMapElement>;
+            "map-a": LocalJSX.MapA & JSXBase.HTMLAttributes<HTMLMapAElement>;
             "map-extent": LocalJSX.MapExtent & JSXBase.HTMLAttributes<HTMLMapExtentElement>;
             "map-feature": LocalJSX.MapFeature & JSXBase.HTMLAttributes<HTMLMapFeatureElement>;
             "map-featurecaption": LocalJSX.MapFeaturecaption & JSXBase.HTMLAttributes<HTMLMapFeaturecaptionElement>;
