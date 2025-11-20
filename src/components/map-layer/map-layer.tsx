@@ -245,6 +245,9 @@ export class GcdsMapLayer {
     if (this.el.hasAttribute('data-moving')) return;
     this._boundCreateLayerControlHTML = createLayerControlHTML.bind(this.el);
     
+    // Publish _validateDisabled on element for MapML compatibility
+    (this.el as any)._validateDisabled = this._validateDisabled.bind(this);
+    
     // Expose _opacity property on DOM element (internal opacity state)
     Object.defineProperty(this.el, '_opacity', {
       get: () => this._opacity,
@@ -436,6 +439,8 @@ export class GcdsMapLayer {
             this._createLayerControlHTML();
             this._setLocalizedDefaultLabel();
             this._attachedToMap();
+            // Render any stylesheet links that were created before layer was ready
+            this._renderStylesheetLinks(this.el.shadowRoot);
             // initializing map-features that previously exist
             // this._runMutationObserver(this.el.shadowRoot.children);
             // this._bindMutationObserver();
@@ -475,6 +480,8 @@ export class GcdsMapLayer {
             this._createLayerControlHTML();
             this._setLocalizedDefaultLabel();
             this._attachedToMap();
+            // Render any stylesheet links that were created before layer was ready
+            this._renderStylesheetLinks(this.el);
             // initializing map-features that previously exist
             // this._runMutationObserver(this.el.children);
             // this._bindMutationObserver();
@@ -682,6 +689,17 @@ export class GcdsMapLayer {
       ];
     }
   }
+  
+  private _renderStylesheetLinks(container: Element | ShadowRoot) {
+    // Find all map-link elements with rel="stylesheet" that have a link property but aren't yet connected
+    const stylesheetLinks = container.querySelectorAll('map-link[rel="stylesheet"]');
+    stylesheetLinks.forEach((linkEl: any) => {
+      if (linkEl.link && !linkEl.link.isConnected && this._layer) {
+        this._layer.renderStyles(linkEl);
+      }
+    });
+  }
+  
   private _validateDisabled() {
     const countTileLayers = () => {
       let totalCount = 0;

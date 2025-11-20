@@ -333,17 +333,23 @@ export class MapLink {
       if (this._stylesheetHost === undefined) return;
 
       this.link = document.createElement('link');
-      (this.link as any).mapLink = this;
+      (this.el as any).link = this.link;
+      (this.link as any).mapLink = this.el;
       this.link.setAttribute('href', new URL(this.href, this.getBase()).href);
       this._copyAttributes(this.el, this.link);
 
+      // Try to render immediately if parent is ready
+      // If parent isn't ready yet, the parent's mutation observer will pick this up
+      // and render it after the parent becomes ready
       if (this._stylesheetHost._layer) {
-        this._stylesheetHost._layer.renderStyles(this);
+        this._stylesheetHost._layer.renderStyles(this.el);
       } else if (this._stylesheetHost._templatedLayer) {
         this._stylesheetHost._templatedLayer.renderStyles(this.el);
       } else if (this._stylesheetHost._extentLayer) {
         this._stylesheetHost._extentLayer.renderStyles(this.el);
       }
+      // If none of the above exist yet, the parent's mutation observer
+      // or initialization will call renderStyles when it's ready
     }
   }
 
