@@ -87,10 +87,23 @@ test.describe('map-a loaded inline or remote, directly or via templated map-link
       .evaluate((layer) => layer.remove());
       await page.waitForTimeout(1000);
     const aWithLongHref = page.getByRole('link', { name: 'Long href' });
-    await aWithLongHref.hover();
+    // WARNING this is very much a pain in the neck...
+    // Move mouse to the element and keep it there to maintain hover state
+    const box = await aWithLongHref.boundingBox();
+    if (!box) throw new Error('Element not found');
+    
+    // Move to center of element slowly to ensure hover is registered
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+    
+    // Wait for toast to appear while mouse stays in position
+    await page.waitForSelector('.mapml-link-preview > p', { 
+      state: 'visible',
+      timeout: 5000 
+    });
+    
     const toast = await page
       .locator('.mapml-link-preview > p')
-      .evaluate((p) => p.innerText);
+      .textContent();
     expect(toast).toEqual(longUrl);
   });
 });
