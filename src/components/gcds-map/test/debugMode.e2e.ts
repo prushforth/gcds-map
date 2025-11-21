@@ -4,7 +4,7 @@ test.describe('Playwright Map Element Tests', () => {
   let page;
   let context;
   test.beforeAll(async () => {
-    context = await chromium.launchPersistentContext('', { slowMo: 350 });
+    context = await chromium.launchPersistentContext('', { slowMo: 500 });
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
@@ -17,8 +17,10 @@ test.describe('Playwright Map Element Tests', () => {
 
   test.beforeEach(async () => {
     await page.reload();
-    await page.waitForTimeout(500);
-    await page.$eval('body > gcds-map', (map) => map.toggleDebug());
+    await page.waitForTimeout(2000);
+    const map = page.getByTestId('viewer');
+    await map.evaluate(async (map) => { await map.whenReady(); map.toggleDebug(); });
+    await page.waitForTimeout(2000);
   });
 
   test('Debug elements added to map', async () => {
