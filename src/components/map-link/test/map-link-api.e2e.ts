@@ -16,7 +16,8 @@ test.describe('map-link api tests', () => {
   let context: BrowserContext;
   test.beforeAll(async function () {
     context = await chromium.launchPersistentContext('', {
-      ignoreHTTPSErrors: true
+      ignoreHTTPSErrors: true,
+      slowMo: 500
     });
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
@@ -139,6 +140,7 @@ test.describe('map-link api tests', () => {
     expect(imageLink).toHaveCount(1);
 await page.pause();
     await imageLink.evaluate((link) => link.zoomTo());
+    await page.pause();
 
     await page.waitForFunction(
       (initial) => {

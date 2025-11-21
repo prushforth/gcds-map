@@ -6,7 +6,9 @@ test.describe('map-link rel=stylesheet media attribute', () => {
   let viewer;
   let stylesheetLink;
   test.beforeAll(async function () {
-    context = await chromium.launchPersistentContext('');
+    context = await chromium.launchPersistentContext('', {
+      slowMo: 500
+    });
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());

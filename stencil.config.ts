@@ -17,11 +17,11 @@ export const config: Config = {
         },
         // Copy test HTML and mapml files to build output so they're accessible via dev server
         {
-          src: 'components/gcds-map/test/*.{html,mapml}',
+          src: 'components/gcds-map/test/*.{html,mapml,css}',
           dest: 'test/gcds-map'
         },
         {
-          src: 'components/map-layer/test/*.{html,mapml}',
+          src: 'components/map-layer/test/*.{html,mapml,css}',
           dest: 'test/map-layer'
         },
         {
@@ -29,35 +29,35 @@ export const config: Config = {
           dest: 'test/map-layer/events'
         },
         {
-          src: 'components/map-extent/test/*.{html,mapml}',
+          src: 'components/map-extent/test/*.{html,mapml,css}',
           dest: 'test/map-extent'
         },
         {
-          src: 'components/map-feature/test/*.{html,mapml}',
+          src: 'components/map-feature/test/*.{html,mapml,css}',
           dest: 'test/map-feature'
         },
         {
-          src: 'components/map-style/test/*.{html,mapml}',
+          src: 'components/map-style/test/*.{html,mapml,css}',
           dest: 'test/map-style'
         },
         {
-          src: 'components/map-link/test/*.{html,mapml}',
+          src: 'components/map-link/test/*.{html,mapml,css}',
           dest: 'test/map-link'
         },
         {
-          src: 'components/map-input/test/*.{html,mapml}',
+          src: 'components/map-input/test/*.{html,mapml,css}',
           dest: 'test/map-input'
         },
         {
-          src: 'components/map-select/test/*.{html,mapml}',
+          src: 'components/map-select/test/*.{html,mapml,css}',
           dest: 'test/map-select'
         },
         {
-          src: 'components/map-a/test/*.{html,mapml}',
+          src: 'components/map-a/test/*.{html,mapml,css}',
           dest: 'test/map-a'
         },
         {
-          src: 'components/map-caption/test/*.{html,mapml}',
+          src: 'components/map-caption/test/*.{html,mapml,css}',
           dest: 'test/map-caption'
         },
         // Copy shared test data directory recursively
@@ -95,11 +95,11 @@ export const config: Config = {
         },
         // Copy test HTML and mapml files to build output so they're accessible via dev server
         {
-          src: 'components/gcds-map/test/*.{html,mapml}',
+          src: 'components/gcds-map/test/*.{html,mapml,css}',
           dest: 'test/gcds-map'
         },
         {
-          src: 'components/map-layer/test/*.{html,mapml}',
+          src: 'components/map-layer/test/*.{html,mapml,css}',
           dest: 'test/map-layer'
         },
         {
@@ -107,35 +107,35 @@ export const config: Config = {
           dest: 'test/map-layer/events'
         },
         {
-          src: 'components/map-extent/test/*.{html,mapml}',
+          src: 'components/map-extent/test/*.{html,mapml,css}',
           dest: 'test/map-extent'
         },
         {
-          src: 'components/map-feature/test/*.{html,mapml}',
+          src: 'components/map-feature/test/*.{html,mapml,css}',
           dest: 'test/map-feature'
         },
         {
-          src: 'components/map-style/test/*.{html,mapml}',
+          src: 'components/map-style/test/*.{html,mapml,css}',
           dest: 'test/map-style'
         },
         {
-          src: 'components/map-link/test/*.{html,mapml}',
+          src: 'components/map-link/test/*.{html,mapml,css}',
           dest: 'test/map-link'
         },
         {
-          src: 'components/map-input/test/*.{html,mapml}',
+          src: 'components/map-input/test/*.{html,mapml,css}',
           dest: 'test/map-input'
         },
         {
-          src: 'components/map-select/test/*.{html,mapml}',
+          src: 'components/map-select/test/*.{html,mapml,css}',
           dest: 'test/map-select'
         },
         {
-          src: 'components/map-a/test/*.{html,mapml}',
+          src: 'components/map-a/test/*.{html,mapml,css}',
           dest: 'test/map-a'
         },
         {
-          src: 'components/map-caption/test/*.{html,mapml}',
+          src: 'components/map-caption/test/*.{html,mapml,css}',
           dest: 'test/map-caption'
         },
         // Copy shared test data directory recursively
