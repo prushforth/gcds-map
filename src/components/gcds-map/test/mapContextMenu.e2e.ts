@@ -376,12 +376,14 @@ test.describe('Playwright Map Context Menu Tests', () => {
 
     await page.click('body > textarea#coord');
     await page.keyboard.press('Control+v');
-    const copyValue = await page.$eval(
+    let copyValue = await page.$eval(
       'body > textarea#coord',
       (text) => text.value
     );
-    const expected = `<gcds-map data-testid="firstmap" style="height: 600px; width: 500px; --map-width: 504px; --map-height: 604px;" projection="CBMTILE" zoom="0" lat="47" lon="-92" controls="" class="hydrated" role="application">
-    <map-layer label="CBMT - INLINE" checked="" class="hydrated">
+    // Remove class="hydrated" which Stencil adds at unpredictable positions
+    copyValue = copyValue.replace(/\s*class="hydrated"/g, '');
+    const expected = `<gcds-map data-testid="firstmap" style="height: 600px; width: 500px; --map-width: 504px; --map-height: 604px;" projection="CBMTILE" zoom="0" lat="47" lon="-92" controls="" role="application">
+    <map-layer label="CBMT - INLINE" checked="">
       <map-extent units="CBMTILE" checked="" hidden="">
         <map-input name="zoomLevel" type="zoom" value="3" min="0" max="3"></map-input>
         <map-input name="row" type="location" axis="row" units="tilematrix" min="14" max="21"></map-input>

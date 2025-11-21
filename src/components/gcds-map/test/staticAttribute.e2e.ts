@@ -7,6 +7,7 @@ test.describe('Adding Static Attribute to gcds-map', () => {
     // Wait for the gcds-map component to be hydrated and ready
     const map = await page.locator('gcds-map');
     await expect(map).toHaveClass('hydrated', { timeout: 10000 });
+    await page.waitForTimeout(500); // Additional wait to ensure map is fully initialized
     
   });
 
