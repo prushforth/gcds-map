@@ -9,6 +9,7 @@ test.describe('History test', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/gcds-map/gcds-map.html');
+    await page.waitForTimeout(1000);
   });
 
   test.afterAll(async function () {
