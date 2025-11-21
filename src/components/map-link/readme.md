@@ -17,7 +17,7 @@
 | `rel`        | `rel`        |             | `string`  | `undefined` |
 | `tms`        | `tms`        |             | `boolean` | `undefined` |
 | `tref`       | `tref`       |             | `string`  | `undefined` |
-| `type`       | `type`       |             | `string`  | `'image/*'` |
+| `type`       | `type`       |             | `string`  | `undefined` |
 
 
 ## Methods

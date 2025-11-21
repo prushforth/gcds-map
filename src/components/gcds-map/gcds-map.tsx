@@ -380,7 +380,7 @@ export class GcdsMap {
         minZoom: 0,
         maxZoom: (window as any).M[this.projection].options.resolutions.length - 1,
         projection: this.projection,
-        // query: true,
+        query: true,
         contextMenu: true,
         announceMovement: true,
         // featureIndex: true,

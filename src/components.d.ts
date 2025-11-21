@@ -131,9 +131,6 @@ export namespace Components {
         "rel"?: string;
         "tms"?: boolean;
         "tref"?: string;
-        /**
-          * @default 'image/*'
-         */
         "type"?: string;
         "whenReady": () => Promise<void>;
     }
@@ -381,9 +378,6 @@ declare namespace LocalJSX {
         "rel"?: string;
         "tms"?: boolean;
         "tref"?: string;
-        /**
-          * @default 'image/*'
-         */
         "type"?: string;
     }
     interface MapMeta {

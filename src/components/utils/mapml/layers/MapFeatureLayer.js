@@ -325,7 +325,7 @@ export var MapFeatureLayer = FeatureGroup.extend({
   },
 
   // for query
-  showPaginationFeature: function (e) {
+  showPaginationFeature: async function (e) {
     if (this.options.query && this._queryFeatures[e.i]) {
       let feature = this._queryFeatures[e.i];
       feature._linkEl.shadowRoot.replaceChildren();
@@ -337,6 +337,9 @@ export var MapFeatureLayer = FeatureGroup.extend({
         }
       }
       feature._linkEl.shadowRoot.appendChild(feature);
+      // Wait for the map-feature component to be ready before calling addFeature
+      // Stencil components need time to hydrate after being appended to the DOM
+      await feature.whenReady();
       feature.addFeature(this);
       e.popup._navigationBar.querySelector('p').innerText =
         e.i + 1 + '/' + this.options._leafletLayer._totalFeatureCount;

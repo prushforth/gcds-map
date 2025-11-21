@@ -8,7 +8,7 @@ import { LocationInput } from '../utils/mapml/elementSupport/inputs/locationInpu
 
 @Component({
   tag: 'map-input',
-  shadow: true
+  shadow: false
 })
 export class MapInput {
   @Element() el: HTMLElement;

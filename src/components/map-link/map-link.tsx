@@ -22,7 +22,12 @@ export class MapLink {
   @Element() el: HTMLElement;
   
   // Core attributes - using getters/setters pattern from MapML
-  @Prop({ reflect: true }) type?: string = 'image/*';
+  @Prop({ reflect: true }) type?: string;
+  
+  // Getter that provides default value without reflecting it to the DOM attribute
+  get typeValue(): string {
+    return this.type || 'image/*';
+  }
   @Prop({ reflect: true }) rel?: string;
   @Prop({ reflect: true }) href?: string;
   @Prop({ reflect: true }) hreflang?: string;
@@ -337,6 +342,9 @@ export class MapLink {
       (this.link as any).mapLink = this.el;
       this.link.setAttribute('href', new URL(this.href, this.getBase()).href);
       this._copyAttributes(this.el, this.link);
+      // Explicitly set disabled based on the property value, not the attribute
+      // (which may be stale during re-enabling)
+      this.link.disabled = this.disabled || false;
 
       // Try to render immediately if parent is ready
       // If parent isn't ready yet, the parent's mutation observer will pick this up
@@ -355,7 +363,10 @@ export class MapLink {
 
   _copyAttributes(source: Element, target: Element) {
     Array.from(source.attributes).forEach((attribute) => {
-      if (attribute.nodeName !== 'href' && attribute.nodeName !== 'media')
+      // Don't copy href, media, or disabled - these are handled separately
+      if (attribute.nodeName !== 'href' && 
+          attribute.nodeName !== 'media' && 
+          attribute.nodeName !== 'disabled')
         target.setAttribute(attribute.nodeName, attribute.nodeValue);
     });
   }
@@ -657,7 +668,7 @@ export class MapLink {
         template: decodeURI(new URL(template, this.getBase()).href),
         linkEl: this.el,
         rel: this.rel,
-        type: this.type,
+        type: this.typeValue,
         values: inputs,
         inputsReady: Promise.allSettled(inputsReady),
         zoom: linkedZoomInput,

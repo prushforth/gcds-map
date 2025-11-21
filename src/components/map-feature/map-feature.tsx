@@ -172,6 +172,9 @@ export class MapFeature {
     (this.el as any).focus = this.focus.bind(this);
     (this.el as any).blur = this.blur.bind(this);
     (this.el as any).mapml2geojson = this.mapml2geojson.bind(this);
+    (this.el as any).addFeature = this.addFeature.bind(this);
+    (this.el as any).removeFeature = this.removeFeature.bind(this);
+    (this.el as any).reRender = this.reRender.bind(this);
 
     Object.defineProperty(this.el, 'zoom', {
         get: () => this.zoomValue,
@@ -723,7 +726,8 @@ export class MapFeature {
   async whenReady(): Promise<void> {
     return new Promise((resolve, reject) => {
       let interval: any, failureTimer: any;
-      if (this.el.isConnected) {
+      // Check if addFeature has been published (indicating connectedCallback completed)
+      if ((this.el as any).addFeature) {
         resolve();
       } else {
         let featureElement = this.el;
@@ -731,7 +735,7 @@ export class MapFeature {
         failureTimer = setTimeout(featureNotDefined, 5000);
       }
       function testForFeature(featureElement: HTMLElement) {
-        if (featureElement.isConnected) {
+        if ((featureElement as any).addFeature) {
           clearInterval(interval);
           clearTimeout(failureTimer);
           resolve();
