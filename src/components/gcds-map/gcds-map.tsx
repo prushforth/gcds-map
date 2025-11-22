@@ -242,6 +242,17 @@ export class GcdsMap {
     };
     return formattedExtent;
   }
+  
+  // Width and height getters return computed CSS values (not attribute values)
+  // This allows CSS to dominate over HTML attributes, matching mapml-viewer behavior
+  getWidth(): number {
+    return +window.getComputedStyle(this.el).width.replace('px', '');
+  }
+  
+  getHeight(): number {
+    return +window.getComputedStyle(this.el).height.replace('px', '');
+  }
+  
   @Watch('static')
   staticChanged() {
     if (this._map) {
@@ -434,6 +445,28 @@ export class GcdsMap {
       // Expose extent property on element for MapML compatibility
       Object.defineProperty(this.el, 'extent', {
         get: () => this.extent,
+        configurable: true,
+        enumerable: true
+      });
+      
+      // Expose width/height getters that return computed CSS values (not attributes)
+      // This allows CSS to dominate over HTML attributes, matching mapml-viewer behavior
+      Object.defineProperty(this.el, 'width', {
+        get: () => this.getWidth(),
+        set: (val: string) => {
+          // Setter changes the attribute (standard HTML behavior)
+          this.el.setAttribute('width', val);
+        },
+        configurable: true,
+        enumerable: true
+      });
+      
+      Object.defineProperty(this.el, 'height', {
+        get: () => this.getHeight(),
+        set: (val: string) => {
+          // Setter changes the attribute (standard HTML behavior)
+          this.el.setAttribute('height', val);
+        },
         configurable: true,
         enumerable: true
       });
