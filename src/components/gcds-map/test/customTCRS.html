@@ -10,13 +10,13 @@
 
 <body>
   <gcds-map zoom="2" lat="45" lon="-90" controls>
-    <map-layer label="CBMT" src="tiles/cbmt/cbmt.mapml" checked></map-layer>
+    <map-layer label="CBMT" src="/test/data/tiles/cbmt/cbmt.mapml" checked></map-layer>
     <map-layer label="Static MapML with tiles" checked>
       <map-meta name="zoom" content="min=1,max=4"></map-meta>
       <map-meta name="projection" content="basic"></map-meta>
 
-      <map-tile zoom="2" row="-23" col="-9" src="data/cbmt/3/c17_r18.png"></map-tile>
-      <map-tile zoom="2" row="-23" col="-10" src="data/cbmt/3/c16_r18.png"></map-tile>
+      <map-tile zoom="2" row="-23" col="-9" src="/test/data/tiles/cbmt/3/c17_r18.png"></map-tile>
+      <map-tile zoom="2" row="-23" col="-10" src="/test/data/tiles/cbmt/3/c16_r18.png"></map-tile>
     </map-layer>
   </gcds-map>
 
@@ -122,7 +122,7 @@
         <map-input name="ymin" type="location" units="gcrs" axis="latitude" position="bottom-right" min="45" max="46"></map-input>
         <map-input name="xmax" type="location" units="gcrs" axis="longitude" position="bottom-right" min="-76" max="-74"></map-input>
         <map-input name="ymax" type="location" units="gcrs" axis="latitude" position="top-left" min="45" max="46"></map-input>
-        <map-link rel="features" tref="data/alabama_feature.mapml?{xmin}{ymin}{xmax}{ymax}{z}" ></map-link>
+        <map-link rel="features" tref="/test/data/tiles/alabama_feature.mapml?{xmin}{ymin}{xmax}{ymax}{z}" ></map-link>
       </map-extent>
     </map-layer>
   </gcds-map>
@@ -165,7 +165,7 @@
           "tilesize":256
         }`
     let mapTwo = document.querySelectorAll("gcds-map")[1];
-    let custProj = mapTwo.defineCustomProjection(customCBM);
+    custProj = mapTwo.defineCustomProjection(customCBM);
     mapTwo.projection = custProj;
   </script>
   <script type="module">
@@ -218,8 +218,8 @@
       <map-meta name="zoom" content="min=1,max=4"></map-meta>
       <map-meta name="projection" content="basic"></map-meta>
 
-      <map-tile zoom="2" row="-23" col="-9" src="data/cbmt/3/c17_r18.png"></map-tile>
-      <map-tile zoom="2" row="-23" col="-10" src="data/cbmt/3/c16_r18.png"></map-tile>
+      <map-tile zoom="2" row="-23" col="-9" src="/test/data/tiles/cbmt/3/c17_r18.png"></map-tile>
+      <map-tile zoom="2" row="-23" col="-10" src="/test/data/tiles/cbmt/3/c16_r18.png"></map-tile>
     </map-layer>
   </gcds-map>
   

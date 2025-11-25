@@ -1,8 +1,8 @@
-import { test, expect, chromium } from '@playwright/test';
+import { test, expect, chromium, type Page, type BrowserContext } from '@playwright/test';
 
 test.describe('Adding Width and Height Attribute to gcds-map', () => {
-  let page;
-  let context;
+  let page: Page;
+  let context: BrowserContext;
   test.beforeAll(async function () {
     context = await chromium.launchPersistentContext('');
     page =
@@ -15,6 +15,12 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
   });
 
   test('Setting New Width and Height Attributes to gcds-map', async () => {
+    // Wait for map to be fully initialized
+    await page.waitForFunction(() => {
+      const viewer = document.querySelector('body > gcds-map') as any;
+      return viewer && viewer._map;
+    });
+    
     //setting new height and width attribute values in the gcds-map tag
     await page.$eval('body > gcds-map', (viewer) =>
       viewer.setAttribute('width', '700')
@@ -22,20 +28,28 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
     await page.$eval('body > gcds-map', (viewer) =>
       viewer.setAttribute('height', '700')
     );
+    
+    // Wait for attribute changes to be processed (MutationObserver is async)
+    await page.waitForTimeout(300);
+    
     //actual height and width value of the map
     let height_without_px = await page.$eval(
       'body > gcds-map',
-      (viewer) => viewer.height
+      (viewer) => (viewer as any).height
     );
     let width_without_px = await page.$eval(
       'body > gcds-map',
-      (viewer) => viewer.width
+      (viewer) => (viewer as any).width
     );
-    expect(height_without_px).toEqual(700);
-    expect(width_without_px).toEqual(700);
+    // The getters return the computed CSS values - coerce to number for comparison
+    expect(+height_without_px).toEqual(700);
+    expect(+width_without_px).toEqual(700);
   });
 
   test('Testing Validity of Width and Height Attributes', async () => {
+    // Wait a bit for the previous test's changes to settle
+    await page.waitForTimeout(200);
+    
     //height and width attribute value in the gcds-map tag
     let height_attribute_value = await page.$eval(
       'body > gcds-map',
@@ -48,11 +62,11 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
     //actual height and width value of the map
     let height_with_px = await page.$eval(
       'body > gcds-map',
-      (viewer) => viewer._container.style.height
+      (viewer) => (viewer as any)._container.style.height
     );
     let width_with_px = await page.$eval(
       'body > gcds-map',
-      (viewer) => viewer._container.style.width
+      (viewer) => (viewer as any)._container.style.width
     );
     expect(height_with_px).toEqual(height_attribute_value + 'px');
     expect(width_with_px).toEqual(width_attribute_value + 'px');
@@ -74,11 +88,11 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
     //expected width and height
     let map_height = await page.$eval(
       'body > gcds-map',
-      (viewer) => viewer.height
+      (viewer) => (viewer as any).height
     );
     let map_width = await page.$eval(
       'body > gcds-map',
-      (viewer) => viewer.width
+      (viewer) => (viewer as any).width
     );
     map_height += 'px';
     map_width += 'px';
@@ -105,15 +119,16 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
 
   test('Only Height Added to A Map With No Width OR Height Attributes', async () => {
     await page.goto('/test/gcds-map/noWidthAndHeight.html');
+    await page.waitForTimeout(200); // Wait for map to load
     let has_width = await page.$eval('body > gcds-map', (viewer) =>
       viewer.hasAttribute('width')
     );
     expect(has_width).toEqual(false);
-    //set a height attribute to a map with no height or width attributes
+    //set a width attribute to a map with no height or width attributes
     await page.$eval('body > gcds-map', (viewer) =>
       viewer.setAttribute('width', '500')
     );
-    //expected height to be true
+    //expected width to be true
     has_width = await page.$eval('body > gcds-map', (viewer) =>
       viewer.hasAttribute('width')
     );

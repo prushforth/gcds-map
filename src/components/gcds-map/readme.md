@@ -11,13 +11,11 @@
 | --------------- | -------------- | ----------- | --------- | ----------- |
 | `_controlslist` | `controlslist` |             | `string`  | `undefined` |
 | `controls`      | `controls`     |             | `boolean` | `false`     |
-| `height`        | `height`       |             | `string`  | `undefined` |
 | `lat`           | `lat`          |             | `number`  | `0`         |
 | `locale`        | `locale`       |             | `any`     | `undefined` |
 | `lon`           | `lon`          |             | `number`  | `0`         |
 | `projection`    | `projection`   |             | `string`  | `'OSMTILE'` |
 | `static`        | `static`       |             | `boolean` | `false`     |
-| `width`         | `width`        |             | `string`  | `undefined` |
 | `zoom`          | `zoom`         |             | `number`  | `0`         |
 
 

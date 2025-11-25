@@ -16,21 +16,14 @@ test.describe('Playwright Custom TCRS Tests', () => {
     await context.close();
   });
 
-  test('Simple Custom TCRS, tiles load, mismatched layer disabled', async () => {
+  test.only('Simple Custom TCRS, tiles load, mismatched layer disabled', async () => {
     await page.waitForTimeout(500);
-    const misMatchedLayerDisabled = await page.$eval(
-      'body > gcds-map:nth-child(1)',
-      (map) => map.querySelectorAll('map-layer')[0].hasAttribute('disabled')
-    );
+    const mismatchedLayer = await page.getByTestId('projection-mismatched-layer');
+    const matchedLayer = await page.getByTestId('projection-matched-layer');
+    const misMatchedLayerDisabled = await mismatchedLayer.evaluate(layer => layer.hasAttribute('disabled'));
+    const matchedLayerEnabled = await matchedLayer.evaluate((layer) => !layer.hasAttribute('disabled'));
 
-    const matchedLayerEnabled = await page.$eval(
-      'body > gcds-map:nth-child(1)',
-      (map) => map.querySelectorAll('map-layer')[1].hasAttribute('disabled')
-    );
-
-    await expect(
-      page.locator('gcds-map:nth-child(1) map-tile')
-    ).toHaveCount(2);
+    expect(await mismatchedLayer.evaluate(layer => layer.querySelectorAll('map-tile').length)).toEqual(2);
     expect(misMatchedLayerDisabled).toEqual(true);
     expect(matchedLayerEnabled).toEqual(false);
   });
