@@ -14,7 +14,6 @@ export namespace Components {
           * @default false
          */
         "controls": boolean;
-        "height"?: string;
         /**
           * @default 0
          */
@@ -41,7 +40,6 @@ export namespace Components {
           * Promise-based method to wait until map is ready Returns a promise that resolves when the map is fully initialized
          */
         "whenReady": () => Promise<void>;
-        "width"?: string;
         /**
           * @default 0
          */
@@ -280,7 +278,6 @@ declare namespace LocalJSX {
           * @default false
          */
         "controls"?: boolean;
-        "height"?: string;
         /**
           * @default 0
          */
@@ -298,7 +295,6 @@ declare namespace LocalJSX {
           * @default false
          */
         "static"?: boolean;
-        "width"?: string;
         /**
           * @default 0
          */

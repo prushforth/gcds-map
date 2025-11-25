@@ -51,8 +51,9 @@ export class GcdsMap {
   @Prop({ mutable: true }) lon?: number = 0;
   @Prop({ mutable: true }) zoom?: number = 0;
   @Prop({ reflect: true, mutable: true }) projection?: string = 'OSMTILE';
-  @Prop({ reflect: true }) width?: string;
-  @Prop({ reflect: true }) height?: string;
+  // Note: width/height are NOT Stencil props - they're managed via custom properties and MutationObserver
+  // @Prop() width?: string;
+  // @Prop() height?: string;
   @Prop({ reflect: true, attribute: 'controls' }) controls: boolean = false;
   @Prop({ reflect: true }) static?: boolean = false;
   @Prop({ reflect: true, attribute: 'controlslist' }) _controlslist?: string;
@@ -78,6 +79,7 @@ export class GcdsMap {
   private _fullScreenControl: any;
   private _geolocationButton: any;
   private _scaleBar: any;
+  private _isInitialized: boolean = false;
   private _debug: any;
 
 
@@ -125,19 +127,9 @@ export class GcdsMap {
       }
     }
   }
-  @Watch('width')
-  widthChanged(newValue: string) {
-    if (newValue) {
-      this._changeWidth(newValue);
-    }
-  }
-  @Watch('height')
-  heightChanged(newValue: string) {
-    if (newValue) {
-      this._changeHeight(newValue);
-    }
-  }
-
+  // Note: width/height watchers removed - handled via MutationObserver instead
+  // since they're not Stencil @Prop() anymore
+  
   // Note: lat, lon, and zoom are NOT watched because in mapml-viewer, changing these
   // attributes does not change the map position/zoom. These attributes are only 
   // updated by map events to reflect the current state for external observers.
@@ -311,14 +303,61 @@ export class GcdsMap {
         attempts++;
       }
       
-      // Fallback to explicit dimensions if getBoundingClientRect still fails
-      const w = this.width ? parseInt(this.width, 10) : (rect.width || 300);
-      const h = this.height ? parseInt(this.height, 10) : (rect.height || 150);
+      // Check for width/height attributes and set CSS custom properties if present
+      // This handles the case where attributes are set before element is connected to DOM
+      // Note: We only set custom properties, NOT inline styles, to allow external CSS to override
+      const widthAttr = this.el.getAttribute('width');
+      const heightAttr = this.el.getAttribute('height');
+      
+      if (widthAttr) {
+        const widthValue = parseInt(widthAttr);
+        this.el.style.setProperty('--map-width', widthValue + 'px');
+      }
+      
+      if (heightAttr) {
+        const heightValue = parseInt(heightAttr);
+        this.el.style.setProperty('--map-height', heightValue + 'px');
+      }
+      
+      // Get computed dimensions after applying attribute custom properties and CSS
+      const computedWidth = this.getWidth();
+      const computedHeight = this.getHeight();
+      const w = computedWidth > 0 ? computedWidth : (rect.width || 300);
+      const h = computedHeight > 0 ? computedHeight : (rect.height || 150);
    
-      this._changeWidth(w);
-      this._changeHeight(h);
+      // Set container dimensions to match computed values
+      if (this._container) {
+        this._container.style.width = w + 'px';
+        this._container.style.height = h + 'px';
+      }
 
       this._createMap();
+
+      // Mark as initialized so watchers can now run
+      this._isInitialized = true;
+      
+      // Watch for attribute changes to width/height after initialization
+      // This handles setAttribute() calls which don't trigger custom property setters
+      const attributeObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName) {
+            const newValue = this.el.getAttribute(mutation.attributeName);
+            if (mutation.attributeName === 'width' && newValue) {
+              this._changeWidth(newValue);
+            } else if (mutation.attributeName === 'height' && newValue) {
+              this._changeHeight(newValue);
+            }
+          }
+        });
+      });
+      
+      attributeObserver.observe(this.el, {
+        attributes: true,
+        attributeFilter: ['width', 'height']
+      });
+      
+      // Store observer for cleanup
+      (this.el as any)._attributeObserver = attributeObserver;
 
       // https://github.com/Maps4HTML/MapML.js/issues/274
       this.el.setAttribute('role', 'application');
@@ -378,6 +417,9 @@ export class GcdsMap {
     this._container.setAttribute('role', 'region');
     this._container.setAttribute('aria-label', 'Interactive map');
     shadowRoot.appendChild(this._container);
+    
+    // Expose _container on DOM element for test access and MapML compatibility
+    (this.el as any)._container = this._container;
     
     // Hide all (light DOM) children of the map element (equivalent to hideElementsCSS)
     let hideElementsCSS = document.createElement('style');
@@ -454,8 +496,11 @@ export class GcdsMap {
       Object.defineProperty(this.el, 'width', {
         get: () => this.getWidth(),
         set: (val: string) => {
-          // Setter changes the attribute (standard HTML behavior)
+          // Setter changes the attribute AND applies the change immediately
           this.el.setAttribute('width', val);
+          if (this._isInitialized) {
+            this._changeWidth(val);
+          }
         },
         configurable: true,
         enumerable: true
@@ -464,8 +509,11 @@ export class GcdsMap {
       Object.defineProperty(this.el, 'height', {
         get: () => this.getHeight(),
         set: (val: string) => {
-          // Setter changes the attribute (standard HTML behavior)
+          // Setter changes the attribute AND applies the change immediately
           this.el.setAttribute('height', val);
+          if (this._isInitialized) {
+            this._changeHeight(val);
+          }
         },
         configurable: true,
         enumerable: true
@@ -526,8 +574,15 @@ export class GcdsMap {
       this._setUpEvents();
     }
   }
+  
   disconnectedCallback() {
     this._removeEvents();
+
+    // Clean up attribute observer
+    if ((this.el as any)._attributeObserver) {
+      (this.el as any)._attributeObserver.disconnect();
+      delete (this.el as any)._attributeObserver;
+    }
 
     delete this._map;
     this._deleteControls();
@@ -800,38 +855,45 @@ export class GcdsMap {
   }
 
   _changeWidth(width: number | string) {
-    const widthPx = typeof width === 'string' ? width : width + 'px';
+    const widthValue = typeof width === 'string' ? parseInt(width) : width;
     
-    // Use CSS custom property instead of inline style for responsive design
-    this.el.style.setProperty('--map-width', widthPx);
+    // Set CSS custom property that the :host rule uses
+    this.el.style.setProperty('--map-width', widthValue + 'px');
     
-    // Update container if it exists
+    // Set inline width style to override external CSS (like <img width="..."> does)
+    // This ensures attribute-based dimensions take precedence over stylesheet max-width etc.
+    this.el.style.width = widthValue + 'px';
+    
     if (this._container) {
-      this._container.style.width = '100%'; // Container should fill host
+      this._container.style.width = widthValue + 'px';
     }
     
     // Invalidate map size if map exists
     if (this._map) {
-      this._map.invalidateSize();
+      this._map.invalidateSize(false);
     }
   }
 
   _changeHeight(height: number | string) {
-    const heightPx = typeof height === 'string' ? height : height + 'px';
+    const heightValue = typeof height === 'string' ? parseInt(height) : height;
     
-    // Use CSS custom property instead of inline style for responsive design
-    this.el.style.setProperty('--map-height', heightPx);
+    // Set CSS custom property that the :host rule uses
+    this.el.style.setProperty('--map-height', heightValue + 'px');
     
-    // Update container if it exists
+    // Set inline height style to override external CSS (like <img height="..."> does)
+    // This ensures attribute-based dimensions take precedence over stylesheet constraints
+    this.el.style.height = heightValue + 'px';
+    
     if (this._container) {
-      this._container.style.height = '100%'; // Container should fill host
+      this._container.style.height = heightValue + 'px';
     }
     
     // Invalidate map size if map exists
     if (this._map) {
-      this._map.invalidateSize();
+      this._map.invalidateSize(false);
     }
   }
+  
   _updateMapCenter() {
     // Update component props to match map state and sync to DOM attributes
     // Note: Stencil mutable props don't automatically reflect changes back to DOM attributes
