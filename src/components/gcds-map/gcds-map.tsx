@@ -264,6 +264,19 @@ export class GcdsMap {
   async connectedCallback() {
 
     this._initShadowRoot();
+    
+    // CRITICAL: Apply width/height attributes to custom properties BEFORE CSS computation
+    // This ensures attributes set before appendChild() are respected
+    // DO NOT set inline styles here - that would override CSS domination
+    const widthAttr = this.el.getAttribute('width');
+    const heightAttr = this.el.getAttribute('height');
+    if (widthAttr) {
+      this.el.style.setProperty('--map-width', widthAttr + 'px');
+    }
+    if (heightAttr) {
+      this.el.style.setProperty('--map-height', heightAttr + 'px');
+    }
+    
     try {
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
@@ -303,27 +316,17 @@ export class GcdsMap {
         attempts++;
       }
       
-      // Check for width/height attributes and set CSS custom properties if present
-      // This handles the case where attributes are set before element is connected to DOM
-      // Note: We only set custom properties, NOT inline styles, to allow external CSS to override
-      const widthAttr = this.el.getAttribute('width');
-      const heightAttr = this.el.getAttribute('height');
-      
-      if (widthAttr) {
-        const widthValue = parseInt(widthAttr);
-        this.el.style.setProperty('--map-width', widthValue + 'px');
-      }
-      
-      if (heightAttr) {
-        const heightValue = parseInt(heightAttr);
-        this.el.style.setProperty('--map-height', heightValue + 'px');
-      }
-      
-      // Get computed dimensions after applying attribute custom properties and CSS
+      // Get computed dimensions after CSS is applied
       const computedWidth = this.getWidth();
       const computedHeight = this.getHeight();
       const w = computedWidth > 0 ? computedWidth : (rect.width || 300);
       const h = computedHeight > 0 ? computedHeight : (rect.height || 150);
+      
+      // Set CSS custom properties to the border-box dimensions (what getBoundingClientRect returns)
+      // This ensures the custom properties reflect the actual space the element occupies,
+      // including borders, which is important for layout calculations
+      this.el.style.setProperty('--map-width', rect.width + 'px');
+      this.el.style.setProperty('--map-height', rect.height + 'px');
    
       // Set container dimensions to match computed values
       if (this._container) {
