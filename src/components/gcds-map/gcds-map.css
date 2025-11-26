@@ -1001,8 +1001,8 @@ label.mapml-layer-item-toggle {
   height: var(--map-height, 150px);        
   width: var(--map-width, 300px);         
   contain: layout size;
-  border-width: 2px;
-  border-style: inset;
+  /* map outline does not affect container coordinates, whereas border does */
+  outline: 2px solid #999;
 }
 
 /* Ensure white background persists in fullscreen */

@@ -10,7 +10,10 @@ test.describe('Adding and Removing Multiple Extents', () => {
       (await context.newPage());
     await page.goto('/test/map-extent/multipleExtents.html');
     await page.waitForTimeout(2000);
+  });
 
+  test.afterAll(async function () {
+    await context.close();
   });
 
   test("Layer's multiple extents display on map and in layer control", async () => {
@@ -243,6 +246,10 @@ test.describe('Multiple Extents Bounds Tests', () => {
       (await context.newPage());
     await page.goto('/test/map-extent/multipleExtents.html');
     await page.waitForTimeout(2000);
+  });
+
+  test.afterAll(async function () {
+    await context.close();
   });
 
   test('Only Extent Bounds show in debug mode', async () => {
