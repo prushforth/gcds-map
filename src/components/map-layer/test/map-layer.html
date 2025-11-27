@@ -20,7 +20,7 @@
     </style>
     <template data-testid="inline-content">
       <map-extent units="CBMTILE"  checked="checked">
-        <!-- the bounds of the inline map-extent are different than those of the remote layer's map-extent -->
+        <!-- the bounds of this map-extent are different than those of dummy-cbmtile-cbmt.mapml -->
         <map-input name="z" type="zoom"  value="17" min="3" max="17"></map-input>
         <map-input name="y" type="location" units="tilematrix" axis="row" min="31000"  max="34000"></map-input>
         <map-input name="x" type="location" units="tilematrix" axis="column" min="27000"  max="30000"></map-input>
@@ -30,8 +30,7 @@
   </head>
   <body>
     <gcds-map data-testid="viewer" style="height: 500px;width:500px;" controls zoom="2" lat="68" lon="-87" controls projection="CBMTILE">
-      <!-- TODO replace with dummy-cbmtile-cbmt.mapml when map-extent implemented-->
-      <map-layer data-testid="test-layer" label="Remote content" src="empty.mapml" checked></map-layer>
+      <map-layer data-testid="test-layer" label="Remote content" src="/test/data/dummy-cbmtile-cbmt.mapml" checked></map-layer>
     </gcds-map>
   </body>
 </html>

@@ -320,6 +320,12 @@ export class GcdsMapLayer {
       writable: true,
       configurable: true
     });
+    
+    Object.defineProperty(this.el, 'getProjection', {
+      value: () => this.getProjection(),
+      writable: true,
+      configurable: true
+    });
 
     // Expose label property on DOM element for MapML compatibility
     Object.defineProperty(this.el, 'label', {
@@ -439,11 +445,9 @@ export class GcdsMapLayer {
             this._createLayerControlHTML();
             this._setLocalizedDefaultLabel();
             this._attachedToMap();
-            // Render any stylesheet links that were created before layer was ready
-            this._renderStylesheetLinks(this.el.shadowRoot);
-            // initializing map-features that previously exist
-            // this._runMutationObserver(this.el.shadowRoot.children);
-            // this._bindMutationObserver();
+            // Process any elements that were created before layer was ready
+            this._runMutationObserver(this.el.shadowRoot.children);
+            this._bindMutationObserver();
             this._validateDisabled();
             // re-use 'loadedmetadata' event from HTMLMediaElement inteface, applied
             // to MapML extent as metadata
@@ -480,11 +484,9 @@ export class GcdsMapLayer {
             this._createLayerControlHTML();
             this._setLocalizedDefaultLabel();
             this._attachedToMap();
-            // Render any stylesheet links that were created before layer was ready
-            this._renderStylesheetLinks(this.el);
-            // initializing map-features that previously exist
-            // this._runMutationObserver(this.el.children);
-            // this._bindMutationObserver();
+            // Process any elements that were created before layer was ready
+            this._runMutationObserver(this.el.children);
+            this._bindMutationObserver();
             this._validateDisabled();
             // re-use 'loadedmetadata' event from HTMLMediaElement inteface, applied
             // to MapML extent as metadata
@@ -690,13 +692,96 @@ export class GcdsMapLayer {
     }
   }
   
-  private _renderStylesheetLinks(container: Element | ShadowRoot) {
-    // Find all map-link elements with rel="stylesheet" that have a link property but aren't yet connected
-    const stylesheetLinks = container.querySelectorAll('map-link[rel="stylesheet"]');
-    stylesheetLinks.forEach((linkEl: any) => {
-      if (linkEl.link && !linkEl.link.isConnected && this._layer) {
-        this._layer.renderStyles(linkEl);
+  private _runMutationObserver(elementsGroup: NodeList | HTMLCollection) {
+    const _addStylesheetLink = (mapLink: any) => {
+      this.whenReady().then(() => {
+        this._layer.renderStyles(mapLink);
+      });
+    };
+    const _addStyleElement = (mapStyle: any) => {
+      this.whenReady().then(() => {
+        this._layer.renderStyles(mapStyle);
+      });
+    };
+    const _addExtentElement = (mapExtent: any) => {
+      this.whenReady().then(() => {
+        // Wait for the extent itself to be ready before recalculating bounds
+        if (typeof mapExtent.whenReady === 'function') {
+          mapExtent.whenReady().then(() => {
+            // Force complete recalculation by deleting cached bounds
+            delete this._layer.bounds;
+            this._layer._calculateBounds();
+            this._validateDisabled();
+          });
+        } else {
+          delete this._layer.bounds;
+          this._layer._calculateBounds();
+          this._validateDisabled();
+        }
+      });
+    };
+    
+    const root = this.src ? this.el.shadowRoot : this.el;
+    const pseudo = root instanceof ShadowRoot ? ':host' : ':scope';
+    
+    const _addMetaElement = (_mapMeta: any) => {
+      this.whenReady().then(() => {
+        this._layer._calculateBounds();
+        this._validateDisabled();
+      });
+    };
+    
+    for (let i = 0; i < elementsGroup.length; ++i) {
+      const element = elementsGroup[i] as any;
+      switch (element.nodeName) {
+        case 'MAP-LINK':
+          if (element.link && !element.link.isConnected)
+            _addStylesheetLink(element);
+          break;
+        case 'MAP-STYLE':
+          if (element.styleElement && !element.styleElement.isConnected) {
+            _addStyleElement(element);
+          }
+          break;
+        case 'MAP-EXTENT':
+          _addExtentElement(element);
+          break;
+        case 'MAP-META':
+          const name =
+            element.hasAttribute('name') &&
+            (element.getAttribute('name').toLowerCase() === 'zoom' ||
+              element.getAttribute('name').toLowerCase() === 'extent');
+          if (
+            name &&
+            element ===
+              root.querySelector(
+                `${pseudo} > [name=${element.getAttribute('name')}]`
+              ) &&
+            element.hasAttribute('content')
+          ) {
+            _addMetaElement(element);
+          }
+          break;
+        default:
+          break;
       }
+    }
+  }
+  
+  /**
+   * Set up a function to watch additions of child elements of map-layer or
+   * map-layer.shadowRoot and invoke desired side effects via _runMutationObserver
+   */
+  private _bindMutationObserver() {
+    this._observer = new MutationObserver((mutationList) => {
+      for (let mutation of mutationList) {
+        if (mutation.type === 'childList') {
+          this._runMutationObserver(mutation.addedNodes);
+        }
+      }
+    });
+    this._observer.observe(this.src ? this.el.shadowRoot : this.el, {
+      childList: true
     });
   }
   

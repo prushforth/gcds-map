@@ -13,30 +13,33 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
   });
   test('Test that a map-layer with src attribute can transition to inline content', async () => {
     const layer = await page.getByTestId('test-layer');
-    const labelAttribute = await layer.evaluate((l) => l.getAttribute('label'));
+    const labelAttribute = await layer.evaluate(async (l) =>{await l.whenReady();return l.getAttribute('label')});
     expect(labelAttribute).toEqual('Remote content');
     const labelProperty = await layer.evaluate((l) => l.label);
-    // TODO remove Empty when map-extent is implemented
-    expect(labelProperty).toEqual('Empty Canada Base Map - Transportation (CBMT)');
+    expect(labelProperty).toEqual('Canada Base Map - Transportation (CBMT)');
 
-    // TODO uncomment when map-layer.zoomTo is implemented
-    // await layer.evaluate((layer) => (layer as any).zoomTo());
-    // let mapLocation = await viewer.evaluate((v) => ({
-    //   lat: v.lat,
-    //   lon: v.lon,
-    //   zoom: v.zoom
-    // }));
-    // expect(mapLocation).toEqual(
-    //   expect.objectContaining({
-    //     zoom: 1,
-    //     lat: expect.closeTo(60.28, 2),
-    //     lon: expect.closeTo(-89.78, 2)
-    //   })
-    // );
+    const viewer = page.getByTestId('viewer');
+    await layer.evaluate(async (layer) => (layer as any).zoomTo());
+    await page.waitForTimeout(500);
+    let mapLocation = await viewer.evaluate((v) => ({
+      lat: v.lat,
+      lon: v.lon,
+      zoom: v.zoom
+    }));
+    expect(mapLocation).toEqual(
+      expect.objectContaining({
+        zoom: 1,
+        lat: expect.closeTo(60.28, 2),
+        lon: expect.closeTo(-89.78, 2)
+      })
+    );
 
     // remove the src attribute
     await layer.evaluate((layer) => layer.removeAttribute('src'));
+    // Wait for the layer to reinitialize without src
+    await layer.evaluate(async (layer) => await (layer as any).whenReady());
     // empty layer is no longer disabled. Is that correct? I think so...
+    await expect(layer).not.toHaveAttribute('disabled');
 
     // append the template map-extent to the local / inline content
     await page.evaluate(() => {
@@ -45,28 +48,30 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
         .content.querySelector('map-extent')
         .cloneNode(true);
       document.querySelector('[data-testid=test-layer]').appendChild(ext);
-      (document
-        .querySelector('[data-testid=test-layer]') as any)
-        .whenReady()
-        .then(() =>
-          (document.querySelector('[data-testid=test-layer]') as any).zoomTo()
-        );
     });
-    await page.waitForTimeout(1000);
-    expect(layer).not.toHaveAttribute('disabled');
-    // TODO uncomment when map-layer.zoomTo is implemented
-    // mapLocation = await viewer.evaluate((v) => ({
-    //   lat: v.lat,
-    //   lon: v.lon,
-    //   zoom: v.zoom
-    // }));
-    // expect(mapLocation).toEqual(
-    //   expect.objectContaining({
-    //     zoom: 3,
-    //     lat: expect.closeTo(55.26, 2),
-    //     lon: expect.closeTo(-109.13, 2)
-    //   })
-    // );
+    // Wait for the extent itself to be ready
+    await page.evaluate(async () => {
+      const extent = document.querySelector('[data-testid=test-layer] map-extent');
+      if (extent && typeof (extent as any).whenReady === 'function') {
+        await (extent as any).whenReady();
+      }
+    });
+    await layer.evaluate((layer) => (layer as any).zoomTo());
+    // Wait for zoomTo to complete and map to update
+    await page.waitForTimeout(500);
+    await expect(layer).not.toHaveAttribute('disabled');
+    mapLocation = await viewer.evaluate((v) => ({
+      lat: v.lat,
+      lon: v.lon,
+      zoom: v.zoom
+    }));
+    expect(mapLocation).toEqual(
+      expect.objectContaining({
+        zoom: 3,
+        lat: expect.closeTo(55.26, 2),
+        lon: expect.closeTo(-109.13, 2)
+      })
+    );
     await layer.evaluate(
       (layer) => (layer.label = 'You can set the label of a local layer')
     );
@@ -77,9 +82,10 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
     expect(label).toEqual('You can set the label of a local layer');
 
     // setting the src attribute should clean out the light DOM, populate SD
-    await layer.evaluate((layer) => (layer.src = 'dummy-cbmtile-cbmt.mapml'));
+    await layer.evaluate((layer) => (layer.src = '/test/data/dummy-cbmtile-cbmt.mapml'));
 
-    await page.waitForTimeout(1000);
+    // Wait a bit longer for the fetch and initialization
+    await page.waitForTimeout(1500);
     // remote source layers return the map-title in the label property
     label = await layer.evaluate((l) => l.label);
 
@@ -94,21 +100,20 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
       (l) => l.querySelector('*') === null
     );
     expect(hasNoLightDOMContent).toBe(true);
-
+    const viewer = page.getByTestId('viewer');
     await layer.evaluate((layer) => (layer as any).zoomTo());
     await page.waitForTimeout(1000);
-    // TODO uncomment when map-layer.zoomTo is implemented
-    // let mapLocation = await viewer.evaluate((v) => ({
-    //   lat: v.lat,
-    //   lon: v.lon,
-    //   zoom: v.zoom
-    // }));
-    // expect(mapLocation).toEqual(
-    //   expect.objectContaining({
-    //     zoom: 1,
-    //     lat: expect.closeTo(60.28, 2),
-    //     lon: expect.closeTo(-89.78, 2)
-    //   })
-    // );
+    let mapLocation = await viewer.evaluate((v) => ({
+      lat: v.lat,
+      lon: v.lon,
+      zoom: v.zoom
+    }));
+    expect(mapLocation).toEqual(
+      expect.objectContaining({
+        zoom: 1,
+        lat: expect.closeTo(60.28, 2),
+        lon: expect.closeTo(-89.78, 2)
+      })
+    );
   });
 });

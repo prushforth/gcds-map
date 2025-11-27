@@ -41,6 +41,10 @@ export class MapStyle {
       ? (this.el.getRootNode() as any).host
       : this.el.parentElement;
     if (!this._stylesheetHost) return;
+    
+    // Try to render via layer's renderStyles method
+    // Note: If layer is not yet ready, the layer will call renderStyles
+    // on all map-style children when it finishes initialization
     if (this._stylesheetHost._layer) {
       this._stylesheetHost._layer.renderStyles?.(this.el);
     } else if (this._stylesheetHost._templatedLayer) {
@@ -48,6 +52,8 @@ export class MapStyle {
     } else if (this._stylesheetHost._extentLayer) {
       this._stylesheetHost._extentLayer.renderStyles?.(this.el);
     }
+    
+    
     this._observer = new MutationObserver(() => {
       if (this.styleElement) this.styleElement.textContent = this.el.textContent;
     });
