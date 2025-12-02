@@ -1,4 +1,4 @@
-import { Component, h, Element } from '@stencil/core';
+import { Component, Element } from '@stencil/core';
 
 @Component({
   tag: 'map-span',
@@ -11,6 +11,6 @@ export class MapSpan {
   disconnectedCallback() {}
 
   render() {
-    return <span><slot /></span>;
+    return null;
   }
 }

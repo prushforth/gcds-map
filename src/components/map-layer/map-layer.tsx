@@ -1009,9 +1009,6 @@ export class GcdsMapLayer {
       });
     });
   }
-  mapml2geojson(options = {}) {
-    return Util.mapml2geojson(this.el, options);
-  }
 
   pasteFeature(feature: any) {
     switch (typeof feature) {
@@ -1118,6 +1115,17 @@ export class GcdsMapLayer {
       }
     }
     return Promise.allSettled(elemsReady);
+  }
+
+  /**
+   * Convert this MapML layer to GeoJSON FeatureCollection
+   * @param options - Conversion options:
+   *   - propertyFunction: Function to map <map-properties> to GeoJSON properties
+   *   - transform: Whether to transform coordinates to GCRS (EPSG:4326), defaults to true
+   * @returns GeoJSON FeatureCollection object
+   */
+  mapml2geojson(options: any = {}): any {
+    return Util.mapml2geojson(this.el, options);
   }
 
   render() {

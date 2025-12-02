@@ -567,6 +567,13 @@ export class GcdsMap {
         configurable: true
       });
 
+      // Expose geojson2mapml method
+      Object.defineProperty(this.el, 'geojson2mapml', {
+        value: (json: any, options?: any) => this.geojson2mapml(json, options),
+        writable: true,
+        configurable: true
+      });
+
       // Expose internal methods needed by MapML controls and context menu items
       (this.el as any)._toggleFullScreen = () => this._toggleFullScreen();
       (this.el as any)._toggleControls = () => this._toggleControls();
@@ -1188,6 +1195,32 @@ export class GcdsMap {
     }
     
     return Promise.allSettled(layersReady);
+  }
+
+  /**
+   * Convert GeoJSON to MapML and append as a layer
+   * @param json - GeoJSON object (FeatureCollection, Feature, or Geometry)
+   * @param options - Conversion options:
+   *   - label: Layer label (defaults to json.name, json.title, or locale default)
+   *   - projection: Target projection (defaults to map's projection)
+   *   - caption: Feature caption property name or function
+   *   - properties: Custom properties handling (function, string, or HTMLElement)
+   *   - geometryFunction: Custom geometry processing function
+   * @returns The created map-layer element
+   */
+  geojson2mapml(json: any, options: any = {}): HTMLElement {
+    // Use current map projection if not specified
+    if (options.projection === undefined) {
+      options.projection = this.projection;
+    }
+    
+    // Call Util.geojson2mapml to create the layer element
+    let geojsonLayer = Util.geojson2mapml(json, options);
+    
+    // Append the layer to the map
+    this.el.appendChild(geojsonLayer);
+    
+    return geojsonLayer;
   }
 
   render() {

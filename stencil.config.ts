@@ -17,11 +17,11 @@ export const config: Config = {
         },
         // Copy test HTML and mapml files to build output so they're accessible via dev server
         {
-          src: 'components/gcds-map/test/*.{html,mapml,css}',
+          src: 'components/gcds-map/test/*.{html,mapml,css,js}',
           dest: 'test/gcds-map'
         },
         {
-          src: 'components/map-layer/test/*.{html,mapml,css}',
+          src: 'components/map-layer/test/*.{html,mapml,css,js}',
           dest: 'test/map-layer'
         },
         {
@@ -95,11 +95,11 @@ export const config: Config = {
         },
         // Copy test HTML and mapml files to build output so they're accessible via dev server
         {
-          src: 'components/gcds-map/test/*.{html,mapml,css}',
+          src: 'components/gcds-map/test/*.{html,mapml,css,js}',
           dest: 'test/gcds-map'
         },
         {
-          src: 'components/map-layer/test/*.{html,mapml,css}',
+          src: 'components/map-layer/test/*.{html,mapml,css,js}',
           dest: 'test/map-layer'
         },
         {
