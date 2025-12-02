@@ -24,9 +24,9 @@ test.describe('<gcds-map> localization tests', () => {
       return JSON.parse(t.content.firstChild.textContent).locale;
     });
     expect(browserLocale.cmBack).toBeTruthy();
-    enLocale = await page.evaluate(() => M.options.localeEn);
+    enLocale = await page.evaluate(() => (window as any).M.options.localeEn);
     expect(enLocale.cmBack).toBeTruthy();
-    frLocale = await page.evaluate(() => M.options.localeFr);
+    frLocale = await page.evaluate(() => (window as any).M.options.localeFr);
     expect(frLocale.cmBack).toBeTruthy();
 
     // define locale pairs for iterations

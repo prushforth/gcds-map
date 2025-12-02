@@ -50,13 +50,13 @@ test.describe('Geolocation control tests', () => {
     await page.getByTitle('Show my location - location tracking on').click();
 
     let locationOnText = await page.evaluate(
-      () => M.options.locale.btnLocTrackOn
+      () => (window as any).M.options.locale.btnLocTrackOn
     );
     let locationOffText = await page.evaluate(
-      () => M.options.locale.btnLocTrackOff
+      () => (window as any).M.options.locale.btnLocTrackOff
     );
     let lastKnownLocationText = await page.evaluate(
-      () => M.options.locale.btnLocTrackLastKnown
+      () => (window as any).M.options.locale.btnLocTrackLastKnown
     );
 
     let locateButton_title1 = await page.$eval(
