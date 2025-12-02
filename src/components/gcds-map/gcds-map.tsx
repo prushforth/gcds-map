@@ -396,12 +396,32 @@ export class GcdsMap {
     }
   }
   _setLocale() {
+    // Priority order (matching mapml-viewer behavior):
+    // 1. :lang(fr) attribute in ancestry (Canadian French context)
+    // 2. :lang(en) attribute in ancestry (Canadian English context)
+    // 3. <map-options> locale in document head (browser/custom locale)
+    
     if (this.el.closest(':lang(fr)') === this.el) {
       this.locale = localeFr;
     } else if (this.el.closest(':lang(en)') === this.el) {
       this.locale = locale;
     } else {
-      // Default to English locale for browser default
+      // Check if there's a <map-options> element in the document head
+      // that was placed there by the browser extension or test harness
+      const mapOptions = document.head.querySelector('map-options');
+      if (mapOptions && mapOptions.textContent) {
+        try {
+          const options = JSON.parse(mapOptions.textContent);
+          if (options.locale) {
+            this.locale = options.locale;
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to parse map-options:', e);
+        }
+      }
+      
+      // Default to English locale if no other locale specified
       this.locale = locale;
     }
   }
