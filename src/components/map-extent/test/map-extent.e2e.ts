@@ -13,6 +13,7 @@ test.describe('map-extent tests', () => {
   });
   test('Basic hidden functionality and API', async () => {
     const extent = await page.getByTestId('ext1');
+    await extent.evaluate(async (extent) => extent.whenReady());
     let hiddenInLayerControl = await extent.evaluate((extent) => {
       return !extent._layerControlHTML.isConnected;
     });

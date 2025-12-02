@@ -1,8 +1,22 @@
-  5 failed
+ 1) src/components/gcds-map/test/debugMode.e2e.ts:59:7 › Playwright Map Element Tests › Accurate debug coordinates 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: "map: i: 250, j: 250"
+    Received: "map: i: 252, j: 252"
+
+      86 |     expect(tile).toEqual('tile: i: 141, j: 6');
+      87 |     expect(matrix).toEqual('tilematrix: column: 3, row: 4');
+    > 88 |     expect(map).toEqual('map: i: 250, j: 250');
+         |                 ^
+      89 |     expect(tcrs).toEqual('tcrs: x: 909, y: 1030');
+      90 |     expect(pcrs).toEqual('pcrs: easting: 217676.00, northing: -205599.86');
+      91 |     expect(gcrs).toEqual('gcrs: lon: -92.152897, lat: 47.114275');
+        at /home/prushfor/github/gcds-map/src/components/gcds-map/test/debugMode.e2e.ts:88:17
+
+    Error Context: test-results/components-gcds-map-test-d-bf434--Accurate-debug-coordinates/error-context.md
+
+  1 failed
     src/components/gcds-map/test/debugMode.e2e.ts:59:7 › Playwright Map Element Tests › Accurate debug coordinates 
-    src/components/map-feature/test/map-feature-rendering.e2e.ts:12:7 › map-feature rendering tests › Test for zingers 
-    src/components/map-layer/test/events/map-change-event.e2e.ts:21:7 › Map-change event are only fired when layers/extents are checked or unchecked in the layer menu  › Map-change event for layers work 
-    src/components/map-layer/test/layer-src.e2e.ts:74:7 › map-layer local/inline vs remote content/src tests › Test that a map-layer with inline content can transition to remote (src-based) content 
-    src/components/map-link/test/map-link-in-shadow-root.e2e.ts:14:7 › map-link can be inside a shadow root or other custom element › map-link getMapEl() works in shadow root 
   16 skipped
-  159 passed 
+  163 passed (1.6m)

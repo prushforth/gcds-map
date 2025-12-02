@@ -4,7 +4,7 @@ test.describe('Multiple Extents Reordering and zIndex Tests', () => {
   let page;
   let context;
   test.beforeAll(async function () {
-    context = await chromium.launchPersistentContext('', { slowMo: 500 });
+    context = await chromium.launchPersistentContext('', { slowMo: 1000 });
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());

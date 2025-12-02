@@ -19,16 +19,18 @@ test.describe('Adding and Removing Multiple Extents', () => {
   test("Layer's multiple extents display on map and in layer control", async () => {
     const cbmtExtent = await page.getByTestId('cbmt-extent');
     const cbmtExtentIsRendered = await cbmtExtent.evaluate(
-      (e) =>
-        e._extentLayer._container.querySelectorAll('.mapml-tile-group').length
-    );
+      async (e) => {
+        await e.whenReady();
+        return e._extentLayer._container.querySelectorAll('.mapml-tile-group').length
+    });
     const alabamaExtent = await page.getByTestId('alabama-extent');
     const alabamaExtentIsRendered = await alabamaExtent.evaluate(
-      (e) =>
-        e._extentLayer._container.querySelectorAll(
+      async (e) => {
+        await e.whenReady();
+        return e._extentLayer._container.querySelectorAll(
           '.mapml-features-tiles-container'
         ).length
-    );
+    });
     const cbmtLabel = await page.$eval('text=cbmt', (label) => label.innerText);
     const alabamaLabel = await page.$eval(
       'text=alabama_feature',

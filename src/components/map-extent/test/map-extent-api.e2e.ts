@@ -15,6 +15,7 @@ test.describe('map-extent tests', () => {
   test('map-extent.zoomTo() works', async () => {
     // get the bounds of the map
     const viewer = await page.getByTestId('firstmap');
+    await viewer.evaluate(async (map) => map.whenReady());
     let mapExtent = await viewer.evaluate((map) => {
       return {
         xmin: Math.trunc(map.extent.topLeft.pcrs.horizontal),
