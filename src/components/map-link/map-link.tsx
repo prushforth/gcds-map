@@ -32,6 +32,12 @@ export class MapLink {
   @Prop({ reflect: true }) href?: string;
   @Prop({ reflect: true }) hreflang?: string;
   @Prop({ reflect: true }) tref?: string;
+  
+  // Getter that provides default value (matching MapML behavior)
+  get trefValue(): string {
+    return this.tref || M.BLANK_TT_TREF;
+  }
+  
   @Prop({ reflect: true }) media?: string;
   @Prop({ reflect: true }) tms?: boolean;
   @Prop({ reflect: true }) projection?: string;
@@ -380,7 +386,9 @@ export class MapLink {
       this.el.parentNode?.nodeName.toUpperCase() === 'MAP-EXTENT'
         ? this.el.parentNode
         : (this.el.parentNode as any)?.host;
-    if (this.disabled || !this.tref || !this.parentExtent) return;
+    if (this.disabled || !this.parentExtent) {
+      return;
+    }
     
     try {
       await this.parentExtent.whenReady();
@@ -614,7 +622,7 @@ export class MapLink {
     let includesZoom = false;
     let linkedZoomInput: any;
 
-    let template = this.tref || M.BLANK_TT_TREF;
+    let template = this.trefValue;
     if (template === M.BLANK_TT_TREF) {
       const mapInputs = this.el.parentElement?.querySelectorAll('map-input');
       if (mapInputs) {
@@ -937,7 +945,7 @@ export class MapLink {
   }
 
   resolve() {
-    if (this.tref) {
+    if (this.trefValue !== M.BLANK_TT_TREF) {
       const obj: any = {};
       const inputs = this.el.parentElement?.querySelectorAll('map-input');
       if (this.rel === 'image') {
@@ -945,7 +953,7 @@ export class MapLink {
           const inp = inputs[i];
           obj[inp.getAttribute('name')] = (inp as any).value;
         }
-        return LeafletUtil.template(this.tref, obj);
+        return LeafletUtil.template(this.trefValue, obj);
       } else if (this.rel === 'tile') {
         return obj;
       } else if (this.rel === 'query') {

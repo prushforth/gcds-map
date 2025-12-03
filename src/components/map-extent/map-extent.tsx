@@ -334,7 +334,7 @@ export class GcdsMapExtent {
     (this.el as any)._opacitySlider = this._opacitySlider;
     (this.el as any)._selectdetails = this._selectdetails;
    // Wait for map-link elements to be ready before calculating bounds
-    await this.whenLinksReady();
+    await this._waitForTrefLinks();
     this._calculateBounds();
 
     // Handle initial checked state - add extent layer to parent if checked
@@ -560,6 +560,41 @@ export class GcdsMapExtent {
     delete this._extentLayer;
     if (this.parentLayer?._layer) delete this.parentLayer._layer.bounds;
   }
+  
+  async _waitForTrefLinks() {
+    // Wait only for links with explicit tref attributes to have _templateVars initialized
+    // This is needed because _calculateBounds() calls link.getZoomBounds() and link.getBounds()
+    // which depend on _templateVars being set
+    // Links without tref would create circular dependency if we waited for them
+    const templates = this.el.querySelectorAll(
+      'map-link[rel=image][tref],map-link[rel=tile][tref],map-link[rel=features][tref],map-link[rel=query][tref]'
+    );
+    const linksVarsReady = [];
+    for (let link of Array.from(templates)) {
+      // Wait for _templateVars to be set, not for _templatedLayer to be created
+      linksVarsReady.push(
+        new Promise<void>((resolve) => {
+          if ((link as any)._templateVars) {
+            resolve();
+          } else {
+            const checkInterval = setInterval(() => {
+              if ((link as any)._templateVars) {
+                clearInterval(checkInterval);
+                resolve();
+              }
+            }, 10);
+            // Timeout after 1 second
+            setTimeout(() => {
+              clearInterval(checkInterval);
+              resolve(); // Resolve anyway to not block forever
+            }, 1000);
+          }
+        })
+      );
+    }
+    return Promise.all(linksVarsReady);
+  }
+  
   _calculateBounds() {
     delete this._extentLayer.bounds;
     delete this._extentLayer.zoomBounds;
