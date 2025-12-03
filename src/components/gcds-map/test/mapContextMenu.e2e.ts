@@ -2,6 +2,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { test, expect, chromium, Page, BrowserContext } from '@playwright/test';
 
+// Helper function to normalize HTML by removing Stencil-specific attributes
+function normalizeHTML(html: string): string {
+  return html
+    .replace(/\s+class="[^"]*hydrated[^"]*"/g, '') // Remove hydrated class
+    .replace(/\s+class=""/g, '') // Remove empty class attributes
+    .replace(/\s+s-[a-z0-9-]+="[^"]*"/g, '') // Remove Stencil scope IDs
+    .replace(/<!---->/g, '') // Remove Stencil placeholder comments
+    .trim();
+}
+
 //
 //expected topLeft values in the different cs, at the different
 //positions the map goes in
@@ -37,9 +47,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
   let context: BrowserContext;
   let currExtCS: string, currLocCS: string;
   test.beforeAll(async () => {
-    context = await chromium.launchPersistentContext('', {
-      slowMo: 1000 // Add 1 second delay between actions
-    });
+    context = await chromium.launchPersistentContext('');
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
@@ -144,24 +152,23 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.getByTestId('firstmap').click({ button: 'right' });
     await page.click('div > div.mapml-contextmenu > button:nth-child(1)');
     await page.waitForTimeout(1000);
-    // TODO uncomment below when map.extent is implemented
-    // expect(await map.evaluate((map) => map.extent.projection)).toEqual(
-    //   'CBMTILE'
-    // );
-    // expect(await map.evaluate((map) => map.extent.zoom.minZoom)).toEqual(0);
-    // expect(await map.evaluate((map) => map.extent.zoom.maxZoom)).toEqual(3);
-    // expect(await map.evaluate((map) => map.extent.topLeft.pcrs)).toEqual(
-    //   expectedPCRS[0]
-    // );
-    // expect(await map.evaluate((map) => map.extent.topLeft.gcrs)).toEqual(
-    //   expectedGCRS[0]
-    // );
-    // expect(
-    //   await map.evaluate((map) => map.extent.topLeft.tilematrix[0])
-    // ).toEqual(expectedFirstTileMatrix[0]);
-    // expect(await map.evaluate((map) => map.extent.topLeft.tcrs[0])).toEqual(
-    //   expectedFirstTCRS[0]
-    // );
+    expect(await map.evaluate((map) => map.extent.projection)).toEqual(
+      'CBMTILE'
+    );
+    expect(await map.evaluate((map) => map.extent.zoom.minZoom)).toEqual(0);
+    expect(await map.evaluate((map) => map.extent.zoom.maxZoom)).toEqual(3);
+    expect(await map.evaluate((map) => map.extent.topLeft.pcrs)).toEqual(
+      expectedPCRS[0]
+    );
+    expect(await map.evaluate((map) => map.extent.topLeft.gcrs)).toEqual(
+      expectedGCRS[0]
+    );
+    expect(
+      await map.evaluate((map) => map.extent.topLeft.tilematrix[0])
+    ).toEqual(expectedFirstTileMatrix[0]);
+    expect(await map.evaluate((map) => map.extent.topLeft.tcrs[0])).toEqual(
+      expectedFirstTCRS[0]
+    );
   });
   test('Context menu, back and reload item at initial location disabled', async () => {
     await page.reload();
@@ -199,21 +206,20 @@ test.describe('Playwright Map Context Menu Tests', () => {
       .click();
     await page.waitForTimeout(300);
 
-    // TODO uncomment below when map.extent is implemented
-    // expect(await map.evaluate((map) => map.extent.zoom.minZoom)).toEqual(0);
-    // expect(await map.evaluate((map) => map.extent.zoom.maxZoom)).toEqual(3);
-    // expect(await map.evaluate((map) => map.extent.topLeft.pcrs)).toEqual(
-    //   expectedPCRS[1]
-    // );
-    // expect(await map.evaluate((map) => map.extent.topLeft.gcrs)).toEqual(
-    //   expectedGCRS[1]
-    // );
-    // expect(
-    //   await map.evaluate((map) => map.extent.topLeft.tilematrix[0])
-    // ).toEqual(expectedFirstTileMatrix[1]);
-    // expect(await map.evaluate((map) => map.extent.topLeft.tcrs[0])).toEqual(
-    //   expectedFirstTCRS[1]
-    // );
+    expect(await map.evaluate((map) => map.extent.zoom.minZoom)).toEqual(0);
+    expect(await map.evaluate((map) => map.extent.zoom.maxZoom)).toEqual(3);
+    expect(await map.evaluate((map) => map.extent.topLeft.pcrs)).toEqual(
+      expectedPCRS[1]
+    );
+    expect(await map.evaluate((map) => map.extent.topLeft.gcrs)).toEqual(
+      expectedGCRS[1]
+    );
+    expect(
+      await map.evaluate((map) => map.extent.topLeft.tilematrix[0])
+    ).toEqual(expectedFirstTileMatrix[1]);
+    expect(await map.evaluate((map) => map.extent.topLeft.tcrs[0])).toEqual(
+      expectedFirstTCRS[1]
+    );
   });
   test('Context menu, forward item at most recent location disabled', async () => {
     const map = await page.getByTestId('firstmap');
@@ -396,7 +402,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.locator('body > textarea#coord').fill('');
   });
 
-  test.skip('Submenu, copy extent with zoom level = 0', async () => {
+  test('Submenu, copy extent with zoom level = 0', async () => {
     currExtCS = await page.$eval(
       'body > gcds-map',
       (map) => map._map.contextMenu.defExtCS
@@ -423,7 +429,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.locator('body > textarea#coord').fill('');
   });
 
-  test.skip('Submenu, copy extent with zoom level = 1', async () => {
+  test('Submenu, copy extent with zoom level = 1', async () => {
     // zoom in
     await page.click('body > gcds-map');
     await page.keyboard.press('Tab');
@@ -457,7 +463,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     );
   });
 
-  test.skip('Submenu, copy map location in gcrs (default) coordinates', async () => {
+  test('Submenu, copy map location in gcrs (default) coordinates', async () => {
     currLocCS = await page.$eval(
       'body > gcds-map',
       (map) => map._map.contextMenu.defLocCS
@@ -503,7 +509,12 @@ test.describe('Playwright Map Context Menu Tests', () => {
       currLocCS
     );
   });
-  test.skip('Paste map-feature to map', async () => {
+  test('Paste map-feature to map', async () => {
+    const initialLayerCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.layers.length
+    );
+    
     currLocCS = await page.$eval(
       'body > gcds-map',
       (map) => map._map.contextMenu.defLocCS
@@ -525,9 +536,15 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
 
+    const layerCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.layers.length
+    );
+    expect(layerCount).toEqual(initialLayerCount + 1);
+    
     const layerLabel = await page.$eval(
       'body > gcds-map',
-      (map) => map.layers[1].label
+      (map) => map.layers[map.layers.length - 1].label
     );
     expect(layerLabel).toEqual('Pasted Layer');
     // clean up
@@ -535,7 +552,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
       map.removeChild(map.querySelector('[label="Pasted Layer"]'))
     );
   });
-  test.skip('Submenu, copy location in tilematrix coordinates, which is not implemented, so faked with gcrs', async () => {
+  test('Submenu, copy location in tilematrix coordinates, which is not implemented, so faked with gcrs', async () => {
     // set the copy location coordinate system to the not-implemented tilematrix
     await page.$eval('body > gcds-map', (map) => {
       map._map.contextMenu.defLocCS = 'tilematrix';
@@ -583,6 +600,11 @@ test.describe('Playwright Map Context Menu Tests', () => {
     );
   });
   test('Paste valid Layer to map', async () => {
+    const initialLayerCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.layers.length
+    );
+    
     await page.click('body > textarea#layer');
     await page.keyboard.press('Control+a');
     await page.keyboard.press('Control+c');
@@ -591,14 +613,25 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
 
+    const layerCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.layers.length
+    );
+    expect(layerCount).toEqual(initialLayerCount + 1);
+    
     const layerLabel = await page.$eval(
       'body > gcds-map',
-      (map) => map.layers[1].label
+      (map) => map.layers[map.layers.length - 1].label
     );
     expect(layerLabel).toEqual('Test Layer');
   });
 
-  test.skip('Paste invalid element to map', async () => {
+  test('Paste invalid element to map', async () => {
+    const initialChildCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.children.length
+    );
+    
     await page.click('body > textarea#invalidLayer');
     await page.keyboard.press('Control+a');
     await page.keyboard.press('Control+c');
@@ -606,14 +639,19 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.click('body > gcds-map');
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
-    const layerCount = await page.$eval(
+    const childCount = await page.$eval(
       'body > gcds-map',
       (map) => map.children.length
     );
-    expect(layerCount).toEqual(4);
+    expect(childCount).toEqual(initialChildCount);
   });
 
-  test.skip('Paste geojson to map', async () => {
+  test('Paste geojson to map', async () => {
+    const initialLayerCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.layers.length
+    );
+    
     await page.click('body > textarea#geojson');
     await page.keyboard.press('Control+a');
     await page.keyboard.press('Control+c');
@@ -622,18 +660,29 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
     await page.waitForTimeout(500);
+    const layerCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.layers.length
+    );
+    expect(layerCount).toEqual(initialLayerCount + 1);
+    
     const layerLabel = await page.$eval(
       'body > gcds-map',
-      (map) => map.layers[2].outerHTML
+      (map) => map.layers[map.layers.length - 1].outerHTML
     );
     const expected = await page.$eval(
       'body > textarea#geojsonExpected',
       (textarea) => textarea.value
     );
-    expect(layerLabel).toEqual(expected);
+    expect(normalizeHTML(layerLabel)).toEqual(expected);
   });
 
-  test.skip('Paste invalid geojson to map', async () => {
+  test('Paste invalid geojson to map', async () => {
+    const initialChildCount = await page.$eval(
+      'body > gcds-map',
+      (map) => map.children.length
+    );
+    
     await page.click('body > textarea#geojsonInvalid');
     await page.keyboard.press('Control+a');
     await page.keyboard.press('Control+c');
@@ -641,14 +690,14 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.click('body > gcds-map');
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
-    const layerCount = await page.$eval(
+    const childCount = await page.$eval(
       'body > gcds-map',
       (map) => map.children.length
     );
-    expect(layerCount).toEqual(5);
+    expect(childCount).toEqual(initialChildCount);
   });
 
-  test.skip('Context menu, click at margin and move mouse out when submenu is visible', async () => {
+  test('Context menu, click at margin and move mouse out when submenu is visible', async () => {
     // click at the right-bottom margin of map
     await page.mouse.wheel(0, 200);
     await page.waitForTimeout(200);

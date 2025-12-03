@@ -10,6 +10,7 @@ test.describe('Playwright gcds-map Element Controls Test', () => {
       (await context.newPage());
     page = await context.newPage();
     await page.goto('/test/gcds-map/gcds-mapControls.html');
+    await page.waitForTimeout(1000);
   });
 
   test.afterAll(async function () {
