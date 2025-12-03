@@ -628,6 +628,7 @@ export class GcdsMap {
       // Load ContextMenu handler to register init hooks
       await import('../utils/mapml/handlers/ContextMenu.js');
       await import('../utils/mapml/handlers/AnnounceMovement.js');
+      await import('../utils/mapml/handlers/keyboard.js');
       // TODO: other controls if needed
     } catch (error) {
       console.error('Failed to load MapML controls:', error);
@@ -870,6 +871,22 @@ export class GcdsMap {
       },
       this
     );
+
+    // Handle Ctrl+V paste for layers, links and geojson
+    this.el.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.keyCode === 86 && e.ctrlKey) {
+        navigator.clipboard.readText().then((layer) => {
+          Util._pasteLayer(this.el, layer);
+        });
+      } else if (
+        e.keyCode === 32 &&
+        this.el.shadowRoot.activeElement?.nodeName !== 'INPUT'
+      ) {
+        // Prevent default spacebar event on map
+        e.preventDefault();
+        this._map.fire('keypress', { originalEvent: e });
+      }
+    });
   }
 
   /**
