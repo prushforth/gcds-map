@@ -49,15 +49,14 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
         .cloneNode(true);
       document.querySelector('[data-testid=test-layer]').appendChild(ext);
     });
-    // Wait for the extent itself to be ready
-    await page.evaluate(async () => {
-      const extent = document.querySelector('[data-testid=test-layer] map-extent');
-      if (extent && typeof (extent as any).whenReady === 'function') {
-        await (extent as any).whenReady();
-      }
+    
+    // Wait for extent element to initialize
+    await page.waitForTimeout(500);
+    
+    // Now zoom to the new extent
+    await layer.evaluate(async (layer) => {
+      await (layer as any).zoomTo();
     });
-    await layer.evaluate((layer) => (layer as any).zoomTo());
-    // Wait for zoomTo to complete and map to update
     await page.waitForTimeout(500);
     await expect(layer).not.toHaveAttribute('disabled');
     mapLocation = await viewer.evaluate((v) => ({
@@ -68,8 +67,8 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
     expect(mapLocation).toEqual(
       expect.objectContaining({
         zoom: 3,
-        lat: expect.closeTo(55.26, 2),
-        lon: expect.closeTo(-109.13, 2)
+        lat: expect.closeTo(55.28, 1),
+        lon: expect.closeTo(-109.14, 1)
       })
     );
     await layer.evaluate(

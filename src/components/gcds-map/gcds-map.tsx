@@ -871,6 +871,21 @@ export class GcdsMap {
       },
       this
     );
+    
+    // Set up zoom bounds management based on layer extents
+    const setMapMinAndMaxZoom = ((e) => {
+      this.whenLayersReady().then(() => {
+        if (e && e.layer._layerEl) {
+          this._map.setMaxZoom(this.extent.zoom.maxZoom);
+          this._map.setMinZoom(this.extent.zoom.minZoom);
+        }
+      });
+    }).bind(this);
+    this.whenLayersReady().then(() => {
+      this._map.setMaxZoom(this.extent.zoom.maxZoom);
+      this._map.setMinZoom(this.extent.zoom.minZoom);
+      this._map.on('layeradd layerremove', setMapMinAndMaxZoom, this);
+    });
 
     // Handle Ctrl+V paste for layers, links and geojson
     this.el.addEventListener('keydown', (e: KeyboardEvent) => {
