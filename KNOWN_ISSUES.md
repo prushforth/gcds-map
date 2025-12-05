@@ -1,5 +1,46 @@
 # Known Issues
 
+## Next Feature Button Race Condition
+
+**Status**: Bug exists in both gcds-map and mapml-source  
+**Discovered**: December 5, 2025 during test migration  
+**Test**: `multipleQueryExtents.e2e.ts` - Tests with rapid "Next feature" button clicks
+
+### Description
+Clicking the "Next feature" button too rapidly in query result pagination causes a console error and potential test/UI failures. The error occurs in `MapFeatureLayer.js:352`:
+
+```
+Uncaught (in promise) TypeError: Cannot read properties of null (reading 'fire')
+    at NewClass.showPaginationFeature (MapFeatureLayer.js:352:17)
+```
+
+### Technical Details
+The `showPaginationFeature` method attempts to fire events on an object that becomes null when the button is clicked faster than the previous pagination operation completes. This suggests the pagination state isn't properly synchronized or protected against rapid successive calls.
+
+### Reproduction
+```javascript
+// Click "Next feature" button rapidly without delays
+await page.getByTitle('Next feature').click();
+await page.getByTitle('Next feature').click(); // May cause error
+await page.getByTitle('Next feature').click(); // More likely to cause error
+```
+
+### Workaround
+Add 100ms delays between clicks:
+```javascript
+await page.getByTitle('Next feature').click();
+await page.waitForTimeout(100);
+await page.getByTitle('Next feature').click();
+```
+
+### Notes
+- Manual slow clicking doesn't reproduce the issue
+- The race condition suggests missing state synchronization in pagination logic
+- Should investigate adding debouncing or disabling the button during pagination transitions
+- This is not a regression - mapml-source has the same behavior
+
+---
+
 ## Layer Control - Extent Disappears After DOM Reordering
 
 **Status**: Bug exists in both gcds-map and mapml-source  
