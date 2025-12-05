@@ -49,33 +49,30 @@ test.describe('Adding Opacity Attribute to the <map-extent> Element', () => {
       });
     });
     await page.waitForTimeout(300);
-    // check the opacity slider value for each map-extent layerControl
-    let opacity_slider_value1 = await page.$eval(
-      'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div.mapml-layer-item-settings > fieldset > fieldset:nth-child(1) > div.mapml-layer-item-settings > details > input[type=range]',
-      (opacity) => opacity.value
-    );
-    let extent_opacity1 = await page.$eval(
+    // check the opacity slider value for each map-extent matches its opacity
+    let extent1 = await page.$eval(
       'body > gcds-map > map-layer > map-extent:nth-child(1)',
-      (extent) => extent._extentLayer._container.style.opacity
+      (extent) => ({
+        opacity: extent._extentLayer._container.style.opacity,
+        sliderValue: extent._opacitySlider.value
+      })
     );
-    let opacity_slider_value2 = await page.$eval(
-      'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div.mapml-layer-item-settings > fieldset > fieldset:nth-child(2) > div.mapml-layer-item-settings > details > input[type=range]',
-      (opacity) => opacity.value
-    );
-    let extent_opacity2 = await page.$eval(
+    let extent2 = await page.$eval(
       'body > gcds-map > map-layer > map-extent:nth-child(2)',
-      (extent) => extent._extentLayer._container.style.opacity
+      (extent) => ({
+        opacity: extent._extentLayer._container.style.opacity,
+        sliderValue: extent._opacitySlider.value
+      })
     );
-    let opacity_slider_value3 = await page.$eval(
-      'div > div.leaflet-control-container > div.leaflet-top.leaflet-right > div > section > div.leaflet-control-layers-overlays > fieldset > div.mapml-layer-item-settings > fieldset > fieldset:nth-child(3) > div.mapml-layer-item-settings > details > input[type=range]',
-      (opacity) => opacity.value
-    );
-    let extent_opacity3 = await page.$eval(
+    let extent3 = await page.$eval(
       'body > gcds-map > map-layer > map-extent:nth-child(3)',
-      (extent) => extent._extentLayer._container.style.opacity
+      (extent) => ({
+        opacity: extent._extentLayer._container.style.opacity,
+        sliderValue: extent._opacitySlider.value
+      })
     );
-    expect(extent_opacity1).toEqual(opacity_slider_value1);
-    expect(extent_opacity2).toEqual(opacity_slider_value2);
-    expect(extent_opacity3).toEqual(opacity_slider_value3);
+    expect(extent1.opacity).toEqual(extent1.sliderValue);
+    expect(extent2.opacity).toEqual(extent2.sliderValue);
+    expect(extent3.opacity).toEqual(extent3.sliderValue);
   });
 });
