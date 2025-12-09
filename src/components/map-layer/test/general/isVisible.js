@@ -6,8 +6,23 @@ exports.test = (path, zoomIn, zoomOut) => {
     let context;
     test.beforeAll(async () => {
       context = await chromium.launchPersistentContext('', { slowMo: 250 });
-      page = await context.newPage();
-      await page.goto(path);
+      page =
+        context.pages().find((page) => page.url() === 'about:blank') ||
+        (await context.newPage());
+      await page.goto(path, { waitUntil: 'load' });
+      await page.waitForTimeout(1000);
+    });
+    
+    test.afterAll(async () => {
+      await context.close();
+    });
+    
+    test.beforeEach(async () => {
+      await page.waitForTimeout(500);
+    });
+    
+    test.afterEach(async () => {
+      await page.waitForTimeout(500);
     });
 
     test('isVisible property false when zoomed out of bounds (zooming in)', async () => {

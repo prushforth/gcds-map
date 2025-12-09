@@ -11,10 +11,16 @@ exports.test = (path, expectedPCRS, expectedGCRS) => {
       page =
         context.pages().find((page) => page.url() === 'about:blank') ||
         (await context.newPage());
-      await page.goto(path);
+      await page.goto(path, { waitUntil: 'load' });
+      await page.waitForTimeout(1000);
     });
-    test.beforeEach(async () => {
-      await page.waitForTimeout(250);
+
+    test.afterAll(async () => {
+      await context.close();
+    });
+
+    test.afterEach(async () => {
+      await page.waitForTimeout(500);
     });
 
     test('<map-layer>.extent test', async () => {

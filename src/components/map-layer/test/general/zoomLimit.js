@@ -6,13 +6,23 @@ exports.test = (path, zoomIn, zoomOut) => {
     let context;
     test.beforeAll(async () => {
       context = await chromium.launchPersistentContext('', { slowMo: 250 });
-      page = await context.newPage();
-      await page.goto(path);
+      page =
+        context.pages().find((page) => page.url() === 'about:blank') ||
+        (await context.newPage());
+      await page.goto(path, { waitUntil: 'load' });
       await page.waitForTimeout(1000);
       // removes the 2nd layer element in the 1st map
       await page.$eval('xpath=/html/body/gcds-map', (controller) =>
         controller.removeChild(controller.children[1])
       );
+    });
+    
+    test.afterAll(async () => {
+      await context.close();
+    });
+    
+    test.afterEach(async () => {
+      await page.waitForTimeout(500);
     });
 
     test('Limit gcds-map zooming (zooming in)', async () => {
