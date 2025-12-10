@@ -6,7 +6,7 @@ test.describe('Simple query by select values without map extent filter tests', (
   test.beforeAll(async () => {
     context = await chromium.launchPersistentContext('', { slowMo: 250 });
     page = await context.newPage();
-    await page.goto('/test/map-layer/templatedFeaturesFilter.html');
+    await page.goto('/test/map-layer/templatedFeaturesFilter.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {
