@@ -21,7 +21,7 @@ export const config: Config = {
           dest: 'test/gcds-map'
         },
         {
-          src: 'components/map-layer/test/*.{html,mapml,css,js}',
+          src: 'components/map-layer/test/*.{html,mapml,css,js,pmtiles}',
           dest: 'test/map-layer'
         },
         {
@@ -103,7 +103,7 @@ export const config: Config = {
           dest: 'test/gcds-map'
         },
         {
-          src: 'components/map-layer/test/*.{html,mapml,css,js}',
+          src: 'components/map-layer/test/*.{html,mapml,css,js,pmtiles}',
           dest: 'test/map-layer'
         },
         {

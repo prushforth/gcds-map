@@ -331,6 +331,7 @@ export class MapLink {
         .then((module) => module.pmtilesRulesReady)
         .then((initializedRules) => {
           this._pmtilesRules = initializedRules;
+          (this.el as any)._pmtilesRules = initializedRules;
         })
         .catch((reason) => {
           console.error(
