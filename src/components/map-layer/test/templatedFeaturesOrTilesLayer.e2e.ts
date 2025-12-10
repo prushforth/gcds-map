@@ -6,7 +6,7 @@ test.describe('Tests to confirm that content cannot be recursively loaded', () =
   test.beforeAll(async () => {
     context = await chromium.launchPersistentContext('', { slowMo: 250 });
     page = await context.newPage();
-    await page.goto('/test/map-layer/templatedFeaturesOrTiles.html');
+    await page.goto('/test/map-layer/templatedFeaturesOrTiles.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {
