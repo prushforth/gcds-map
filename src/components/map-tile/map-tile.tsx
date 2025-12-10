@@ -1,7 +1,7 @@
 import { Component, Prop, Element, Method, Watch } from '@stencil/core';
-import { Util } from '../../mapml-source/src/mapml/utils/Util.js';
-import { mapTileLayer } from '../../mapml-source/src/mapml/layers/MapTileLayer.js';
-import { calculatePosition } from '../../mapml-source/src/mapml/elementSupport/layers/calculatePosition.js';
+import { Util } from '../utils/mapml/Util.js';
+import { mapTileLayer } from '../utils/mapml/layers/MapTileLayer.js';
+import { calculatePosition } from '../utils/mapml/elementSupport/layers/calculatePosition.js';
 
 @Component({
   tag: 'map-tile',
@@ -10,7 +10,7 @@ import { calculatePosition } from '../../mapml-source/src/mapml/elementSupport/l
 export class MapTile {
   @Element() el: HTMLElement;
 
-  // "Set once" properties
+  // "Set once" properties - these are set once at connection and never change
   @Prop({ reflect: true }) row?: number;
   @Prop({ reflect: true }) col?: number;
   @Prop({ reflect: true }) zoom?: number;
@@ -19,19 +19,62 @@ export class MapTile {
   _parentEl: any;
   _tileLayer: any;
   _extent: any;
+  
+  // Store initial values to prevent changes after connection
+  private _initialRow: number;
+  private _initialCol: number;
+  private _initialZoom: number;
+  private _hasConnected = false;
 
   @Watch('src')
   srcChanged(newValue: string, oldValue: string) {
     if (oldValue !== newValue) {
       if (this._extent) this._calculateExtent();
       if (this._tileLayer) {
-        this._tileLayer.removeMapTile(this);
-        this._tileLayer.addMapTile(this);
+        this._tileLayer.removeMapTile(this.el);
+        this._tileLayer.addMapTile(this.el);
       }
     }
   }
 
   connectedCallback() {
+    // Capture initial values before anything else - these won't change
+    // Read from attributes first, then fall back to props
+    this._initialRow = this.el.hasAttribute('row') ? +this.el.getAttribute('row') : (this.row ?? 0);
+    this._initialCol = this.el.hasAttribute('col') ? +this.el.getAttribute('col') : (this.col ?? 0);
+    this._initialZoom = this.el.hasAttribute('zoom') ? +this.el.getAttribute('zoom') : (this.zoom ?? (this.getMapEl()?.zoom || 0));
+    this._hasConnected = true;
+    
+    // Override getAttribute/setAttribute on the element to prevent row/col/zoom changes
+    const originalGetAttribute = this.el.getAttribute.bind(this.el);
+    const originalSetAttribute = this.el.setAttribute.bind(this.el);
+    
+    this.el.getAttribute = (name: string) => {
+      if (this._hasConnected) {
+        switch (name) {
+          case 'row':
+            return String(this._initialRow);
+          case 'col':
+            return String(this._initialCol);
+          case 'zoom':
+            return String(this._initialZoom);
+        }
+      }
+      return originalGetAttribute(name);
+    };
+    
+    this.el.setAttribute = (name: string, value: string) => {
+      if (this._hasConnected) {
+        switch (name) {
+          case 'row':
+          case 'col':
+          case 'zoom':
+            return; // Ignore changes to these after connection
+        }
+      }
+      originalSetAttribute(name, value);
+    };
+    
     // Find parent element (handle shadow DOM)
     const parentNode = this.el.parentNode as HTMLElement;
     this._parentEl =
@@ -49,7 +92,7 @@ export class MapTile {
   }
   disconnectedCallback() {
     if (this._tileLayer) {
-      this._tileLayer.removeMapTile(this);
+      this._tileLayer.removeMapTile(this.el);
       if (this._tileLayer._mapTiles && this._tileLayer._mapTiles.length === 0) {
         this._tileLayer.remove();
         this._tileLayer = null;
@@ -67,14 +110,15 @@ export class MapTile {
   }
 
   // "Set once" property pattern for row, col, zoom
+  // After connection, always return the initial values
   get rowValue() {
-    return +this.row;
+    return this._hasConnected ? this._initialRow : +this.row;
   }
   get colValue() {
-    return +this.col;
+    return this._hasConnected ? this._initialCol : +this.col;
   }
   get zoomValue() {
-    return +this.zoom;
+    return this._hasConnected ? this._initialZoom : +this.zoom;
   }
 
   get extent() {
@@ -112,7 +156,7 @@ export class MapTile {
   }
 
   getMapEl() {
-    return Util.getClosest(this.el, 'gcds-map,mapml-viewer,map[is=web-map]');
+    return Util.getClosest(this.el, 'gcds-map');
   }
 
   getLayerEl() {
@@ -146,7 +190,7 @@ export class MapTile {
           parentElement._layer?.getContainer?.(),
         zIndex: this.position
       });
-      this._tileLayer.addMapTile(this);
+      this._tileLayer.addMapTile(this.el);
       if (parentElement._templatedLayer?.addLayer) {
         parentElement._templatedLayer.addLayer(this._tileLayer);
       } else {
@@ -163,7 +207,7 @@ export class MapTile {
         entry.count++;
       }
       if (this._tileLayer) {
-        this._tileLayer.addMapTile(this);
+        this._tileLayer.addMapTile(this.el);
       }
     }
   }
