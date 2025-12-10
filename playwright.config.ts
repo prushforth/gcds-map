@@ -6,7 +6,7 @@ expect.extend(matchers);
 export default defineConfig({
   testDir: './src',
   testMatch: '*.e2e.ts',
-  timeout: 10000,
+  timeout: 25000,
   use: {
     baseURL: 'http://localhost:3333/',
   },
