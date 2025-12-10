@@ -248,6 +248,16 @@ export class GcdsMapLayer {
     // Publish _validateDisabled on element for MapML compatibility
     (this.el as any)._validateDisabled = this._validateDisabled.bind(this);
     
+    // Expose disabled property on DOM element
+    Object.defineProperty(this.el, 'disabled', {
+      get: () => this.disabled,
+      set: (val: boolean) => {
+        this.disabled = val;
+      },
+      configurable: true,
+      enumerable: true
+    });
+    
     // Expose _opacity property on DOM element (internal opacity state)
     Object.defineProperty(this.el, '_opacity', {
       get: () => this._opacity,

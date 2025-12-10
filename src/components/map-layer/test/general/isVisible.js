@@ -9,7 +9,7 @@ exports.test = (path, zoomIn, zoomOut) => {
       page =
         context.pages().find((page) => page.url() === 'about:blank') ||
         (await context.newPage());
-      await page.goto(path, { waitUntil: 'load' });
+      await page.goto(path, { waitUntil: 'networkidle' });
       await page.waitForTimeout(1000);
     });
     

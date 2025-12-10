@@ -8,7 +8,7 @@ test.describe('Templated features cleanup test', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/renderer.html');
+    await page.goto('/test/map-layer/renderer.html', { waitUntil: 'networkidle'});
   });
 
   test.afterAll(async function () {
@@ -21,7 +21,6 @@ test.describe('Templated features cleanup test', () => {
     let svgCount = await link.evaluate(
       (l) => l._templatedLayer._container.querySelectorAll('svg').length
     );
-    const viewer = page.getByTestId('map');
     await page.getByLabel('Zoom in').click();
     await page.getByLabel('Zoom in').click();
     await page.getByLabel('Zoom in').click();
