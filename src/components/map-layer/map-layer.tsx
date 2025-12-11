@@ -168,8 +168,39 @@ export class GcdsMapLayer {
       : null;
   }
   private _registerMediaQuery(mq: string) {
-    // TODO: Implement media query registration
-    console.log('Media query registration not yet implemented:', mq);
+    if (!this._changeHandler) {
+      this._changeHandler = () => {
+        this._onRemove();
+        if (this._mql.matches) {
+          this._onAdd();
+        }
+        // set the disabled 'read-only' attribute indirectly, via _validateDisabled
+        this._validateDisabled();
+      };
+    }
+
+    if (mq) {
+      // a new media query is being established
+      let map = this.getMapEl();
+      if (!map) return;
+
+      // Remove listener from the old media query (if it exists)
+      if (this._mql) {
+        this._mql.removeEventListener('change', this._changeHandler);
+      }
+
+      this._mql = (map as any).matchMedia(mq);
+      this._changeHandler();
+      this._mql.addEventListener('change', this._changeHandler);
+    } else if (this._mql) {
+      // the media attribute removed or query set to ''
+      this._mql.removeEventListener('change', this._changeHandler);
+      delete this._mql;
+      // effectively, no / empty media attribute matches, do what changeHandler does
+      this._onRemove();
+      this._onAdd();
+      this._validateDisabled();
+    }
   }
 
   getMapEl() {

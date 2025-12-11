@@ -9,8 +9,7 @@ test.describe('map-layer media attribute', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('map-layer-media.html');
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-layer/map-layer-media.html', { waitUntil: 'networkidle' });
     viewer = page.getByTestId('viewer');
   });
   test('On initial load, a matching media queried layer is enabled', async () => {
