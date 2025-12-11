@@ -223,33 +223,29 @@ test.describe('map-layer local/inline extent source tests', () => {
     expect(bounds.zminNative).toEqual(3);
   });
   test(`map-layer .extent bounds change with added / removed child map-features`, async () => {
-    await page.evaluate(async () => {
-      const leafletModule = await import('/leaflet-src.esm.js');
-      window.L = leafletModule.default || leafletModule;
-    });
     const newFeature = `<map-feature data-testid="f1" zoom="0" min="0" max="11"><map-geometry cs="pcrs"><map-linestring>
                         <map-coordinates>-7195964 5732985 4048850 5732985 4048850 -5511829 -7195964 -5511829 -7195964 5732985 
                         </map-coordinates></map-linestring></map-geometry>
                       </map-feature>`;
 
-    const layer = await page.evaluateHandle(() =>
-      document.querySelector('[data-testid=inline-layer]')
-    );
-    const initialLayerBoundsContainsFeatureBounds = await page.evaluate(
-      (obj) => {
-        // weird, but could not use document.querySelector here
+    const initialLayerBoundsContainsFeatureBounds = await page.getByTestId('inline-layer').evaluate(
+      async (l, featureHTML) => {
         let beforeFeatureLayerBounds = L.bounds(
           [
-            obj.l.extent.topLeft.pcrs.horizontal,
-            obj.l.extent.topLeft.pcrs.vertical
+            l.extent.topLeft.pcrs.horizontal,
+            l.extent.topLeft.pcrs.vertical
           ],
           [
-            obj.l.extent.bottomRight.pcrs.horizontal,
-            obj.l.extent.bottomRight.pcrs.vertical
+            l.extent.bottomRight.pcrs.horizontal,
+            l.extent.bottomRight.pcrs.vertical
           ]
         );
-        obj.l.insertAdjacentHTML('beforeend', obj.f);
-        let f = obj.l.querySelector('[data-testid=f1]');
+        l.insertAdjacentHTML('beforeend', featureHTML);
+        let f = l.querySelector('[data-testid=f1]');
+        // Wait for the custom element to be fully connected and initialized
+        if (f.whenReady) {
+          await f.whenReady();
+        }
         let featureBounds = L.bounds(
           [f.extent.topLeft.pcrs.horizontal, f.extent.topLeft.pcrs.vertical],
           [
@@ -259,10 +255,11 @@ test.describe('map-layer local/inline extent source tests', () => {
         );
         return beforeFeatureLayerBounds.contains(featureBounds);
       },
-      { l: layer, f: newFeature }
+      newFeature
     );
     expect(initialLayerBoundsContainsFeatureBounds).toBe(false);
 
+    const inline = page.getByTestId('inline-layer');
     const layerBoundsIncludesNewFeatureBounds = await inline.evaluate((l) => {
       let layerBounds = L.bounds(
         [l.extent.topLeft.pcrs.horizontal, l.extent.topLeft.pcrs.vertical],
