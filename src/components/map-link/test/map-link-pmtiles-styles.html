@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>map-link-pmtiles-styles.html</title>
-    <script type="module" src="../mapml.js"></script>
+    <script type="module" src="/build/gcds-map.esm.js"></script>
   </head>
   <body>
-    <mapml-viewer data-testid="viewer" controls style="width: 500px;height: 500px;"  projection="OSMTILE" zoom="10" lat="44.5" lon="-103.8">
-      <map-layer data-testid="dark" src="dark.mapml" ></map-layer>
+    <gcds-map data-testid="viewer" controls style="width: 500px;height: 500px;"  projection="OSMTILE" zoom="10" lat="44.5" lon="-103.8">
+      <map-layer data-testid="dark" src="/test/map-link/dark.mapml" ></map-layer>
       <map-layer data-testid="local-layer">
         <map-link data-testid="local-operative-light" rel="stylesheet" type="application/pmtiles+stylesheet" href="lightTheme.js"></map-link>
 
@@ -17,7 +17,7 @@
         <map-extent data-testid="local-light-me" label="light" units="OSMTILE" checked="checked" >
 
           <!-- this guy should use the local-operative-light stylesheet in the local-layer -->
-          <map-link rel="tile" type="application/pmtiles" tref="../spearfish.pmtiles?theme=light"></map-link>
+          <map-link rel="tile" type="application/pmtiles" tref="http://localhost:30333/test/map-layer/spearfish.pmtiles?theme=light"></map-link>
 
         </map-extent>
         <map-extent data-testid="local-dark-me" label="dark" units="OSMTILE" checked="checked" >
@@ -26,10 +26,10 @@
           <map-link data-testid="local-inoperative-light" rel="stylesheet" type="application/pmtiles+stylesheet" href="lightTheme.js"></map-link>
 
           <!-- this guy should use the local-operative-dark stylesheet -->
-          <map-link rel="tile" type="application/pmtiles" tref="../spearfish.pmtiles?theme=dark"></map-link>
+          <map-link rel="tile" type="application/pmtiles" tref="http://localhost:30333/test/map-layer/spearfish.pmtiles?theme=dark"></map-link>
 
         </map-extent>
       </map-layer>
-    </mapml-viewer>
+    </gcds-map>
   </body>
 </html>

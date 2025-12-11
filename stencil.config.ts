@@ -45,7 +45,7 @@ export const config: Config = {
           dest: 'test/map-style'
         },
         {
-          src: 'components/map-link/test/*.{html,mapml,css}',
+          src: 'components/map-link/test/*.{html,mapml,css,js}',
           dest: 'test/map-link'
         },
         {
@@ -127,7 +127,7 @@ export const config: Config = {
           dest: 'test/map-style'
         },
         {
-          src: 'components/map-link/test/*.{html,mapml,css}',
+          src: 'components/map-link/test/*.{html,mapml,css,js}',
           dest: 'test/map-link'
         },
         {

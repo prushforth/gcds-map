@@ -11,7 +11,7 @@ test.describe('pmtiles map-link with associated style can be in a remote mapml d
   });
 
   test.beforeEach(async function () {
-    await page.goto('pmtiles/map-link-pmtiles-styles.html');
+    await page.goto('/test/map-link/map-link-pmtiles-styles.html', { waitUntil: 'networkidle' });
   });
   test('map-link styles load correctly from within remote mapml', async () => {
     const viewer = page.getByTestId('viewer');
@@ -47,7 +47,6 @@ test.describe('pmtiles map-link with associated style can be in a remote mapml d
   test('map-link in local content selects correct stylesheet link from context', async () => {
     const viewer = page.getByTestId('viewer');
     await expect(viewer).toBeTruthy();
-    const remoteLayer = viewer.getByTestId('dark');
     const layer = viewer.getByTestId('local-layer');
     await layer.evaluate((l) => (l.checked = true));
 

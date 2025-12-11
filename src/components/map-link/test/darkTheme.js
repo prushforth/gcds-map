@@ -9,8 +9,8 @@ const sheet = new protomapsL.Sheet(`
 `);
 const pmtilesRules = new Map();
 const pmtilesRulesReady = sheet.load().then(() => {
-  pmtilesRules.set('http://localhost:30001/spearfish.pmtiles?theme=light', {
-    theme: { theme: 'light' }
+  pmtilesRules.set('http://localhost:30333/test/map-layer/spearfish.pmtiles?theme=dark', {
+    theme: { theme: 'dark' }
   });
   return pmtilesRules;
 });
