@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { test, expect, chromium } from '@playwright/test';
 
 test.describe('map-layer local/inline extent source tests', () => {
@@ -10,8 +11,11 @@ test.describe('map-layer local/inline extent source tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('layer-extent.html');
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-layer/layer-extent.html', { waitUntil: 'networkidle' });
+    await page.evaluate(async () => {
+      const leafletModule = await import('/leaflet-src.esm.js');
+      window.L = leafletModule.default || leafletModule;
+    });
   });
   test('map-layer.extent min/maxZoom from map-inputs', async () => {
     // changed to add :host / :scope - create a test that passes now but failed before that change
@@ -139,11 +143,10 @@ test.describe('map-layer local/inline extent source tests', () => {
     expect(bounds.zminNative).toEqual(3);
   });
   test('map-layer.extent bounds update with addition of map-meta children', async () => {
-    await page.reload();
-    await page.waitForTimeout(1000);
+    await page.reload({ waitUntil: 'networkidle' });
     await page.evaluate(async () => {
-      const leaflet = await import('http://localhost:30001/leaflet-src.esm.js');
-      window.L = leaflet;
+      const leafletModule = await import('/leaflet-src.esm.js');
+      window.L = leafletModule.default || leafletModule;
     });
     // this tests the MutationObserver on the map-layer element to ensure it's
     // listening for map-meta name=zoom and name=extent
@@ -220,6 +223,10 @@ test.describe('map-layer local/inline extent source tests', () => {
     expect(bounds.zminNative).toEqual(3);
   });
   test(`map-layer .extent bounds change with added / removed child map-features`, async () => {
+    await page.evaluate(async () => {
+      const leafletModule = await import('/leaflet-src.esm.js');
+      window.L = leafletModule.default || leafletModule;
+    });
     const newFeature = `<map-feature data-testid="f1" zoom="0" min="0" max="11"><map-geometry cs="pcrs"><map-linestring>
                         <map-coordinates>-7195964 5732985 4048850 5732985 4048850 -5511829 -7195964 -5511829 -7195964 5732985 
                         </map-coordinates></map-linestring></map-geometry>
@@ -256,7 +263,6 @@ test.describe('map-layer local/inline extent source tests', () => {
     );
     expect(initialLayerBoundsContainsFeatureBounds).toBe(false);
 
-    const inline = page.getByTestId('inline-layer');
     const layerBoundsIncludesNewFeatureBounds = await inline.evaluate((l) => {
       let layerBounds = L.bounds(
         [l.extent.topLeft.pcrs.horizontal, l.extent.topLeft.pcrs.vertical],
