@@ -196,6 +196,8 @@ export class MapTile {
       } else {
         parentElement._layer?.addLayer?.(this._tileLayer);
       }
+      // Publish _tileLayer on the element for test access
+      (this.el as any)._tileLayer = this._tileLayer;
       // Add this position to the parent's _layerRegistry with layer reference and count = 1
       parentElement._layerRegistry.set(this.position, { layer: this._tileLayer, count: 1 });
     } else {
@@ -208,6 +210,8 @@ export class MapTile {
       }
       if (this._tileLayer) {
         this._tileLayer.addMapTile(this.el);
+        // Publish _tileLayer on the element for test access
+        (this.el as any)._tileLayer = this._tileLayer;
       }
     }
   }
