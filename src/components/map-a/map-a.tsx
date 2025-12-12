@@ -12,7 +12,4 @@ export class MapA {
   @Prop({ reflect: true }) type?: string;
   @Prop({ reflect: true }) inplace?: boolean;
 
-  render() {
-    return null;
-  }
 }

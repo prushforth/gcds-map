@@ -29,12 +29,7 @@ export class MapStyle {
   private _connect() {
     this.styleElement = document.createElement('style');
     (this.styleElement as any).mapStyle = this.el;
-    // Use innerHTML instead of textContent - during Stencil initialization,
-    // textContent returns empty string even though innerHTML has the CSS content
-    // Parse innerHTML to extract only text content, filtering out any elements like <script>
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = this.el.innerHTML;
-    this.styleElement.textContent = tempDiv.textContent || '';
+    this.styleElement.textContent = this.el.textContent;
     this._copyAttributes(this.el, this.styleElement);
     // Expose styleElement as a public property on the element
     Object.defineProperty(this.el, 'styleElement', {
@@ -58,13 +53,7 @@ export class MapStyle {
     
     
     this._observer = new MutationObserver(() => {
-      // Use innerHTML instead of textContent - textContent is empty in Stencil components
-      // Parse innerHTML to extract only text content, filtering out any elements
-      if (this.styleElement) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = this.el.innerHTML;
-        this.styleElement.textContent = tempDiv.textContent || '';
-      }
+      this.styleElement.textContent = this.el.textContent;
     });
     this._observer.observe(this.el, {
       childList: true,
@@ -133,9 +122,5 @@ export class MapStyle {
 
   disconnectedCallback() {
     this._disconnect();
-  }
-
-  render() {
-    return null;
   }
 }
