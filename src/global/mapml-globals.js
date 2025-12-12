@@ -721,4 +721,194 @@ import Proj from 'proj4leaflet/src/proj4leaflet.js';
 
   // this is for tests, all other modules import and use Util directly
   M.Util = Util;
+
+  // Global API for defining custom projections
+  M.defineCustomProjection = function(jsonTemplate) {
+    let t = JSON.parse(jsonTemplate);
+    if (
+      t === undefined ||
+      !t.proj4string ||
+      !t.projection ||
+      !t.resolutions ||
+      !t.origin ||
+      !t.bounds
+    )
+      throw new Error('Incomplete TCRS Definition');
+    if (t.projection.indexOf(':') >= 0)
+      throw new Error('":" is not permitted in projection name');
+    if (M[t.projection.toUpperCase()]) return t.projection.toUpperCase();
+    let tileSize = [256, 512, 1024, 2048, 4096].includes(t.tilesize)
+      ? t.tilesize
+      : M.TILE_SIZE;
+
+    M[t.projection] = new Proj.CRS(t.projection, t.proj4string, {
+      origin: t.origin,
+      resolutions: t.resolutions,
+      bounds: bounds(t.bounds),
+      crs: {
+        tcrs: {
+          horizontal: {
+            name: 'x',
+            min: 0,
+            max: (zoom) =>
+              Math.round(
+                M[t.projection].options.bounds.getSize().x /
+                  M[t.projection].options.resolutions[zoom]
+              )
+          },
+          vertical: {
+            name: 'y',
+            min: 0,
+            max: (zoom) =>
+              Math.round(
+                M[t.projection].options.bounds.getSize().y /
+                  M[t.projection].options.resolutions[zoom]
+              )
+          },
+          bounds: (zoom) =>
+            bounds(
+              [
+                M[t.projection].options.crs.tcrs.horizontal.min,
+                M[t.projection].options.crs.tcrs.vertical.min
+              ],
+              [
+                M[t.projection].options.crs.tcrs.horizontal.max(zoom),
+                M[t.projection].options.crs.tcrs.vertical.max(zoom)
+              ]
+            )
+        },
+        pcrs: {
+          horizontal: {
+            name: 'easting',
+            get min() {
+              return M[t.projection].options.bounds.min.x;
+            },
+            get max() {
+              return M[t.projection].options.bounds.max.x;
+            }
+          },
+          vertical: {
+            name: 'northing',
+            get min() {
+              return M[t.projection].options.bounds.min.y;
+            },
+            get max() {
+              return M[t.projection].options.bounds.max.y;
+            }
+          },
+          get bounds() {
+            return M[t.projection].options.bounds;
+          }
+        },
+        gcrs: {
+          horizontal: {
+            name: 'longitude',
+            // set min/max axis values from EPSG registry area of use, retrieved 2019-07-25
+            get min() {
+              return M[t.projection].unproject(M.OSMTILE.options.bounds.min)
+                .lng;
+            },
+            get max() {
+              return M[t.projection].unproject(M.OSMTILE.options.bounds.max)
+                .lng;
+            }
+          },
+          vertical: {
+            name: 'latitude',
+            // set min/max axis values from EPSG registry area of use, retrieved 2019-07-25
+            get min() {
+              return M[t.projection].unproject(M.OSMTILE.options.bounds.min)
+                .lat;
+            },
+            get max() {
+              return M[t.projection].unproject(M.OSMTILE.options.bounds.max)
+                .lat;
+            }
+          },
+          get bounds() {
+            return latLngBounds(
+              [
+                M[t.projection].options.crs.gcrs.vertical.min,
+                M[t.projection].options.crs.gcrs.horizontal.min
+              ],
+              [
+                M[t.projection].options.crs.gcrs.vertical.max,
+                M[t.projection].options.crs.gcrs.horizontal.max
+              ]
+            );
+          }
+        },
+        map: {
+          horizontal: {
+            name: 'i',
+            min: 0,
+            max: (map) => map.getSize().x
+          },
+          vertical: {
+            name: 'j',
+            min: 0,
+            max: (map) => map.getSize().y
+          },
+          bounds: (map) => bounds([0, 0], map.getSize())
+        },
+        tile: {
+          horizontal: {
+            name: 'i',
+            min: 0,
+            max: tileSize
+          },
+          vertical: {
+            name: 'j',
+            min: 0,
+            max: tileSize
+          },
+          get bounds() {
+            return bounds(
+              [
+                M[t.projection].options.crs.tile.horizontal.min,
+                M[t.projection].options.crs.tile.vertical.min
+              ],
+              [
+                M[t.projection].options.crs.tile.horizontal.max,
+                M[t.projection].options.crs.tile.vertical.max
+              ]
+            );
+          }
+        },
+        tilematrix: {
+          horizontal: {
+            name: 'column',
+            min: 0,
+            max: (zoom) =>
+              Math.round(
+                M[t.projection].options.crs.tcrs.horizontal.max(zoom) /
+                  M[t.projection].options.crs.tile.bounds.getSize().x
+              )
+          },
+          vertical: {
+            name: 'row',
+            min: 0,
+            max: (zoom) =>
+              Math.round(
+                M[t.projection].options.crs.tcrs.vertical.max(zoom) /
+                  M[t.projection].options.crs.tile.bounds.getSize().y
+              )
+          },
+          bounds: (zoom) =>
+            bounds(
+              [
+                M[t.projection].options.crs.tilematrix.horizontal.min,
+                M[t.projection].options.crs.tilematrix.vertical.min
+              ],
+              [
+                M[t.projection].options.crs.tilematrix.horizontal.max(zoom),
+                M[t.projection].options.crs.tilematrix.vertical.max(zoom)
+              ]
+            )
+        }
+      }
+    }); //creates crs using L.Proj
+    M[t.projection.toUpperCase()] = M[t.projection]; //adds the projection uppercase to global M
+    return t.projection;
+  }
 })(window, document);

@@ -4,7 +4,6 @@ import {
   LatLng,
   control
 } from 'leaflet';
-// import Proj from 'proj4leaflet/src/proj4leaflet.js';
 import { Util } from '../utils/mapml/Util.js';
 import { DOMTokenList } from '../utils/mapml/DOMTokenList.js';
 import { locale, localeFr } from '../../generated/locale.js';
@@ -590,6 +589,12 @@ export class GcdsMap {
       // Expose geojson2mapml method
       Object.defineProperty(this.el, 'geojson2mapml', {
         value: (json: any, options?: any) => this.geojson2mapml(json, options),
+        writable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(this.el, 'defineCustomProjection', {
+        value: (jsonTemplate: string) => this.defineCustomProjection(jsonTemplate),
         writable: true,
         configurable: true
       });
@@ -1196,7 +1201,16 @@ export class GcdsMap {
       }
     });
   }
-
+  defineCustomProjection(jsonTemplate) {
+    // Delegate to the global M.defineCustomProjection API
+    if ((window as any).M && (window as any).M.defineCustomProjection) {
+      (window as any).M.defineCustomProjection(jsonTemplate);
+      const t = JSON.parse(jsonTemplate);
+      return t.projection;
+    } else {
+      throw new Error('MapML API not loaded');
+    }
+  }
   /**
    * Promise-based method to wait until map is ready
    * Returns a promise that resolves when the map is fully initialized
