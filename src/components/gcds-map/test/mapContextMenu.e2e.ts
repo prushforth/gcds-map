@@ -535,7 +535,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.click('body > gcds-map');
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
-
+    await page.waitForTimeout(500);
     const layerCount = await page.$eval(
       'body > gcds-map',
       (map) => map.layers.length
@@ -612,7 +612,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.click('body > gcds-map');
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
-
+    await page.waitForTimeout(500);
     const layerCount = await page.$eval(
       'body > gcds-map',
       (map) => map.layers.length
@@ -639,6 +639,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.click('body > gcds-map');
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
+    await page.waitForTimeout(500);
     const childCount = await page.$eval(
       'body > gcds-map',
       (map) => map.children.length
@@ -690,6 +691,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     await page.click('body > gcds-map');
     await page.keyboard.press('Shift+F10');
     await page.keyboard.press('p');
+    await page.waitForTimeout(500);
     const childCount = await page.$eval(
       'body > gcds-map',
       (map) => map.children.length
