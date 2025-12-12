@@ -8,7 +8,7 @@ test.describe('map-style element tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-style/map-style.html');
+    await page.goto('/test/map-style/map-style.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

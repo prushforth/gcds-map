@@ -9,7 +9,7 @@ test.describe('Retrieved Static Features Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/featureLayer.html');
+    await page.goto('/test/map-layer/featureLayer.html', { waitUntil: 'networkidle' });
   });
   
   test.afterAll(async function () {

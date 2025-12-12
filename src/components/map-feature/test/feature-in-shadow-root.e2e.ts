@@ -8,7 +8,7 @@ test.describe('map-feature can be inside a shadow root or other custom element',
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-feature/feature-in-shadow-root.html');
+    await page.goto('/test/map-feature/feature-in-shadow-root.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(500);
   });
   test('map-feature getMapEl() works in shadow root', async () => {

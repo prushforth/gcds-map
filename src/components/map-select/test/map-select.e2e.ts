@@ -6,7 +6,7 @@ test.describe('map-select tests', () => {
   test.beforeAll(async () => {
     context = await chromium.launchPersistentContext('', { slowMo: 250 });
     page = await context.newPage();
-    await page.goto('/test/map-select/map-select.html');
+    await page.goto('/test/map-select/map-select.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

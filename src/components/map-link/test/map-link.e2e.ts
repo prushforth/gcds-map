@@ -14,7 +14,7 @@ test.describe('map-link extent tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-link/map-link.html');
+    await page.goto('/test/map-link/map-link.html', { waitUntil: 'networkidle' });
   });
 
   const contentLocations = ['inline', 'remote'];
@@ -201,7 +201,7 @@ test.describe('map-link extent tests', () => {
       expect(link3ZoomBounds.maxNativeZoom).toEqual(projectionZoomBounds.max);
     });
     test(`${inlineOrRemote} queryable layer should be disabled when extent is out of bounds in any way`, async () => {
-      await page.reload();
+      await page.reload({ waitUntil: 'networkidle' });
       const viewer = page.getByTestId('viewer');
       const layer = page.getByTestId(`${inlineOrRemote}-image-queryable`);
       await expect(layer).toHaveAttribute('disabled');

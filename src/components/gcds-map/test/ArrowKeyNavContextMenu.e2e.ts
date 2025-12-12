@@ -8,7 +8,7 @@ test.describe('Using arrow keys to navigate context menu', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/ArrowKeyNavContextMenu.html');
+    await page.goto('/test/gcds-map/ArrowKeyNavContextMenu.html', { waitUntil: 'networkidle' });
   });
   test.afterAll(async function () {
     await context.close();

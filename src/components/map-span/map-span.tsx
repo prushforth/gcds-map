@@ -10,7 +10,5 @@ export class MapSpan {
   connectedCallback() {}
   disconnectedCallback() {}
 
-  render() {
-    return null;
-  }
+  // No render() method - preserve text content in light DOM
 }

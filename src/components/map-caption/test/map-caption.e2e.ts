@@ -8,7 +8,7 @@ test.describe('map-caption tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-caption/map-caption.html');
+    await page.goto('/test/map-caption/map-caption.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

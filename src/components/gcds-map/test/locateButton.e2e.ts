@@ -14,7 +14,7 @@ test.describe('Geolocation control tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await context.grantPermissions(['geolocation']);
-    await page.goto('/test/gcds-map/locateButton.html');
+    await page.goto('/test/gcds-map/locateButton.html', { waitUntil: 'networkidle' });
   });
   test.afterAll(async function () {
     await context.close();

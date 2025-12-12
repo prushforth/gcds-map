@@ -9,7 +9,7 @@ test.describe('Mixed Layer Z-Index Rendering Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/mixedLayer.html');
+    await page.goto('/test/map-layer/mixedLayer.html', { waitUntil: 'networkidle' });
   });
 
   test('baseline rendering - red map-extent over green inline tiles and features', async () => {
@@ -118,7 +118,7 @@ test.describe('Mixed Layer Z-Index Rendering Tests', () => {
 
   test('feature data maintains correct z-index order when layer is checked', async () => {
     // Reset to baseline state
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Wait for features to be loaded and rendered
     await page.waitForTimeout(1000);

@@ -8,7 +8,7 @@ test.describe('map-extent can be inside a shadow root or other custom element', 
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/map-extent-in-shadow-root.html');
+    await page.goto('/test/map-extent/map-extent-in-shadow-root.html', { waitUntil: 'networkidle' });
   });
   test('map-extent getMapEl() works in shadow root', async () => {
     await page.waitForTimeout(500);

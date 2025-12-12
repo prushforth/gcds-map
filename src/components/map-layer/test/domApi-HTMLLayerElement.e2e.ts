@@ -9,7 +9,7 @@ test.describe('HTMLLayerElement DOM API Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     page = await context.newPage();
-    await page.goto('/test/map-layer/domApi-HTMLLayerElement.html');
+    await page.goto('/test/map-layer/domApi-HTMLLayerElement.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

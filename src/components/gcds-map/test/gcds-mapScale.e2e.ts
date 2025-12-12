@@ -8,7 +8,7 @@ test.describe('Announce movement test', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/gcds-map.html');
+    await page.goto('/test/gcds-map/gcds-map.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(2000);
   });
 

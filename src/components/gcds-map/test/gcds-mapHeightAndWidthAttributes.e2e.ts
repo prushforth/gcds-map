@@ -8,7 +8,7 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/gcds-mapHeightAndWidthAttributes.html');
+    await page.goto('/test/gcds-map/gcds-mapHeightAndWidthAttributes.html', { waitUntil: 'networkidle' });
   });
   test.afterAll(async function () {
     await context.close();
@@ -73,7 +73,7 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
   });
 
   test('Map Property Dimension Match On Window Size Change', async () => {
-    await page.goto('/test/gcds-map/windowSizeChange.html');
+    await page.goto('/test/gcds-map/windowSizeChange.html', { waitUntil: 'networkidle' });
     //change initial viewport of the map
     await page.setViewportSize({ width: 300, height: 300 });
     //actual height and width value of the map
@@ -101,7 +101,7 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
   });
 
   test('Only Width Added to A Map With No Width OR Height Attributes', async () => {
-    await page.goto('/test/gcds-map/noWidthAndHeight.html');
+    await page.goto('/test/gcds-map/noWidthAndHeight.html', { waitUntil: 'networkidle' });
     let has_height = await page.$eval('body > gcds-map', (viewer) =>
       viewer.hasAttribute('height')
     );
@@ -118,7 +118,7 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
   });
 
   test('Only Height Added to A Map With No Width OR Height Attributes', async () => {
-    await page.goto('/test/gcds-map/noWidthAndHeight.html');
+    await page.goto('/test/gcds-map/noWidthAndHeight.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(200); // Wait for map to load
     let has_width = await page.$eval('body > gcds-map', (viewer) =>
       viewer.hasAttribute('width')

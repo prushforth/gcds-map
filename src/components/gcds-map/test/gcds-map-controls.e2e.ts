@@ -16,7 +16,7 @@ test.describe('Playwright gcds-map Controls Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     page = await context.newPage();
-    await page.goto('/test/gcds-map/gcds-map.html');
+    await page.goto('/test/gcds-map/gcds-map.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
 

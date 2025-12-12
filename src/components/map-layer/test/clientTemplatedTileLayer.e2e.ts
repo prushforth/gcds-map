@@ -8,7 +8,7 @@ test.describe('Playwright Client Tile Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/clientTemplatedTileLayer.html');
+    await page.goto('/test/map-layer/clientTemplatedTileLayer.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

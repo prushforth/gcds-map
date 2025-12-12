@@ -52,7 +52,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/mapElement.html');
+    await page.goto('/test/gcds-map/mapElement.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {
@@ -171,7 +171,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     );
   });
   test('Context menu, back and reload item at initial location disabled', async () => {
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
     const map = await page.getByTestId('firstmap');
     await page.getByTestId('firstmap').click({ button: 'right' });
     await page.waitForTimeout(300);
@@ -371,7 +371,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
   });
 
   test('Submenu, copy map (MapML)', async () => {
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
     const map = await page.getByTestId('firstmap');
     await map.evaluate((map) => map.whenLayersReady());
     await page.click('body > gcds-map');

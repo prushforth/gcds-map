@@ -9,7 +9,7 @@ test.describe('Playwright gcds-map Element Controls Test', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     page = await context.newPage();
-    await page.goto('/test/gcds-map/gcds-mapControls.html');
+    await page.goto('/test/gcds-map/gcds-mapControls.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
 

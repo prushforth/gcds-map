@@ -8,7 +8,7 @@ test.describe('Adding Opacity Attribute to the <map-extent> Element', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/multipleExtentsOpacity.html');
+    await page.goto('/test/map-extent/multipleExtentsOpacity.html', { waitUntil: 'networkidle' });
   });
   test.afterAll(async function () {
     await context.close();

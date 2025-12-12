@@ -8,7 +8,7 @@ test.describe('Playwright map-feature tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-feature/mapFeature.html');
+    await page.goto('/test/map-feature/mapFeature.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

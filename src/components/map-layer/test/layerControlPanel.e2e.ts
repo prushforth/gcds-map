@@ -8,9 +8,7 @@ test.describe('Control Layer Panel Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/layerControl.html');
-    await page.waitForTimeout(1000);
-
+    await page.goto('/test/map-layer/layerControl.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

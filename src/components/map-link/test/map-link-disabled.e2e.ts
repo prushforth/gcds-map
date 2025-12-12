@@ -8,8 +8,7 @@ test.describe('map-link disabled', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-link/map-link-disabled.html');
-    await page.waitForTimeout(1000); // wait for map to be ready
+    await page.goto('/test/map-link/map-link-disabled.html', { waitUntil: 'networkidle' });
   });
   test.afterAll(async function () {
     await context.close();

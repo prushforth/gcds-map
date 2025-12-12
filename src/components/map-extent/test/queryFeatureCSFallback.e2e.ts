@@ -8,7 +8,7 @@ test.describe('Playwright Remote Queryable layer with multiple <map-extent>', ()
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/queryFeatureCSFallback.html');
+    await page.goto('/test/map-extent/queryFeatureCSFallback.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

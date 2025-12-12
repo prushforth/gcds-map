@@ -8,7 +8,7 @@ test.describe('Playwright Map Element Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/debugMode.html');
+    await page.goto('/test/gcds-map/debugMode.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {
@@ -16,7 +16,7 @@ test.describe('Playwright Map Element Tests', () => {
   });
 
   test.beforeEach(async () => {
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
     await page.waitForTimeout(2000);
     const map = page.getByTestId('viewer');
     await map.evaluate(async (map) => { await map.whenReady(); map.toggleDebug(); });

@@ -10,16 +10,14 @@ test.describe('map-feature rendering tests', () => {
       (await context.newPage());
   });
   test('Test for zingers', async ({ page }) => {
-    await page.goto('/test/map-feature/render-bug.html');
+    await page.goto('/test/map-feature/render-bug.html', { waitUntil: 'networkidle' });
     const viewer = page.getByTestId('viewer');
     await expect(viewer).toHaveScreenshot('no-zinger.png', {
       maxDiffPixels: 100
     });
   });
   test('removing a map-feature from DOM removes its rendering', async () => {
-    await page.goto('/test/map-feature/static-features.html');
-    // Wait for initial rendering
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-feature/static-features.html', { waitUntil: 'networkidle' });
     const viewer = page.getByTestId('viewer');
     let nFeatures = await viewer.evaluate(
       (v) => v.querySelectorAll('map-feature').length
@@ -49,9 +47,7 @@ test.describe('map-feature rendering tests', () => {
   test('removing last map-feature in a sequence removes rendering container', async ({
     page
   }) => {
-    await page.goto('/test/map-feature/static-features.html');
-    // Wait for initial rendering
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-feature/static-features.html', { waitUntil: 'networkidle' });
     const viewer = page.getByTestId('viewer');
     let nFeatures = await viewer.evaluate(
       (v) => v.querySelectorAll('map-feature').length

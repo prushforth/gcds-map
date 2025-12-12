@@ -8,8 +8,7 @@ test.describe('Playwright templatedFeatures Layer Tests - Loading', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/templatedFeatures.html');
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-layer/templatedFeatures.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

@@ -8,7 +8,7 @@ test.describe('map-input can be inside a shadow root or other custom element', (
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-input/map-input-in-shadow-root.html');
+    await page.goto('/test/map-input/map-input-in-shadow-root.html', { waitUntil: 'networkidle' });
   });
   test('map-input getMapEl() works in shadow root', async () => {
     const viewer = page.getByTestId('viewer');

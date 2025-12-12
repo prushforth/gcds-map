@@ -8,7 +8,7 @@ test.describe('Test the map-layer opacity attribute', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/layerOpacityAttribute.html');
+    await page.goto('/test/map-layer/layerOpacityAttribute.html', { waitUntil: 'networkidle' });
     const l = await page.locator('map-layer');
     await l.evaluate((l) => l.whenReady());
   });

@@ -9,7 +9,7 @@ test.describe('GeoJSON API - mapml2geojson', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     
-    await page.goto('/test/map-layer/mapml2geojson.html');
+    await page.goto('/test/map-layer/mapml2geojson.html', { waitUntil: 'networkidle' });
     
     // Wait for the async initialization to complete
     await page.waitForTimeout(5000);

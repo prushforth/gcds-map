@@ -15,8 +15,8 @@ test.describe('Query Popup Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     
-    await page.goto('/test/map-link/queryLink.html');
-    await page.waitForTimeout(2000);
+    await page.goto('/test/map-link/queryLink.html', { waitUntil: 'networkidle' });
+
   });
 
   test.afterAll(async function () {

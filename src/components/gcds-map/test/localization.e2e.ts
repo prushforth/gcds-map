@@ -16,7 +16,7 @@ test.describe('<gcds-map> localization tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/localization.html');
+    await page.goto('/test/gcds-map/localization.html', { waitUntil: 'networkidle' });
 
     // fetch locales and check that they are not undefined
     browserLocale = await page.getByTestId('map-options').evaluate((t) => {

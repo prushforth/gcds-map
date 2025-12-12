@@ -11,7 +11,7 @@ test.describe('Multiple Extent Query Tests', () => {
       slowMo: 500
     });
     page = await context.newPage();
-    await page.goto('/test/map-extent/multipleQueryExtents.html');
+    await page.goto('/test/map-extent/multipleQueryExtents.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
 

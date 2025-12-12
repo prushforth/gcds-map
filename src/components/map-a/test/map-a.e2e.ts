@@ -8,7 +8,7 @@ test.describe('map-a loaded inline or remote, directly or via templated map-link
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-a/map-a.html');
+    await page.goto('/test/map-a/map-a.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(2500);
   });
 

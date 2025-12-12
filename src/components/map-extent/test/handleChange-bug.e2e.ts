@@ -10,7 +10,7 @@ test.describe('map-extent tests', () => {
       (await context.newPage());
   });
   test("Ensure page doesn't throw errors", async () => {
-    await page.goto('/test/map-extent/handleChange-bug.html');
+    await page.goto('/test/map-extent/handleChange-bug.html', { waitUntil: 'networkidle' });
     // check for error messages in console
     let errorLogs = [];
     await page.on('pageerror', (err) => {

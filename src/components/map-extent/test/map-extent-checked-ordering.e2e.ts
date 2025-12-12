@@ -8,7 +8,7 @@ test.describe('map-extent checked order tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/map-extent-checked.html');
+    await page.goto('/test/map-extent/map-extent-checked.html', { waitUntil: 'networkidle' });
   });
   test('map-extent layer control order correct when cycling checked state', async () => {
     // Fixed #935 https://github.com/Maps4HTML/MapML.js/issues/935

@@ -18,7 +18,7 @@ test.describe('GeoJSON API - geojson2mapml', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/gcds-map/geojson2mapml.html');
+    await page.goto('/test/gcds-map/geojson2mapml.html', { waitUntil: 'networkidle' });
     // Wait longer for the page to fully load and execute scripts
     await page.waitForTimeout(2000);
   });

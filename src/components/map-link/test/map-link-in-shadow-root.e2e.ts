@@ -8,7 +8,7 @@ test.describe('map-link can be inside a shadow root or other custom element', ()
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-link/map-link-in-shadow-root.html');
+    await page.goto('/test/map-link/map-link-in-shadow-root.html', { waitUntil: 'networkidle' });
   });
 
   test('map-link getMapEl() works in shadow root', async () => {

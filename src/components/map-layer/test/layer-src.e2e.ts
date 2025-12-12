@@ -8,8 +8,7 @@ test.describe('map-layer local/inline vs remote content/src tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-layer/map-layer.html');
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-layer/map-layer.html', { waitUntil: 'networkidle' });
   });
   test('Test that a map-layer with src attribute can transition to inline content', async () => {
     const layer = await page.getByTestId('test-layer');

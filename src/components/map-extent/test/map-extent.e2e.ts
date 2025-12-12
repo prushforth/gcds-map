@@ -8,7 +8,7 @@ test.describe('map-extent tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/map-extent.html');
+    await page.goto('/test/map-extent/map-extent.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
   test('Basic hidden functionality and API', async () => {

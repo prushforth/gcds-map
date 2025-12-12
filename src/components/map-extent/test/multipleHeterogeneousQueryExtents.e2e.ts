@@ -10,7 +10,7 @@ test.describe('Multiple Extent Queries with heterogeneous response content types
       slowMo: 500
     });
     page = await context.newPage();
-    await page.goto('/test/map-extent/multipleHeterogeneousQueryExtents.html');
+    await page.goto('/test/map-extent/multipleHeterogeneousQueryExtents.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
   test.afterAll(async function () {

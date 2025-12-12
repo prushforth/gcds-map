@@ -8,7 +8,7 @@ test.describe('Playwright Remote MapML with <map-extent> Tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-extent/queryableMapExtent.html');
+    await page.goto('/test/map-extent/queryableMapExtent.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

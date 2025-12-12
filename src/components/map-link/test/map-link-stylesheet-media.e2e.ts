@@ -12,8 +12,7 @@ test.describe('map-link rel=stylesheet media attribute', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-link/map-link-stylesheet-media.html');
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-link/map-link-stylesheet-media.html', { waitUntil: 'networkidle' });
     viewer = page.getByTestId('viewer');
     stylesheetLink = page.locator('map-link[rel=stylesheet][href="red.css"]');
   });

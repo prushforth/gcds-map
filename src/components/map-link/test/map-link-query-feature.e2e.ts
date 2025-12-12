@@ -15,8 +15,8 @@ test.describe('Queried Feature Tests', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     
-    await page.goto('/test/map-link/queryLink.html');
-    await page.waitForTimeout(2000);
+    await page.goto('/test/map-link/queryLink.html', { waitUntil: 'networkidle' });
+
   });
 
   test.afterAll(async function () {
@@ -203,7 +203,7 @@ test.describe('Queried Feature Tests', () => {
   });
 
   test("'Zoom to here' link test", async () => {
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
 
     const startTopLeft = await page.evaluate(

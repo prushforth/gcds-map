@@ -12,7 +12,7 @@ test.describe('map-link media attribute', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-link/map-link-media.html');
+    await page.goto('/test/map-link/map-link-media.html', { waitUntil: 'networkidle' });
   });
 
   test.afterAll(async function () {

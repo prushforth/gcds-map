@@ -22,7 +22,7 @@ test.describe('map-link api tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-link/map-link-api.html');
+    await page.goto('/test/map-link/map-link-api.html', { waitUntil: 'networkidle' });
   });
   test(`extent of map-link established via map-meta vs map-inputs`, async () => {
     // create map-extent with map-link whose min,maxZoom and min/maxNativeZoom
