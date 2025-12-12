@@ -78,3 +78,139 @@ The test `mixedLayer-zindex-rendering.e2e.ts` verifies rendering (screenshot) no
 - The `data-moving` attribute (used during layer control drag operations) properly prevents this issue during drag
 - A fix would need to add insertion logic to `connectedCallback()` similar to the hidden attribute handler (lines 105-140 in map-extent.tsx)
 - Investigate whether this is intended behavior or should be fixed in mapml-source upstream
+
+---
+
+## Custom Projection API Documentation
+
+**Status**: Documentation needed  
+**Discovered**: December 12, 2025 during custom projection refactoring  
+**Related**: `M.defineCustomProjection()` global API implementation
+
+### Description
+The preferred API for defining custom projections is `window.M.defineCustomProjection()`, not `<mapml-viewer>.defineCustomProjection()` as currently documented at https://maps4html.org/web-map-doc/docs/api/mapml-viewer-api#definecustomprojectionoptions
+
+### Technical Details
+Custom projections must be defined **before** map markup is parsed to avoid timing issues:
+
+```html
+<script type="module">
+  // Wait for M API to be available
+  if (!window.M) {
+    await new Promise(resolve => {
+      const checkM = setInterval(() => {
+        if (window.M) {
+          clearInterval(checkM);
+          resolve();
+        }
+      }, 10);
+    });
+  }
+  
+  // Define projection before map markup
+  window.M.defineCustomProjection(JSON.stringify({
+    "projection": "BNG",
+    "proj4string": "+proj=tmerc ...",
+    "origin": [-238375, 1376256],
+    "resolutions": [896, 448, 224, ...],
+    "bounds": [[-238375, 0], [900000, 1376256]],
+    "tilesize": 256
+  }));
+</script>
+
+<!-- Now map can use the custom projection -->
+<mapml-viewer projection="BNG">
+  ...
+</mapml-viewer>
+```
+
+### Why Element Method Has Timing Issues
+- `<mapml-viewer>.defineCustomProjection()` is only available after the element initializes
+- But `connectedCallback()` runs `whenProjectionDefined(projection)` immediately
+- If projection doesn't exist yet, initialization fails with "Projection X is not defined"
+- This creates a chicken-and-egg problem for the documented workflow
+
+### Solution
+Both APIs exist and delegate to the same implementation:
+- `window.M.defineCustomProjection()` - **Recommended** for page setup before map markup
+- `<mapml-viewer>.defineCustomProjection()` - Available for runtime/programmatic use
+
+### Action Required
+Update documentation to recommend `window.M.defineCustomProjection()` as the primary API for defining custom projections, with the element method as a secondary option for dynamic scenarios.
+
+### Notes
+- `window.M` namespace is the polyfill API
+- Future standardization may use a different namespace (e.g., `window.maps`)
+- Both APIs store projections globally in `window.M[projectionName]`
+
+---
+
+## Crosshair Layer - Missing Accessibility Tests
+
+**Status**: Critical accessibility feature, tests needed  
+**Discovered**: December 12, 2025 during keyboard navigation implementation  
+**Component**: Crosshair layer (`src/components/utils/mapml/layers/Crosshair.js`)
+
+### Description
+The crosshair layer is a **critical accessibility feature** that enables keyboard navigation to map features, but currently lacks automated tests to verify its functionality.
+
+### Why Crosshair Is Critical
+The crosshair serves two essential accessibility functions:
+
+1. **Visual feedback**: Displays a crosshair at the map center when the map has keyboard focus, helping keyboard users orient themselves
+2. **Feature navigation enabler**: Fires the `mapkeyboardfocused` event when the map receives keyboard focus, which triggers the FeatureIndex handler to set `tabindex=0` on the nearest feature
+
+**Without the crosshair**, keyboard users cannot tab to features because:
+- The `mapkeyboardfocused` event never fires
+- FeatureIndex never calls `_sortIndex()` 
+- Features remain with `tabindex=-1` (unfocusable)
+- Keyboard navigation to features is completely broken
+
+### Event Chain That Depends on Crosshair
+```
+User presses Tab → Map container gains focus
+  ↓
+Crosshair detects keyboard event via _onKeyUpDown()
+  ↓
+Crosshair sets map.isFocused = true
+  ↓
+Crosshair fires map.fire('mapkeyboardfocused')
+  ↓
+FeatureIndex handler receives event
+  ↓
+FeatureIndex calls _sortIndex()
+  ↓
+FeatureIndex sets nearest feature's tabindex=0
+  ↓
+User can now tab to features
+```
+
+### Current Implementation
+- **gcds-map.tsx line 610**: `this._crosshair = crosshair().addTo(this._map);`
+- Matches mapml-source implementation exactly
+- Added to map after controls, before event setup
+- Auto-cleaned up when map is deleted
+
+### Missing Test Coverage
+Need automated tests for:
+1. Crosshair appears in DOM when map gains keyboard focus
+2. `mapkeyboardfocused` event fires when user tabs into map
+3. Features gain `tabindex=0` after map is keyboard-focused
+4. Crosshair visual elements are present and visible
+5. Regression test: ensure crosshair isn't accidentally disabled
+
+### Workaround for Manual Testing
+Test in browser by:
+1. Build and run: `npm run build && npm start`
+2. Open any test page with features (e.g., `/test/map-feature/popupTabNavigation.html`)
+3. Press Tab to focus the map
+4. Verify crosshair appears at map center
+5. Press Tab again - should focus first feature (not skip over it)
+
+### Action Required
+Create accessibility test suite for keyboard navigation features including crosshair visibility and feature focus behavior.
+
+### Notes
+- Crosshair cannot be disabled without breaking feature keyboard navigation
+- This is a fundamental accessibility requirement, not optional
+- Future refactoring must preserve crosshair or provide alternative event source

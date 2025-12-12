@@ -34,8 +34,8 @@ import { scaleBar } from '../utils/mapml/control/ScaleBar.js';
 import { geolocationButton } from '../utils/mapml/control/GeolocationButton.js';
 import { fullscreenButton } from '../utils/mapml/control/FullscreenButton.js';
 import { debugOverlay } from '../utils/mapml/layers/DebugOverlay.js';
-// import { crosshair } from '../../utils/mapml/layers/Crosshair.js';
-// import { featureIndexOverlay } from '../../utils/mapml/layers/FeatureIndexOverlay.js';
+import { crosshair } from '../utils/mapml/layers/Crosshair.js';
+// import { featureIndexOverlay } from '../utils/mapml/layers/FeatureIndexOverlay.js';
 
 @Component({
   tag: 'gcds-map',
@@ -80,6 +80,7 @@ export class GcdsMap {
   private _scaleBar: any;
   private _isInitialized: boolean = false;
   private _debug: any;
+  private _crosshair: any; // Stored for potential cleanup, removed when map is deleted
 
 
   // see comments below regarding attributeChangedCallback vs. getter/setter
@@ -458,7 +459,7 @@ export class GcdsMap {
         query: true,
         contextMenu: true,
         announceMovement: true,
-        // featureIndex: true,
+        featureIndex: true,
         mapEl: this.el,
         crs: (window as any).M[this.projection],
         zoom: this.zoom,
@@ -606,6 +607,7 @@ export class GcdsMap {
       this._addToHistory();
       this._createControls();
       this._toggleControls();
+      this._crosshair = crosshair().addTo(this._map);
       this._setUpEvents();
     }
   }
@@ -634,6 +636,8 @@ export class GcdsMap {
       await import('../utils/mapml/handlers/ContextMenu.js');
       await import('../utils/mapml/handlers/AnnounceMovement.js');
       await import('../utils/mapml/handlers/keyboard.js');
+      // Load FeatureIndex handler to register init hooks for keyboard navigation
+      await import('../utils/mapml/handlers/FeatureIndex.js');
       // TODO: other controls if needed
     } catch (error) {
       console.error('Failed to load MapML controls:', error);
