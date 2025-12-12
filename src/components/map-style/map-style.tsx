@@ -29,7 +29,12 @@ export class MapStyle {
   private _connect() {
     this.styleElement = document.createElement('style');
     (this.styleElement as any).mapStyle = this.el;
-    this.styleElement.textContent = this.el.textContent;
+    // Use innerHTML instead of textContent - during Stencil initialization,
+    // textContent returns empty string even though innerHTML has the CSS content
+    // Parse innerHTML to extract only text content, filtering out any elements like <script>
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = this.el.innerHTML;
+    this.styleElement.textContent = tempDiv.textContent || '';
     this._copyAttributes(this.el, this.styleElement);
     // Expose styleElement as a public property on the element
     Object.defineProperty(this.el, 'styleElement', {
@@ -37,9 +42,7 @@ export class MapStyle {
       configurable: true,
       enumerable: true
     });
-    this._stylesheetHost = this.el.getRootNode() instanceof ShadowRoot
-      ? (this.el.getRootNode() as any).host
-      : this.el.parentElement;
+    
     if (!this._stylesheetHost) return;
     
     // Try to render via layer's renderStyles method
@@ -55,7 +58,13 @@ export class MapStyle {
     
     
     this._observer = new MutationObserver(() => {
-      if (this.styleElement) this.styleElement.textContent = this.el.textContent;
+      // Use innerHTML instead of textContent - textContent is empty in Stencil components
+      // Parse innerHTML to extract only text content, filtering out any elements
+      if (this.styleElement) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = this.el.innerHTML;
+        this.styleElement.textContent = tempDiv.textContent || '';
+      }
     });
     this._observer.observe(this.el, {
       childList: true,

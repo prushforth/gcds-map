@@ -9,8 +9,7 @@ test.describe('map-style media attribute', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
-    await page.goto('/test/map-style/map-style-media.html');
-    await page.waitForTimeout(1000);
+    await page.goto('/test/map-style/map-style-media.html', { waitUntil: 'networkidle' });
     viewer = page.getByTestId('viewer');
   });
   test(`when a map-style loads with a matching media query, the styles apply`, async () => {
