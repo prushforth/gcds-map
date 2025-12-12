@@ -6,11 +6,10 @@ test.describe('Multiple Extent Query Tests', () => {
 
   test.beforeAll(async function () {
     // sloMo setting seems to make all the difference here
-    context = await chromium.launchPersistentContext('', {
-      headless: true,
-      slowMo: 500
-    });
-    page = await context.newPage();
+    context = await chromium.launchPersistentContext('', { slowMo: 500 });
+    page =
+      context.pages().find((page) => page.url() === 'about:blank') ||
+      (await context.newPage());
     await page.goto('/test/map-extent/multipleQueryExtents.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
