@@ -81,6 +81,8 @@ export class GcdsMap {
   private _isInitialized: boolean = false;
   private _debug: any;
   private _crosshair: any; // Stored for potential cleanup, removed when map is deleted
+  private _boundDropHandler: (event: DragEvent) => void;
+  private _boundDragoverHandler: (event: DragEvent) => void;
 
 
   // see comments below regarding attributeChangedCallback vs. getter/setter
@@ -846,9 +848,25 @@ export class GcdsMap {
     }
   }
   _removeEvents() {
-    // TODO: Implement event cleanup
+    if (this._map) {
+      this._map.off();
+    }
+    if (this._boundDropHandler) {
+      this.el.removeEventListener('drop', this._boundDropHandler, false);
+    }
+    if (this._boundDragoverHandler) {
+      this.el.removeEventListener('dragover', this._boundDragoverHandler, false);
+    }
   }
   _setUpEvents() {
+    // Store bound handlers for cleanup
+    this._boundDropHandler = this._dropHandler.bind(this);
+    this._boundDragoverHandler = this._dragoverHandler.bind(this);
+
+    // Set up drag and drop handlers for layers, geojson, and mapml URLs
+    this.el.addEventListener('drop', this._boundDropHandler, false);
+    this.el.addEventListener('dragover', this._boundDragoverHandler, false);
+
     // Set up map event handlers to sync with component props
     this._map.on(
       'moveend',
@@ -911,6 +929,17 @@ export class GcdsMap {
         this._map.fire('keypress', { originalEvent: e });
       }
     });
+  }
+
+  _dropHandler(event: DragEvent) {
+    event.preventDefault();
+    let text = event.dataTransfer.getData('text');
+    Util._pasteLayer(this.el, text);
+  }
+
+  _dragoverHandler(event: DragEvent) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
   }
 
   /**

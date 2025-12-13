@@ -79,9 +79,54 @@ get type() {
 } else if (col && row && template.zoom && !isNaN(template.zoom.initialValue)) {
 ```
 
+### 5. Event Listener Binding Pattern for Drop/Dragover Handlers
+**File**: `src/mapml-viewer.js` and `src/web-map.js`
+**Issue**: Event listeners added without proper binding, making removal ineffective
+**Current Problem**:
+```javascript
+_setUpEvents() {
+  this.addEventListener('drop', this._dropHandler, false);
+  this.addEventListener('dragover', this._dragoverHandler, false);
+  // ...
+}
+_removeEvents() {
+  this.removeEventListener('drop', this._dropHandler, false);  // Won't work!
+  this.removeEventListener('dragover', this._dragoverHandler, false);  // Won't work!
+}
+```
+
+**Fix**: Store bound handler references and use them consistently
+```javascript
+_setUpEvents() {
+  // Store bound handlers for cleanup
+  this._boundDropHandler = this._dropHandler.bind(this);
+  this._boundDragoverHandler = this._dragoverHandler.bind(this);
+  
+  this.addEventListener('drop', this._boundDropHandler, false);
+  this.addEventListener('dragover', this._boundDragoverHandler, false);
+  // ...
+}
+_removeEvents() {
+  if (this._map) {
+    this._map.off();
+  }
+  if (this._boundDropHandler) {
+    this.removeEventListener('drop', this._boundDropHandler, false);
+  }
+  if (this._boundDragoverHandler) {
+    this.removeEventListener('dragover', this._boundDragoverHandler, false);
+  }
+}
+```
+
+**Why This Matters**:
+- Without binding, `removeEventListener` cannot match the original handler
+- Leads to memory leaks as handlers are never removed
+- Important for elements that may be repeatedly connected/disconnected
+
 ## Testing Improvements
 
-### 5. Stencil class="hydrated" Handling in Tests
+### 6. Stencil class="hydrated" Handling in Tests
 **Files**: Various e2e test files
 **Issue**: Stencil adds `class="hydrated"` at unpredictable positions in attributes
 **Fix**: Strip `class="hydrated"` from HTML strings before comparison in tests
