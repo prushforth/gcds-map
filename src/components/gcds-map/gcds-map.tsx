@@ -35,7 +35,7 @@ import { geolocationButton } from '../utils/mapml/control/GeolocationButton.js';
 import { fullscreenButton } from '../utils/mapml/control/FullscreenButton.js';
 import { debugOverlay } from '../utils/mapml/layers/DebugOverlay.js';
 import { crosshair } from '../utils/mapml/layers/Crosshair.js';
-// import { featureIndexOverlay } from '../utils/mapml/layers/FeatureIndexOverlay.js';
+import { featureIndexOverlay } from '../utils/mapml/layers/FeatureIndexOverlay.js';
 
 @Component({
   tag: 'gcds-map',
@@ -69,8 +69,8 @@ export class GcdsMap {
   // private locale: any; // TODO: Use when implementing locale support
   private _container: HTMLElement;
   private mapCaptionObserver: MutationObserver;
-  // private _crosshair: any; // TODO: Use when implementing crosshair
-  // private _featureIndexOverlay: any; // TODO: Use when implementing feature index
+  // @ts-ignore - Stored for potential cleanup, removed when map is deleted
+  private _featureIndexOverlay: any;
 
   private _zoomControl: any;
   private _layerControl: any;
@@ -80,7 +80,8 @@ export class GcdsMap {
   private _scaleBar: any;
   private _isInitialized: boolean = false;
   private _debug: any;
-  private _crosshair: any; // Stored for potential cleanup, removed when map is deleted
+  // @ts-ignore 
+  private _crosshair: any;
   private _boundDropHandler: (event: DragEvent) => void;
   private _boundDragoverHandler: (event: DragEvent) => void;
 
@@ -610,6 +611,10 @@ export class GcdsMap {
       this._createControls();
       this._toggleControls();
       this._crosshair = crosshair().addTo(this._map);
+      
+      if ((window as any).M.options.featureIndexOverlayOption)
+        this._featureIndexOverlay = featureIndexOverlay().addTo(this._map);
+      
       this._setUpEvents();
     }
   }

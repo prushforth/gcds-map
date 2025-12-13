@@ -227,8 +227,22 @@ export var TemplatedFeaturesOrTilesLayer = LayerGroup.extend({
     const map = this._map;
     getMapML(this._url)
       .then(() => {
-        //Fires event for feature index overlay to check overlaps
-        map.fire('templatedfeatureslayeradd');
+        // ATTENTION: different approach needed wrt mapml-source due to stencil
+        // slowness - templated features are not found by the FeatureIndexOverlay 
+        // unless you wait for them to be ready before firing templatedfeatureslayeradd event
+        // Wait for all map-feature elements to complete their async setup
+        // before firing the event to check feature index overlay
+        const features = linkEl.shadowRoot.querySelectorAll('map-feature');
+        const featurePromises = Array.from(features).map(feature => {
+          // Each feature has a whenReady() that resolves when geometry is added
+          return feature.whenReady ? feature.whenReady() : Promise.resolve();
+        });
+        
+        Promise.all(featurePromises).then(() => {
+          //Fires event for feature index overlay to check overlaps
+          map.fire('templatedfeatureslayeradd');
+        });
+        
         this.eachLayer(function (layer) {
           if (layer._path) {
             if (layer._path.getAttribute('d') !== 'M0 0') {
