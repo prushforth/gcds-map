@@ -18,6 +18,11 @@ test.describe('<gcds-map> localization tests', () => {
       (await context.newPage());
     await page.goto('/test/gcds-map/localization.html', { waitUntil: 'networkidle' });
 
+    // wait for maps to be visible and ready
+    await page.getByTestId('english').waitFor({ state: 'visible' });
+    await page.getByTestId('french').waitFor({ state: 'visible' });
+    await page.getByTestId('ukrainian').waitFor({ state: 'visible' });
+
     // fetch locales and check that they are not undefined
     browserLocale = await page.getByTestId('map-options').evaluate((t) => {
       return JSON.parse(t.content.firstChild.textContent).locale;
