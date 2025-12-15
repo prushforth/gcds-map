@@ -177,8 +177,7 @@ export class GcdsMapExtent {
     return calculatePosition(this.el);
   }
 
-  @Method()
-  async getOuterHTML() {
+  getOuterHTML() {
     let tempElement = this.el.cloneNode(true) as Element;
 
     if (this.el.querySelector('map-link')) {
@@ -257,6 +256,7 @@ export class GcdsMapExtent {
     (this.el as any).zoomTo = this.zoomTo.bind(this);
     (this.el as any)._validateDisabled = this._validateDisabled.bind(this);
     (this.el as any).getMeta = this.getMeta.bind(this);
+    (this.el as any).getOuterHTML = this.getOuterHTML.bind(this);
     // this is necessary for true "whenReady" being true because bounds
     // being established is pretty important.  This is different from MapML.js;
     // TODO it may be to port this idea back to MapML.js tbd.
