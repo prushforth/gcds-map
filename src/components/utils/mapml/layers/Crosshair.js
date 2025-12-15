@@ -67,7 +67,7 @@ export var Crosshair = Layer.extend({
     let layers = this._map.options.mapEl.layers;
     if (this._map.isFocused) {
       for (let layer of layers) {
-        if (layer.queryable()) {
+        if (layer.queryable && layer.queryable()) {
           return true;
         }
       }

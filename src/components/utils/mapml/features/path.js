@@ -88,7 +88,7 @@ export var Path = LeafletPath.extend({
           (nextLayer.tagName.toUpperCase() === 'MAP-LAYER' ||
             nextLayer.tagName.toUpperCase() === 'LAYER-')
         )
-          onTop = !nextLayer.queryable();
+          onTop = !(nextLayer.queryable && nextLayer.queryable());
         nextLayer = nextLayer.nextElementSibling;
       }
       if (onTop && dragStart) {

@@ -211,6 +211,14 @@ export class GcdsMapLayer {
     // Mirror the original constructor logic
     // by keeping track of console.log, we can avoid overwhelming the console
     this.loggedMessages = new Set();
+    
+    // Publish queryable() early so it's available even before connectedCallback
+    // This is needed for dynamically added layers (e.g., via inplace links)
+    Object.defineProperty(this.el, 'queryable', {
+      value: () => this.queryable(),
+      writable: true,
+      configurable: true
+    });
   }
   
   disconnectedCallback() {
@@ -334,12 +342,6 @@ export class GcdsMapLayer {
     
     Object.defineProperty(this.el, 'pasteFeature', {
       value: (feature: any) => this.pasteFeature(feature),
-      writable: true,
-      configurable: true
-    });
-    
-    Object.defineProperty(this.el, 'queryable', {
-      value: () => this.queryable(),
       writable: true,
       configurable: true
     });

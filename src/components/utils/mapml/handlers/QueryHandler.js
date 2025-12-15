@@ -26,7 +26,7 @@ export var QueryHandler = Handler.extend({
     var layers = this.options.mapEl.layers;
     // work backwards in document order (top down)
     for (var l = layers.length - 1; l >= 0; l--) {
-      if (layers[l].queryable()) {
+      if (layers[l].queryable && layers[l].queryable()) {
         return layers[l]._layer;
       }
     }
