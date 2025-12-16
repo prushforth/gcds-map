@@ -5,8 +5,6 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Element } from "@stencil/core";
-export { Element } from "@stencil/core";
 export namespace Components {
     interface GcdsMap {
         "_controlslist"?: string;
@@ -64,7 +62,6 @@ export namespace Components {
           * @default false
          */
         "disabled"?: boolean;
-        "getOuterHTML": () => Promise<string>;
         /**
           * @default false
          */
