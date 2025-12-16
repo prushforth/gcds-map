@@ -15,7 +15,7 @@ test.describe('Playwright Feature Links Tests', () => {
         await page.waitForTimeout(200);
       }
       await page.keyboard.press('Enter'); // Press enter on the feature in the top-left
-      await page.waitForTimeout(1000);
+      await page.waitForURL('https://geogratis.gc.ca/mapml/en/cbmtile/cbmtgeom/');
       const url = await page.url();
       expect(url).toEqual('https://geogratis.gc.ca/mapml/en/cbmtile/cbmtgeom/');
     });
@@ -26,7 +26,7 @@ test.describe('Playwright Feature Links Tests', () => {
       await page.keyboard.press('ArrowDown');
       await page.waitForTimeout(200);
       await page.keyboard.press('Enter'); // Press enter on the top point feature in the top left
-      await page.waitForTimeout(1000);
+      await page.waitForURL('https://geogratis.gc.ca/mapml/en/cbmtile/fdi/');
       const url = await page.url();
       expect(url).toEqual('https://geogratis.gc.ca/mapml/en/cbmtile/fdi/');
     });
@@ -39,7 +39,7 @@ test.describe('Playwright Feature Links Tests', () => {
         await page.waitForTimeout(200);
       }
       await page.keyboard.press('Enter'); // Press enter on the second feature in the top left
-      await page.waitForTimeout(1000);
+      await page.waitForURL('https://geogratis.gc.ca/mapml/en/cbmtile/cbmtgeom/');
       const url = await page.url();
       expect(url).toEqual('https://geogratis.gc.ca/mapml/en/cbmtile/cbmtgeom/');
     });

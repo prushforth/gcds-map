@@ -84,9 +84,42 @@ if (geometry.defaultOptions.group.parentNode) {
 }
 ```
 
+## Test Improvements
+
+### 4. Use waitForURL() Instead of waitForTimeout() for Navigation Tests
+**File**: `test/e2e/core/linkTypes.test.js` (and potentially other navigation tests)
+**Issue**: Tests use arbitrary `waitForTimeout(2000)` to wait for page navigation
+**Improvement**: Use `page.waitForURL()` for more reliable navigation waiting
+
+**Why**:
+- Waits for actual navigation to complete, not arbitrary timeout
+- Fails fast if navigation doesn't happen or goes to wrong URL
+- More reliable - doesn't depend on timing assumptions
+- Faster - continues immediately when navigation completes
+
+**Example**:
+```javascript
+// Before:
+await page.keyboard.press('Enter');
+await page.waitForTimeout(2000);
+const url = await page.url();
+expect(url).toEqual('https://geogratis.gc.ca/mapml/en/cbmtile/fdi/');
+
+// After:
+await page.keyboard.press('Enter');
+await page.waitForURL('https://geogratis.gc.ca/mapml/en/cbmtile/fdi/');
+const url = await page.url();
+expect(url).toEqual('https://geogratis.gc.ca/mapml/en/cbmtile/fdi/');
+```
+
+**Files to Review**:
+- `test/e2e/core/linkTypes.test.js` - navigation tests
+- Any other tests using `waitForTimeout()` after actions that trigger navigation
+- Look for patterns like: `press('Enter')` followed by `waitForTimeout()` followed by URL checks
+
 ## Architecture Improvements
 
-### 3. Layer Registry for Child Layer Management
+### 5. Layer Registry for Child Layer Management
 **Files**: `src/map-link.js`, `src/map-layer.js`, `src/map-extent.js`, `src/map-feature.js`
 **Purpose**: Manage child Leaflet feature and tile layers within parent elements
 **Implementation**:
