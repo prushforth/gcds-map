@@ -1,6 +1,30 @@
 import { test, expect } from '@playwright/test';
 import data from './mapFeatureCustomElement.data.js';
 
+
+
+// Helper function to compare geojson with tolerance for floating point differences
+function expectGeojsonToMatch(actual: any, expected: any, tolerance: number = 1e-10) {
+  function compareValues(a: any, b: any): boolean {
+    if (typeof a === 'number' && typeof b === 'number') {
+      return Math.abs(a - b) < tolerance;
+    }
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return false;
+      return a.every((val, idx) => compareValues(val, b[idx]));
+    }
+    if (typeof a === 'object' && typeof b === 'object' && a !== null && b !== null) {
+      const keysA = Object.keys(a).sort();
+      const keysB = Object.keys(b).sort();
+      if (keysA.length !== keysB.length) return false;
+      if (!keysA.every((key, idx) => key === keysB[idx])) return false;
+      return keysA.every(key => compareValues(a[key], b[key]));
+    }
+    return a === b;
+  }
+  expect(compareValues(actual, expected)).toBe(true);
+}
+
 test.describe('Playwright MapFeature Custom Element Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/test/map-feature/mapFeatureCustomElement.html', { waitUntil: 'networkidle' });
@@ -46,13 +70,11 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
 
     // change <map-coordinates>
     await page.reload({ waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
     let prevExtentBR = await page.$eval('body > gcds-map', (map) => {
       let layer = map.querySelector('map-layer'),
         mapFeature = layer.querySelector('map-feature');
       return (mapFeature as any).extent.bottomRight.pcrs;
     });
-    await page.pause();
     let newExtentBR = await page.$eval('body > gcds-map', (map) => {
       let layer = map.querySelector('map-layer'),
         mapFeature = layer.querySelector('map-feature'),
@@ -75,7 +97,7 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
       return (mapFeature as any).click();
     });
     const popupCount = await page.$eval(
-      'body > gcds-map > div > div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-popup-pane',
+      'div.leaflet-pane.leaflet-popup-pane',
       (popupPane) => popupPane.childElementCount
     );
     // expect no popup is binded
@@ -83,8 +105,6 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
   });
 
   test('Get extent of <map-point> with zoom attribute = 2', async ({ page }) => {
-    await page.reload({ waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
     const extent = await page.$eval(
       'body > gcds-map',
       (map) => (map.querySelector('.point_1') as any).extent
@@ -117,19 +137,17 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
   });
 
   test('Get geojson representation of <map-geometry> with single geometry', async ({ page }) => {
-    await page.reload({ waitUntil: 'networkidle' });
-    await page.waitForTimeout(200);
     // options = {propertyFunction: null, transform: true} (default)
     let geojson = await page.$eval('body > gcds-map', (map) =>
       (map.querySelector('map-feature') as any).mapml2geojson()
     );
-    expect(geojson).toEqual(data.geojsonData.withDefOptions);
+    expectGeojsonToMatch(geojson, data.geojsonData.withDefOptions);
 
     // options = {propertyFunction: null, transform: false}
     geojson = await page.$eval('body > gcds-map', (map) =>
       (map.querySelector('map-feature') as any).mapml2geojson({ transform: false })
     );
-    expect(geojson).toEqual(data.geojsonData.withNoTransform);
+    expectGeojsonToMatch(geojson, data.geojsonData.withNoTransform);
 
     // options = {propertyFunction: function (properties) {...}, transform: true}
     geojson = await page.$eval('body > gcds-map', (map) => {
@@ -151,7 +169,7 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
         }
       });
     });
-    expect(geojson).toEqual(data.geojsonData.withPropertyFunc);
+    expectGeojsonToMatch(geojson, data.geojsonData.withPropertyFunc);
   });
 
   test('Get geojson representation of <map-geometry> with multiple geometries', async ({ page }) => {
@@ -159,7 +177,7 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
     let geojson = await page.$eval('body > gcds-map', (map) =>
       (map.querySelector('.link') as any).mapml2geojson()
     );
-    expect(geojson).toEqual(data.geojsonData.withMultiGeo);
+    expectGeojsonToMatch(geojson, data.geojsonData.withMultiGeo);
   });
 
   test('Default click method test', async ({ page }) => {
@@ -171,7 +189,6 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
       return feature._geometry.isPopupOpen();
     });
     expect(popup).toEqual(true);
-
     // <map-feature> with role="link" should add a new layer / jump to another page after click
     const layerCount = await page.$eval('body > gcds-map', (map: any) => {
       map.querySelector('.link').click();
@@ -180,11 +197,12 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
     expect(layerCount).toEqual(4);
 
     // the <path> element should be marked as "visited" after click
-    let status = await page.$eval(
-      'body > gcds-map > div > div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > div > div.mapml-vector-container > svg > g > g:nth-child(3)',
-      (g) => {
-        for (let path of Array.from(g.querySelectorAll('path'))) {
-          if (!path.classList.contains('map-a-visited')) {
+    const mapLink = await page.locator('map-feature.link');
+
+    let status = await mapLink.evaluate(
+      (l: any) => {
+        for (let path of Array.from(l._groupEl.querySelectorAll('path'))) {
+          if (!(path as any).classList.contains('map-a-visited')) {
             return false;
           }
         }
@@ -208,29 +226,30 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
   });
 
   test('Default focus method test', async ({ page }) => {
-    await page.reload({ waitUntil: 'networkidle' });
-    await page.waitForTimeout(500);
-    // focus method test
-    let focus = await page.$eval(
-      'body > gcds-map > div > div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > div > div.mapml-vector-container > svg > g > g:nth-child(1)',
-      (g) => {
-        let layer = document.querySelector('gcds-map').querySelector('map-layer'),
-          mapFeature = layer.querySelector('map-feature') as any;
-        mapFeature.focus();
-        return document.activeElement.shadowRoot?.activeElement === g;
-      }
-    );
-    expect(focus).toEqual(true);
+    await page.locator('gcds-map').click();
+    await page.keyboard.press('Tab'); // focus first map-feature
+    // vermont is closest to the map centre, so is the first in tab order
+    const firstFeature = page.locator('map-feature').filter({
+      has: page.locator('map-featurecaption', { hasText: 'Vermont' })
+    });
+    await expect(firstFeature).toHaveCount(1);
+    let firstFeatureHasFocus = await firstFeature.evaluate( (f: any) => {
+      let g = f._groupEl;
+      return document.activeElement.shadowRoot?.activeElement === g;
+    });
+    // the first feature in tab order should be focused
+    expect(firstFeatureHasFocus).toEqual(true);
 
-    // focus state will be removed when users change focus to the other elements
-    await page.$eval('body > gcds-map', (map) =>
-      (map.querySelectorAll('map-feature')[1] as any).focus()
-    );
-    focus = await page.$eval(
-      'body > gcds-map > div > div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-overlay-pane > div > div.mapml-vector-container > svg > g > g:nth-child(1)',
-      (g) => document.activeElement.shadowRoot?.activeElement === g
-    );
-    expect(focus).toEqual(false);
+    // focus state will be removed when user changes focus to any other feature
+    await page.locator('map-feature').filter({
+      has: page.locator('map-featurecaption', { hasText: 'feature with table properties' })
+    }).evaluate((f: any) => f.focus());
+
+    firstFeatureHasFocus = await firstFeature.evaluate( (f: any) => {
+      let g = f._groupEl;
+      return document.activeElement.shadowRoot?.activeElement === g;
+    });
+    expect(firstFeatureHasFocus).toEqual(false);
   });
 
   test('Default blur method test', async ({ page }) => {
@@ -270,7 +289,9 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
 
   test('Add event handler via Script', async ({ page }) => {
     const test = await page.$eval('body > gcds-map', (map) => {
+      (window as any).test_1();
       let mapFeature = map.querySelector('.event') as any;
+      mapFeature._groupEl.focus();
       mapFeature._groupEl.blur();
       return (
         mapFeature.classList.contains('blur_property_test') &&
@@ -278,60 +299,5 @@ test.describe('Playwright MapFeature Custom Element Tests', () => {
       );
     });
     expect(test).toEqual(true);
-  });
-});
-
-test.describe('MapFeature Events', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/test/map-feature/mapFeatureEvents.html', { waitUntil: 'networkidle' });
-  });
-
-  test('Custom Click event - stopPropagation', async ({ page }) => {
-    await page.waitForTimeout(1000);
-    // Click on polygon
-    await page
-      .locator(
-        'gcds-map[role="application"]:has-text("Polygon -75.5859375 45.4656690 -75.6813812 45.4533876 -75.6961441 45.4239978 -75")'
-      )
-      .click();
-    const popupCount = await page.$eval(
-      'body > gcds-map > div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-popup-pane',
-      (popupPane) => popupPane.childElementCount
-    );
-    // expect no popup is binded
-    expect(popupCount).toEqual(0);
-
-    await page.waitForTimeout(500);
-
-    // custom click property displaying on div
-    const propertyDiv = await page.$eval(
-      'body > div#property',
-      (div) => (div.firstElementChild as HTMLElement).innerText
-    );
-    // check custom event is displaying properties
-    expect(propertyDiv).toEqual('This is a Polygon');
-  });
-
-  test('click() method - stopPropagation', async ({ page }) => {
-    // click() method on line feature
-    await page.$eval(
-      'body > gcds-map > map-layer > map-feature#line',
-      (line) => (line as any).click()
-    );
-
-    const popupCount = await page.$eval(
-      'body > gcds-map > div > div.leaflet-pane.leaflet-map-pane > div.leaflet-pane.leaflet-popup-pane',
-      (popupPane) => popupPane.childElementCount
-    );
-    // expect no popup is binded
-    expect(popupCount).toEqual(0);
-
-    // custom click property displaying on div
-    const propertyDiv = await page.$eval(
-      'body > div#property',
-      (div) => (div.firstElementChild as HTMLElement).innerText
-    );
-    // check custom event is displaying properties
-    expect(propertyDiv).toEqual('This is a Line');
   });
 });

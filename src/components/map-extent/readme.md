@@ -20,16 +20,6 @@
 
 ## Methods
 
-### `getOuterHTML() => Promise<string>`
-
-
-
-#### Returns
-
-Type: `Promise<string>`
-
-
-
 ### `whenLinksReady() => Promise<PromiseSettledResult<any>[]>`
 
 

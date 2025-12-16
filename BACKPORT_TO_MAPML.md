@@ -46,6 +46,44 @@ get type() {
 }
 ```
 
+### 3. MapFeatureLayer._validateRendering() Null Pointer Fix
+**File**: `src/mapml/layers/MapFeatureLayer.js`
+**Issue**: Crash with "Cannot read properties of null (reading 'replaceWith')" when geometry group's parentNode is null
+**Root Cause**: 
+- During `map-feature.reRender()`, a new geometry is created with a detached SVG group element
+- `addTo()` triggers `_validateRendering()` before `reRender()` attaches the group to DOM
+- The placeholder lookup via `querySelector()` fails because `parentNode` is null
+
+**Fix**: Add null check before attempting to find and replace placeholder
+```javascript
+// Only try to find placeholder if the geometry group has a parentNode
+// If parentNode is null, the geometry is being handled by reRender()
+// which will attach it to the DOM after _validateRendering completes
+if (geometry.defaultOptions.group.parentNode) {
+  let placeholder =
+    geometry.defaultOptions.group.parentNode.querySelector(
+      `span[id="${geometry._leaflet_id}"]`
+    );
+  if (placeholder) {
+    placeholder.replaceWith(geometry.defaultOptions.group);
+  }
+}
+```
+
+**Location in _validateRendering()**: Lines ~417-430 in the block that handles re-adding geometries:
+```javascript
+} else if (
+  !map.hasLayer(geometry) &&
+  !geometry._map
+) {
+  this.addRendering(geometry);
+  // Add the null check here before querySelector
+  if (geometry.defaultOptions.group.parentNode) {
+    // ... placeholder logic
+  }
+}
+```
+
 ## Architecture Improvements
 
 ### 3. Layer Registry for Child Layer Management
