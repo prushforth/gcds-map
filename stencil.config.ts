@@ -64,6 +64,10 @@ export const config: Config = {
           src: 'components/map-caption/test/*.{html,mapml,css}',
           dest: 'test/map-caption'
         },
+        {
+          src: 'components/map-span/test/*.{html,mapml,css}',
+          dest: 'test/map-span'
+        },
         // Copy shared test data directory recursively
         {
           src: 'components/test/data',
@@ -145,6 +149,10 @@ export const config: Config = {
         {
           src: 'components/map-caption/test/*.{html,mapml,css}',
           dest: 'test/map-caption'
+        },
+        {
+          src: 'components/map-span/test/*.{html,mapml,css}',
+          dest: 'test/map-span'
         },
         // Copy shared test data directory recursively
         {
