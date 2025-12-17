@@ -42,7 +42,23 @@ export class MapTile {
     // Read from attributes first, then fall back to props
     this._initialRow = this.el.hasAttribute('row') ? +this.el.getAttribute('row') : (this.row ?? 0);
     this._initialCol = this.el.hasAttribute('col') ? +this.el.getAttribute('col') : (this.col ?? 0);
-    this._initialZoom = this.el.hasAttribute('zoom') ? +this.el.getAttribute('zoom') : (this.zoom ?? (this.getMapEl()?.zoom || 0));
+    
+    // For zoom, check: explicit attribute -> prop -> map-meta value -> map zoom -> 0
+    let zoomValue = 0;
+    if (this.el.hasAttribute('zoom')) {
+      zoomValue = +this.el.getAttribute('zoom');
+    } else if (this.zoom !== undefined) {
+      zoomValue = this.zoom;
+    } else {
+      // Try to get zoom from map-meta element
+      const metaZoom = this._getMetaZoomValue();
+      if (metaZoom !== null) {
+        zoomValue = metaZoom;
+      } else {
+        zoomValue = this.getMapEl()?.zoom || 0;
+      }
+    }
+    this._initialZoom = zoomValue;
     this._hasConnected = true;
     
     // Override getAttribute/setAttribute on the element to prevent row/col/zoom changes
@@ -74,6 +90,22 @@ export class MapTile {
       }
       originalSetAttribute(name, value);
     };
+
+    // Override property accessors on the element to return initial values
+    Object.defineProperties(this.el, {
+      row: {
+        get: () => this._initialRow,
+        configurable: true
+      },
+      col: {
+        get: () => this._initialCol,
+        configurable: true
+      },
+      zoom: {
+        get: () => this._initialZoom,
+        configurable: true
+      }
+    });
     
     // Find parent element (handle shadow DOM)
     const parentNode = this.el.parentNode as HTMLElement;
@@ -161,6 +193,26 @@ export class MapTile {
 
   getLayerEl() {
     return Util.getClosest(this.el, 'map-layer,layer-');
+  }
+
+  private _getMetaZoomValue(): number | null {
+    // Look for <map-meta name="zoom" content="...value=N..."> in parent layer
+    const layerEl = this.getLayerEl();
+    if (!layerEl) return null;
+    
+    const metaZoom = layerEl.querySelector('map-meta[name="zoom"][content]');
+    if (!metaZoom) return null;
+    
+    const content = metaZoom.getAttribute('content');
+    if (!content) return null;
+    
+    // Parse content like "min=1,max=4,value=2"
+    const valueMatch = content.match(/value=(\d+)/);
+    if (valueMatch && valueMatch[1]) {
+      return parseInt(valueMatch[1], 10);
+    }
+    
+    return null;
   }
 
   getMeta(metaName: string) {

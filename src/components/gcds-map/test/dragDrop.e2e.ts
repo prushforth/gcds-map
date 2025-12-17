@@ -1,21 +1,12 @@
-import { test, expect, chromium } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Drag and Drop Layers (map-layer, GeoJSON, Link) to gcds-map', () => {
-  let page;
-  let context;
-  test.beforeAll(async () => {
-    context = await chromium.launchPersistentContext('');
-    page =
-      context.pages().find((page) => page.url() === 'about:blank') ||
-      (await context.newPage());
-    await page.goto('/test/gcds-map/dragDrop.html', { waitUntil: 'networkidle' });
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/test/gcds-map/dragDrop.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(500);
   });
 
-  test.afterAll(async function () {
-    await context.close();
-  });
-
-  test('Drag and drop of valid mapml URL', async () => {
+  test('Drag and drop of valid mapml URL', async ({ page }) => {
     const dataTransfer = await page.evaluateHandle(() => {
       const dt = new DataTransfer();
       dt.items.add(
@@ -32,7 +23,7 @@ test.describe('Drag and Drop Layers (map-layer, GeoJSON, Link) to gcds-map', () 
     expect(vars.length).toBe(2);
   });
 
-  test('Drag and drop of valid geoJSON', async () => {
+  test('Drag and drop of valid geoJSON', async ({ page }) => {
     const dataTransfer = await page.evaluateHandle(() => {
       const dt = new DataTransfer();
       dt.items.add(
@@ -43,12 +34,12 @@ test.describe('Drag and Drop Layers (map-layer, GeoJSON, Link) to gcds-map', () 
     });
     await page.dispatchEvent('gcds-map', 'drop', { dataTransfer });
     await page.hover('.leaflet-top.leaflet-right');
-    await page.waitForSelector('.leaflet-control-layers-overlays > fieldset:nth-of-type(3)', { timeout: 3000 });
+    await page.waitForSelector('.leaflet-control-layers-overlays > fieldset:nth-of-type(2)', { timeout: 3000 });
     let vars = await page.$$('.leaflet-control-layers-overlays > fieldset');
-    expect(vars.length).toBe(3);
+    expect(vars.length).toBe(2);
   });
 
-  test('Drag and drop of valid map-layer', async () => {
+  test('Drag and drop of valid map-layer', async ({ page }) => {
     const dataTransfer = await page.evaluateHandle(() => {
       const dt = new DataTransfer();
       dt.items.add(
@@ -59,22 +50,22 @@ test.describe('Drag and Drop Layers (map-layer, GeoJSON, Link) to gcds-map', () 
     });
     await page.dispatchEvent('gcds-map', 'drop', { dataTransfer });
     await page.hover('.leaflet-top.leaflet-right');
-    await page.waitForSelector('.leaflet-control-layers-overlays > fieldset:nth-of-type(4)', { timeout: 3000 });
+    await page.waitForSelector('.leaflet-control-layers-overlays > fieldset:nth-of-type(2)', { timeout: 3000 });
     let vars = await page.$$('.leaflet-control-layers-overlays > fieldset');
-    expect(vars.length).toBe(4);
+    expect(vars.length).toBe(2);
   });
 
-  test('Drag and drop of Invalid text', async () => {
+  test('Drag and drop of Invalid text', async ({ page }) => {
     const dataTransfer = await page.evaluateHandle(() => {
       const dt = new DataTransfer();
       dt.items.add('This is an invalid layer yo!', 'text/plain');
       return dt;
     });
     await page.dispatchEvent('gcds-map', 'drop', { dataTransfer });
-    // Invalid drop shouldn't add a layer, wait a bit then check count is still 4
+    // Invalid drop shouldn't add a layer, wait a bit then check count is still 1
     await page.waitForTimeout(500);
     await page.hover('.leaflet-top.leaflet-right');
     let vars = await page.$$('.leaflet-control-layers-overlays > fieldset');
-    expect(vars.length).toBe(4);
+    expect(vars.length).toBe(1);
   });
 });
