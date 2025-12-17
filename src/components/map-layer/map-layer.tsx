@@ -659,7 +659,9 @@ export class GcdsMapLayer {
           Array.from(mapml.querySelectorAll('map-extent[units]'))
         ) || projection;
     } else {
-      const message = `A projection was not assigned to the '${this.label || this.el.querySelector('map-title').textContent}' Layer. \nPlease specify a projection for that layer using a map-meta element. \nSee more here - https://maps4html.org/web-map-doc/docs/elements/meta/`;
+      const titleElement = this.el.querySelector('map-title');
+      const layerLabel = this.label || (titleElement ? titleElement.textContent : 'Unnamed');
+      const message = `A projection was not assigned to the '${layerLabel}' Layer. \nPlease specify a projection for that layer using a map-meta element. \nSee more here - https://maps4html.org/web-map-doc/docs/elements/meta/`;
       if (!this.loggedMessages.has(message)) {
         console.log(message);
         this.loggedMessages.add(message);
