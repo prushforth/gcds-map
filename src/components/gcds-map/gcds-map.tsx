@@ -171,6 +171,15 @@ export class GcdsMap {
           // changing the map CRS. Specifically affects projection
           // upgrades, e.g. https://maps4html.org/experiments/custom-projections/BNG/
           // see leaflet bug: https://github.com/Leaflet/Leaflet/issues/2553
+          // Skip restoration if there's only one layer - link traversal case where layer.zoomTo() should control zoom
+          const layers = (this.el as any).layers;
+          if (layers.length === 1) {
+            const layer = layers[0] as any;
+            if (layer.extent) {
+              this._map.setMinZoom(layer.extent.zoom.minZoom);
+              this._map.setMaxZoom(layer.extent.zoom.maxZoom);
+            }
+          }
           this.zoomTo(lat, lon, zoom);
           if ((window as any).M.options.announceMovement) this._map.announceMovement?.enable();
           // required to delay until map-extent.disabled is correctly set

@@ -48,7 +48,8 @@ test.describe('Playwright Feature Links Tests', () => {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(200);
       await page.keyboard.press('Enter'); // Press enter on the second point in the top left
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(10000);
       const extent = await page.$eval('body > gcds-map', (map) => (map as any).extent);
       expect(extent.topLeft.gcrs).toEqual({
         horizontal: -118.38250407225894,

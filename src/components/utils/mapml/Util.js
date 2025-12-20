@@ -396,7 +396,7 @@ export const Util = {
           for (let l of map.options.mapEl.querySelectorAll('map-layer,layer-'))
             if (l._layer !== leafletLayer) map.options.mapEl.removeChild(l);
           map.options.mapEl.appendChild(layer);
-          map.options.mapEl.removeChild(leafletLayer._layerEl);
+         leafletLayer._layerEl.remove();
           break;
         case '_top':
           window.location.href = link.url;
@@ -427,9 +427,26 @@ export const Util = {
       // specifically required for use cases like changing projection after
       // link traversal, e.g. BC link here https://maps4html.org/experiments/linking/features/
       if (!link.inPlace && zoomTo) updateMapZoomTo(zoomTo);
+      
+      // Wait for projection change to complete before calling layer.zoomTo()
+      // This ensures zoom constraints are set properly in projectionChanged (gcds-map.tsx)
+      // NOTE: We cannot determine in advance whether projection will change because:
+      // 1. Would need to fetch/parse the MapML document first
+      // 2. Would need to check if result leaves single layer (triggers projection change)
+      // 3. This adds complexity and delays that offset the timeout benefit
+      // So we always wait with 5000ms fallback. Tests must account for this delay.
+      // See: gcds-map.tsx projectionChanged() and test files for related code.
+      const projectionChangePromise = new Promise(resolve => {
+        const timeout = setTimeout(resolve, 5000); // Fallback if no projection change
+        map.options.mapEl.addEventListener('map-projectionchange', () => {
+          clearTimeout(timeout);
+          resolve();
+        }, { once: true });
+      });
+      
       // the layer is newly created, so have to wait until it's fully init'd
       // before setting properties.
-      layer.whenReady().then(() => {
+      Promise.all([layer.whenReady(), projectionChangePromise]).then(() => {
         // if the map projection isnt' changed by link traversal, it's necessary
         // to perform pan/zoom operations after the layer is ready
         if (!link.inPlace && zoomTo)

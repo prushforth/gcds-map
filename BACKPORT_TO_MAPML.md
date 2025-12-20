@@ -214,3 +214,80 @@ copyValue = copyValue.replace(/\s*class="hydrated"/g, '');
 - All changes should be tested in MapML.js context before merging
 - Some patterns (like Stencil lifecycle timing) may need adjustment for custom elements
 - The `_layerRegistry` pattern is the most significant architectural improvement
+
+### 6. Projection Change and Link Traversal Timing Fix
+**Files**: `src/mapml/utils/Util.js` (_handleLink function), `src/mapml-viewer.js` (projection attributeChangedCallback)
+**Issue**: When following a map-a link that changes projection, the map doesn't zoom to the new layer's extent correctly (stays at zoom 2 instead of zoom 0)
+**Root Cause**: 
+- Custom element's `attributeChangedCallback` for projection is synchronous
+- Stencil's `@Watch` is async (microtask-based)
+- In Stencil, `layer.zoomTo()` executes before projection change completes, using wrong zoom constraints
+- In mapml-source, execution order is correct but could still fail due to async layeradd event handler
+
+**Fix Part 1 - Util.js `_handleLink()` function's `postTraversalSetup()`**:
+```javascript
+function postTraversalSetup() {
+  if (!link.inPlace && zoomTo) updateMapZoomTo(zoomTo);
+  
+  // Wait for projection change to complete before calling layer.zoomTo()
+  // This ensures zoom constraints are set properly in projectionChanged
+  // Use timeout fallback in case no projection change occurs
+  const projectionChangePromise = new Promise(resolve => {
+    const timeout = setTimeout(resolve, 5000); // Fallback if no projection change
+    map.options.mapEl.addEventListener('map-projectionchange', () => {
+      clearTimeout(timeout);
+      resolve();
+    }, { once: true });
+  });
+  
+  // Wait for both layer.whenReady() and projection change before proceeding
+  Promise.all([layer.whenReady(), projectionChangePromise]).then(() => {
+    if (!link.inPlace && zoomTo)
+      layer.parentElement.zoomTo(+zoomTo.lat, +zoomTo.lng, +zoomTo.z);
+    else if (!link.inPlace) layer.zoomTo();
+    if (opacity) layer.opacity = opacity;
+    map.getContainer().focus();
+  });
+}
+```
+
+**Fix Part 2 - mapml-viewer.js projection attributeChangedCallback**:
+After reconnecting layers but before restoring coordinates, add synchronous constraint setting for single-layer case:
+```javascript
+// After all layers reconnected, before this.zoomTo(lat, lon, zoom)
+Promise.allSettled(layersReady).then(() => {
+  // Skip restoration if there's only one layer - link traversal case where layer.zoomTo() should control zoom
+  const layers = this.layers;
+  if (layers.length === 1) {
+    const layer = layers[0];
+    if (layer.extent) {
+      this._map.setMinZoom(layer.extent.zoom.minZoom);
+      this._map.setMaxZoom(layer.extent.zoom.maxZoom);
+    }
+  }
+  this.zoomTo(lat, lon, zoom);
+  // ... rest of existing code
+});
+```
+
+**Why Both Changes Are Needed**:
+1. **Util.js change**: Ensures `layer.zoomTo()` waits for projection change to complete
+   - Without this, `layer.zoomTo()` runs before constraints are set
+   - 5000ms timeout handles cases where no projection change occurs
+   
+2. **mapml-viewer.js change**: Sets constraints synchronously for single-layer case
+   - Handles race condition where `layer.zoomTo()` runs before async `layeradd` event handler
+   - The `layeradd` event handler uses `whenLayersReady()` which is async
+   - Single layer detection (`layers.length === 1`) indicates link traversal scenario
+   - Without this, constraints remain at default values preventing zoom 0
+
+**Test Changes**:
+- Updated `test/e2e/core/projectionChange.test.js` expectations
+- After following link with `target="_parent"`, map should be centered at layer's extent (0,0,0)
+- Previous expectation that map stayed at original coordinates was incorrect
+
+**Why This Fix Works**:
+- Synchronous constraint setting in projection change ensures constraints ready before `layer.zoomTo()`
+- Promise-based waiting in link handler ensures proper execution order
+- Both changes work together to handle the timing properly in both mapml-source and Stencil
+
