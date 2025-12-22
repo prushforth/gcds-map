@@ -3,7 +3,7 @@
     <map-title>Canada Base Map - Transportation (CBMT)</map-title>
     <map-meta http-equiv="Content-Type" content="text/mapml"></map-meta>
     <map-meta charset="utf-8"></map-meta>
-    <map-link rel="zoomin" href="osm-changeProjection.mapml" type="text/mapml"></map-link>
+    <map-meta name="zoom" content="min=0,max=18"></map-meta>
   </map-head>
   <map-body>
   <map-extent units="CBMTILE"  checked="checked" hidden="hidden">

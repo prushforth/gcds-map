@@ -376,3 +376,26 @@ return (isSVG || isContainer)
 - Extent's styles should render in extent's `_extentLayer._container`
 - Styles should maintain source order relative to all sibling elements (not just other styles)
 
+## 8. Media Query-Based Layer Selection Test
+
+**File**: `test/e2e/core/zoomChangeProjection.html` and `test/e2e/core/zoomChangeProjection.test.js`
+
+**Issue**: Current test uses `zoomin`/`zoomout` link relations which are being deprecated. Need to update to demonstrate media query-based layer selection.
+
+**Changes Needed**:
+```html
+<!-- BEFORE: Using deprecated link relations -->
+<map-layer src="layer-with-zoomin-link.mapml" checked></map-layer>
+
+<!-- AFTER: Using media queries on map-layer elements -->
+<map-layer media="(0 <= map-zoom <= 8)" label="CBMT" src="cbmt-changeProjection.mapml" checked></map-layer>
+<map-layer media="(9 <= map-zoom <= 18)" label="OSM" src="osm-changeProjection.mapml" checked></map-layer>
+```
+
+**Note**: This approach requires manual projection changes via script because the map detects multiple layers (even if one is disabled by media query). Combination of `matchMedia` script plus declarative `media` attribute values needed.
+
+**Test Updates**:
+- Update test to verify media query-based layer switching instead of link-based
+- Add test for automatic projection change when only one layer is active
+- Consider adding `matchMedia` listener example for automatic projection management
+
