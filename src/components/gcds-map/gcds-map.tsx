@@ -717,6 +717,9 @@ export class GcdsMap {
       // Expose on element for MapML compatibility
       (this.el as any)._geolocationButton = this._geolocationButton;
     }
+    
+    // Expose locate method on element for MapML compatibility
+    (this.el as any).locate = this.locate.bind(this);
   }
   // Sets controls by hiding/unhiding them based on the map attribute
   _toggleControls() {
@@ -913,6 +916,30 @@ export class GcdsMap {
       this
     );
     
+    // Forward geolocation events from Leaflet to custom events
+    this._map.on(
+      'locationfound',
+      function (e: any) {
+        this.el.dispatchEvent(
+          new CustomEvent('maplocationfound', {
+            detail: { latlng: e.latlng, accuracy: e.accuracy }
+          })
+        );
+      },
+      this
+    );
+    this._map.on(
+      'locationerror',
+      function (e: any) {
+        this.el.dispatchEvent(
+          new CustomEvent('maplocationerror', {
+            detail: { message: e.message, code: e.code }
+          })
+        );
+      },
+      this
+    );
+    
     // Set up zoom bounds management based on layer extents
     const setMapMinAndMaxZoom = ((e) => {
       this.whenLayersReady().then(() => {
@@ -965,6 +992,22 @@ export class GcdsMap {
       this._debug = undefined;
     } else {
       this._debug = debugOverlay().addTo(this._map);
+    }
+  }
+
+  locate(options?: any) {
+    //options: https://leafletjs.com/reference.html#locate-options
+    if (this._geolocationButton) {
+      this._geolocationButton.stop();
+    }
+    if (options) {
+      if (options.zoomTo) {
+        options.setView = options.zoomTo;
+        delete options.zoomTo;
+      }
+      this._map.locate(options);
+    } else {
+      this._map.locate({ setView: true, maxZoom: 16 });
     }
   }
 

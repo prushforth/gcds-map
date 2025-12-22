@@ -399,3 +399,38 @@ return (isSVG || isContainer)
 - Add test for automatic projection change when only one layer is active
 - Consider adding `matchMedia` listener example for automatic projection management
 
+## 9. Geolocation API Event Forwarding
+
+**Context**: The `locate()` method is already implemented in mapml-viewer.js, but the geolocation event forwarding is already present. This is NOT a bug fix - just documenting the existing implementation that was refactored to gcds-map.
+
+**Already Implemented** in `src/mapml-viewer.js` (lines 722-737):
+```javascript
+this._map.on(
+  'locationfound',
+  function (e) {
+    this.dispatchEvent(
+      new CustomEvent('maplocationfound', {
+        detail: { latlng: e.latlng, accuracy: e.accuracy }
+      })
+    );
+  },
+  this
+);
+this._map.on(
+  'locationerror',
+  function (e) {
+    this.dispatchEvent(
+      new CustomEvent('maplocationerror', {
+        detail: { message: e.message, code: e.code }
+      })
+    );
+  },
+  this
+);
+```
+
+**Test Refactoring**: 
+- Refactored `test/e2e/api/locateApi.html` and `test/e2e/api/locateApi.test.js` to Stencil/Playwright
+- All 4 tests passing: locate API, maplocationfound event, locationerror event, button interaction
+- No changes needed to MapML.js - implementation already correct
+
