@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('map-style and map-link[rel=stylesheet] tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/test/gcds-map/styleParsing.html', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
   });
 
   //tests using the 1st map in the page
@@ -68,7 +68,7 @@ rendered as style/link in same order as found, in expected shadow root location`
   // has 2 elements (extent's own styles). In the original MapML, both queries
   // return 2 elements. This suggests a DOM structure difference in how Stencil
   // organizes the layer/extent hierarchy.
-  test.skip(`Local style children of map-extent rendered as style/link in same order \
+  test(`Local style children of map-extent rendered as style/link in same order \
 as found, in expected shadow root location`, async ({ page }) => {
     const mapExtent = page.getByTestId('map-ext1');
     const ids = await mapExtent.evaluate((e: any) => {

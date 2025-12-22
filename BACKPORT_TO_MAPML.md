@@ -291,3 +291,88 @@ Promise.allSettled(layersReady).then(() => {
 - Promise-based waiting in link handler ensures proper execution order
 - Both changes work together to handle the timing properly in both mapml-source and Stencil
 
+## 7. Style and Link Rendering Order Fix
+
+### Part A: Prevent Incorrect Parent Container Rendering
+**Files**: 
+- `src/map-style.js`
+- `src/map-link.js`
+
+**Issue**: Layer's `<map-style>` and `<map-link>` elements were being rendered into sibling `<map-extent>` containers instead of the parent layer's container
+
+**Root Cause**: 
+- When `map-style`/`map-link` connects, parent layer's `_layer` may not exist yet
+- Original fallback logic checked `_layer`, then `_templatedLayer`, then `_extentLayer`
+- If `_extentLayer` existed anywhere (even on different element), styles would render there incorrectly
+
+**Fix**: Add explicit parent type checking before rendering
+```javascript
+// In map-style.js and map-link.js _connect()/_createStylesheetLink()
+// IMPORTANT: Only render if the correct container exists for THIS element's parent.
+// Don't fall back to _extentLayer if this is a layer child - wait for _layer instead.
+const isLayerChild = this._stylesheetHost.tagName === 'MAP-LAYER';
+const isExtentChild = this._stylesheetHost.tagName === 'MAP-EXTENT';
+
+if (isLayerChild && this._stylesheetHost._layer) {
+  this._stylesheetHost._layer.renderStyles(this.el);
+} else if (isExtentChild && this._stylesheetHost._extentLayer) {
+  this._stylesheetHost._extentLayer.renderStyles(this.el);
+} else if (this._stylesheetHost._templatedLayer) {
+  this._stylesheetHost._templatedLayer.renderStyles(this.el);
+}
+// If none of the above exist yet, the parent's mutation observer
+// will call renderStyles when it's ready
+```
+
+### Part B: Optimize renderStyles Performance
+**File**: `src/mapml/elementSupport/layers/renderStyles.js`
+
+**Issue**: Inefficient expression with multiple DOM property accesses and unnecessary string operations
+
+**Optimization**:
+```javascript
+// BEFORE (inefficient):
+return this._container.lastChild &&
+  (this._container.lastChild.nodeName.toUpperCase() === 'SVG' ||
+    this._container.lastChild.classList.contains('mapml-vector-container') ||
+    this._container.lastChild.classList.contains('mapml-extentlayer-container'))
+  ? { position: 'beforebegin', node: this._container.lastChild }
+  : this._container.lastChild
+  ? { position: 'afterend', node: this._container.lastChild }
+  : { position: 'afterbegin', node: this._container };
+
+// AFTER (optimized):
+const lastChild = this._container.lastChild;
+if (!lastChild) {
+  return { position: 'afterbegin', node: this._container };
+}
+
+const isSVG = lastChild.nodeName === 'SVG';
+const isContainer = lastChild.classList?.contains('mapml-vector-container') ||
+                    lastChild.classList?.contains('mapml-extentlayer-container');
+
+return (isSVG || isContainer)
+  ? { position: 'beforebegin', node: lastChild }
+  : { position: 'afterend', node: lastChild };
+```
+
+**Improvements**:
+- Cache `lastChild` - only access `this._container.lastChild` once instead of 3+ times
+- Remove `toUpperCase()` - SVG tag names are always uppercase in DOM
+- Early return for null case
+- Use optional chaining `?.` to safely check classList
+- Combine checks for better readability
+
+### Part C: Test Updates
+**File**: `test/e2e/core/styleParsing.test.js`
+
+**Changes Needed**:
+1. Update test to use scoped querySelector: `:scope > style, :scope > link[rel="stylesheet"]`
+2. Verify layer children render into layer container, not extent container
+3. Add test coverage for style/link rendering order relative to sibling extent containers
+
+**Verification**: 
+- Layer's styles should render in layer's `_layer._container`
+- Extent's styles should render in extent's `_extentLayer._container`
+- Styles should maintain source order relative to all sibling elements (not just other styles)
+
