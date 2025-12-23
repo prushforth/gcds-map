@@ -372,6 +372,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
 
   test('Submenu, copy map (MapML)', async () => {
     await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForTimeout(1000);
     const map = await page.getByTestId('firstmap');
     await map.evaluate((map) => map.whenLayersReady());
     await page.click('body > gcds-map');
