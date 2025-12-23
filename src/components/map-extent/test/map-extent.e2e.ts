@@ -11,6 +11,9 @@ test.describe('map-extent tests', () => {
     await page.goto('/test/map-extent/map-extent.html', { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
   });
+  test.afterAll(async function () {
+    await context.close();
+  })
   test('Basic hidden functionality and API', async () => {
     const extent = await page.getByTestId('ext1');
     await extent.evaluate(async (extent) => extent.whenReady());

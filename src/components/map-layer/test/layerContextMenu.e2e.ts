@@ -19,7 +19,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Layer context menu shows when layer is clicked', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     const cbmtLayer = await page.getByText('CBMT - INLINE');
     cbmtLayer.click({ button: 'right' });
 
@@ -49,7 +49,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Layer context menu copy layer', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     const cbmtLayer = await page.getByText('CBMT - INLINE');
     await cbmtLayer.click({ button: 'right' });
     await page.keyboard.press('l');
@@ -74,7 +74,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Map zooms in to layer 2', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     const layer2 = page.getByText('Layer 2');
     await layer2.click({ button: 'right', force: true });
 
@@ -95,7 +95,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Map zooms out to layer 3', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     const layer3 = page.getByText('Layer 3');
     await layer3.click({ button: 'right', force: true });
 
@@ -118,7 +118,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Map zooms out to layer 4', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     const layer4 = page.getByText('Layer 4');
     await layer4.click({ button: 'right', force: true });
 
@@ -140,8 +140,9 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Copy layer with relative src attribute', async () => {
     await page.reload();
+    await page.waitForTimeout(1000);
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     const pseudotsuga = await layerControl.getByText('Genus Pseudotsuga');
     await pseudotsuga.click({ button: 'right' });
 
@@ -165,7 +166,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Map Extent context menu shows when extent layer is right clicked', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     await page
       .getByRole('group', { name: 'CBMT - INLINE' })
       .getByTitle('Layer Settings', { exact: true })
@@ -226,7 +227,7 @@ test.describe('Layer Context Menu Tests', () => {
 
   test('Map zooms to extent layer', async () => {
     const layerControl = page.locator('.leaflet-control-layers');
-    await layerControl.hover();
+    await layerControl.hover({force: true});
     await page
       .getByRole('group', { name: 'Sub-layer' })
       .locator('label')

@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Playwright Feature Links Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/test/map-feature/linkTypes.html', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(2000);
   });
 
   test.describe('HTML Link Type Tests', () => {

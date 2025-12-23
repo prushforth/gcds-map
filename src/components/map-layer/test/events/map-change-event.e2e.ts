@@ -5,13 +5,13 @@ test.describe('Map-change event are only fired when layers/extents are checked o
   let context;
   test.beforeAll(async () => {
     context = await chromium.launchPersistentContext('', {
-      headless: false,
       slowMo: 250
     });
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/map-layer/events/map-change-event.html', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1000);
   });
 
   test.afterAll(async function () {
@@ -47,7 +47,7 @@ test.describe('Map-change event are only fired when layers/extents are checked o
     expect(layerClicked).toBe(0);
 
     // check and uncheck layers in the layer menu should call map-change
-    await page.hover('.leaflet-top.leaflet-right');
+    await page.hover('.leaflet-top.leaflet-right', {force: true});
     const button = await page.locator('.leaflet-control-layers-selector');
     await button.click();
     await button.click();
@@ -69,7 +69,7 @@ test.describe('Map-change event are only fired when layers/extents are checked o
     expect(layerClicked).toBe(4);
   });
 
-  test.skip('Map-change event for sub-layers work', async () => {
+  test('Map-change event for sub-layers work', async () => {
     let extentClicked = 0;
     page.on('console', (msg) => {
       if (msg.text() === 'Sub-layer clicked') {
