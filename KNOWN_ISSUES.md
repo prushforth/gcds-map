@@ -214,3 +214,37 @@ Create accessibility test suite for keyboard navigation features including cross
 - Crosshair cannot be disabled without breaking feature keyboard navigation
 - This is a fundamental accessibility requirement, not optional
 - Future refactoring must preserve crosshair or provide alternative event source
+---
+
+## customTCRS Test Needs Rewrite
+
+**Status**: Confusing test exists in both gcds-map and mapml-source  
+**Discovered**: December 24, 2025 during test refactoring  
+**Test**: `customTCRS.e2e.ts` - Test #3 "Complex Custom TCRS, static features loaded, templated features loaded"
+
+### Description
+The customTCRS-features.html test has multiple issues that make it confusing and difficult to maintain:
+
+1. **Invalid zoom metadata**: Arizona layer has `<map-meta name="zoom" content="min=1,max=5,value=0">` where `value=0` is outside the declared `min=1,max=5` range
+2. **Mismatched zoom levels**: Features declare `zoom="2"` but map initializes at `zoom="3"`
+3. **Unclear test intent**: Test expects Arizona layer to be disabled but doesn't document why (bounds intersection? zoom constraints? projection validation?)
+4. **Mixed coordinate systems**: Tests features with different `cs` attributes (tilematrix, pcrs, gcrs) but unclear what behavior is being validated
+5. **Missing extent element**: Arizona layer has `<map-meta name="extent">` metadata but no `<map-extent>` element - what is this testing?
+
+### Impact
+- Unclear whether layer disabling is due to bounds, zoom constraints, or validation
+- Different behavior between mapml-viewer (may not enforce zoom constraints) and gcds-map (may enforce them)
+- Test may pass/fail for unexpected reasons making it brittle
+
+### Action Required
+Rewrite test in both repositories to:
+1. Use valid, consistent zoom metadata values
+2. Clearly document what behavior each test case validates
+3. Separate tests for bounds checking, zoom constraints, and coordinate system validation
+4. Remove ambiguous/conflicting metadata
+5. Match map zoom and feature zoom levels when testing static features
+
+### Notes
+- Test currently passes but for potentially wrong reasons
+- May fail differently as zoom constraint enforcement evolves
+- Should be split into multiple focused test cases
