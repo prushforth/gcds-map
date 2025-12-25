@@ -38,3 +38,18 @@ This file tracks which MapML.js files have been refactored into GCDS components.
 - Keep mapml-source as reference only - do not modify
 - Each completed refactoring should maintain source correspondence for future diff/apply operations
 - Tests should be migrated alongside their corresponding components
+## Test File Standards
+
+### Required Script Tag in HTML Test Files
+All HTML test files must include the correct script path in the `<head>`:
+
+```html
+<script type="module" src="/build/gcds-map.esm.js"></script>
+```
+
+**NOT** this (incorrect):
+```html
+<script type="module" src="/build/gcds.esm.js"></script>
+```
+
+The correct path is `/build/gcds-map.esm.js` which loads the compiled Stencil component bundle.
