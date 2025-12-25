@@ -1,0 +1,528 @@
+Test Name Comparison Report
+Generated: Tue Dec 23 14:20:13 EST 2025
+================================
+
+SUMMARY:
+--------
+MapML viewer test cases: 512
+Stencil gcds-map test cases: 466
+Tests ported: 436
+Tests missing in Stencil: 76
+New tests in Stencil: 30
+Coverage: 85.2%
+
+COMMON TESTS (Already Ported):
+-------------------------------
+'Zoom to here' link test
+(full) Up and Down Arrow keys to navigate the contextmenu
+(partial) Up and Down Arrow keys to navigate the contextmenu
+2nd <map-layer>.extent test
+<map-layer>.extent test
+<map-select> <map-option> attributes are copied to layer control <option> elements
+<map-span> hides tile boundaries
+A layer disabled due to mq would otherwise be enabled is enabled and added to the layer control when mq removed
+A mq-disabled layer is removed from the layer control
+A protomaps map-link in a non-OSMTILE map-extent is never enabled
+A protomaps map-link, parent map-extent and ancestor map-layer are disabled when out of bounds
+A protomaps mvt map-link that has {z},{x},{y} variable names without associated map-inputs will not render
+A visible (enabled) map-layer with no media query should be disabled when a non-matching media query attribute is set
+A visible (enabled) map-layer with no media query should remain enabled when a matching mq is added
+Accurate debug coordinates
+Add event handler via HTML
+Add event handler via Script
+Adding a layer to a map without controls does not add controls
+Adding controlslist using setAttribute and controlsList setter
+All features loaded at start
+All locales have matching keys
+All map-extent layerControl are hidden because of the map-extent hidden attribute
+Allow zooming before reaching limit (zooming in)
+Allow zooming before reaching limit (zooming out)
+An empty layer's extent equals projection extent + it updates once content is added to the layer
+An empty media query is the same as no media query
+An invalid media query is the same as a non-matching media query
+Aria-label matches map-caption
+BBOX, Options label, caption + properties function
+BBOX, Options label, caption + properties string
+Back function
+Basic checked functionality and API
+Basic hidden functionality and API
+CBMTILE Map with OSMTILE layer
+Changing extent opacity, removing and adding extent effects expected changes to map container layer content
+Changing extent opacity, removing and adding extent effects expected changes to only that specific content
+Changing first map-caption changes aria-label
+Changing not-first map-caption doesn't change aria-label
+Check attribute added
+Check attribute removed
+Checking Context Menu Items Names In Order
+Checking an extent adds its bounds, unchecking an extent removes its bounds
+Contents of features-tiles-extents.mapml SELECTIVELY copied to map-link shadow root
+Contents of features-tiles-extents.mapml copied to map-layer shadow root
+Context Menu Fullscreen Button light DOM MAP_ELEMENT element fullscreen
+Context Menu Fullscreen Button makes shadow DOM MAP_ELEMENT element fullscreen
+Context Menu Fullscreen Button makes the MAP_ELEMENT element fullscreen
+Context menu dismissed by Escape key
+Context menu displaying on map
+Context menu focus on keyboard shortcut
+Context menu tab goes to next item
+Context menu, All buttons enabled when fwd and back history present
+Context menu, back and reload item at initial location disabled
+Context menu, back item
+Context menu, click at margin and move mouse out when submenu is visible
+Context menu, forward item
+Context menu, forward item at most recent location disabled
+Context menu, toggle controls after changing opacity
+Context menu, toggle controls off
+Context menu, toggle controls on
+Control panel hidden when no layers/all layers hidden
+Control panel shown when layers are on map
+Control panel unhidden when at least one layer with no hidden attribute
+Copy layer with relative src attribute
+Correct tiles render on initial map zoom level
+Create a layer with document.createElement(map-layer)
+Creating MAP_ELEMENT with the default size hides the fullscreen control and the controls attribute functions properly
+Crosshair hidden onload, shows on focus
+Crosshair hidden when queryable layer is unselected, shows on reselect
+Crosshair remains on map move with arrow keys
+Crosshair shows on esc but hidden on tab out
+Css Values Dominate Attribute Values
+Custom Click event - stopPropagation
+Custom Tiles Loaded In, Accurate Coordinates
+Custom click method test
+Custom focus method test
+Custom pmtilesRules can render mvt data
+DOM order change affects z-index rendering
+Debug components update with projection changes
+Debug elements added to map
+Debug mode correctly re-enabled after disabling
+Default blur method test
+Default click method test
+Default focus method test
+Drag and drop of Invalid text
+Drag and drop of invalid HTML page
+Drag and drop of layers
+Drag and drop of valid geoJSON
+Drag and drop of valid map-layer
+Drag and drop of valid mapml URL
+Ensure Same Order When Extent and Layer Checked Off/On
+Ensure attribution control has role='group' aria-label='Map data attribution'
+Ensure page doesn't throw errors
+Ensure that undefined projection throws exception
+Enter activates layer context menu item
+Enusre extents that are unchecked or removed are not included in query results
+Extent is individually disabled in layer control when out of bounds
+Extents retain their state when turning layer off and on
+Feature
+Feature Collection
+Feature Collections
+Feature index content is correct
+Feature index content is correct on moveend
+Feature index message for "No features found", reticle still visible
+Feature index more results are correct
+Feature index overlay and reticle show after following a link
+Feature index overlay and reticle show on fullscreen
+Feature index overlay and reticle show on geolocation activation, deactivation
+Feature index overlay and reticle show on history-based navigation
+Feature index overlay and reticle show on reload
+Feature index overlay and reticle shows on focus
+Feature index previous results are correct
+Feature without properties renders & is not interactable
+Fetched layer extent test
+Fetched layer with no map-meta's is rendered on map
+First feature added + popup content updated
+Focus Controls button after query focuses the zoom in control
+Focus Controls focuses the first <button> child in control div
+Focus stays on checkbox after checking and unchecking extents in the layer menu
+Focus stays on checkbox after checking and unchecking layers in the layer menu
+Forward function
+Fullscreen button makes MAP_ELEMENT element the fullscreen element
+Fullscreen button makes light DOM MAP_ELEMENT element the fullscreen element
+Fullscreen button makes shadow DOM MAP_ELEMENT element the fullscreen element
+GCRS inferring
+Geolocation control state changes when pressed
+Geometry Collection
+Get extent of <map-point> with no zoom attribute
+Get extent of <map-point> with zoom attribute = 2
+Get geojson representation of <map-geometry> with multiple geometries
+Get geojson representation of <map-geometry> with single geometry
+HTML _blank target projection negotiation with hash
+HTML _parent target point navigates to new page
+HTML _self target navigates to new page
+HTML _top target point navigates to new page
+History across zoom levels
+History does not get added to when trying to zoom out at min zoom level
+History values are correct during vertical motion out of projection
+Hover messages for location tracking matches the locale key
+Hover messages in top left control buttons matches the locale key
+Initial map element extent
+Inline features popup focus order
+Inline layer extent test
+Keyboard feature messages in the attribution button matches the locale key
+Keyboard shortcuts attribution opens up dialog
+Layer Context menu, Opening contextmenu focuses on first layer contextmenu
+Layer Context menu, Pressing enter on contextmenu focuses on checkbox element
+Layer Context menu, Pressing space on checkbox button toggles layer
+Layer Context menu, escaping from the contextmenu takes you back to the checkbox element
+Layer context menu - copy extent layer
+Layer context menu copy layer
+Layer context menu shows when layer is clicked
+Layer deselected then selected again
+Layer disabled attribute update when debug is toggled off
+Layer is disabled in layer control when all extents are out of bounds
+Layer with no map-meta's is rendered on map
+Layer's multiple extents display on map and in layer control
+Line Geometry
+Loading in pcrs feature
+Loading in retrieved features
+Loading in tcrs feature
+Loading in tilematrix cs feature
+Loading in tilematrix feature
+Local content map-link[rel=tile][type=text/mapml] with remote styles embedded in text/mapml tiles are rendered in same order as found in tile
+Local layer content (no src) map-link[rel=features] remote styles rendered as style/link in same order as found, in expected shadow root location
+Local style children of map-extent rendered as style/link in same order as found, in expected shadow root location
+Local-content (no src) styles rendered as style/link in same order as found, in expected shadow root location
+Long map-a href is actionable, does not cause client to hang
+M.geojson2mapml public API method exists and works
+M.mapml2geojson public API method exists and works
+MAP_ELEMENT projection set to unknown prj errors to console
+Map Caption doesn't create aria-label on a layer
+Map Extent context menu shows when extent layer is right clicked
+Map Property Dimension Match On Window Size Change
+Map feature options matches the locale key
+Map zooms in to layer 2
+Map zooms out to layer 3
+Map zooms out to layer 4
+Map zooms to extent layer
+Map-change event for layers work
+Map-change event for sub-layers work
+MapFeature interactivity tests
+Messages in context menus matches the locale key
+Messages in layer menus matches the locale key
+Move Extent Back Up in the Layer Control
+Move extent down in the layer control / up in the zIndex
+Moving layer down one in control overlay
+Moving layer up one in control overlay
+MultiLineString Geometry
+MultiPoint Geometry
+MultiPolygon Geometry
+Name of unnamed layer is Layer
+Navigate back from second query result set to end of first query result set by clicking '< / Previous'
+Next feature added + popup content updated 
+Next feature button focuses next feature
+No features returned when queried outside of bounds of all extents
+OSMTILE Map with CBMTILE layer
+On initial load, a matching media queried layer is enabled
+Only Extent Bounds show in debug mode
+Only Height Added to A Map With No Width OR Height Attributes
+Only Width Added to A Map With No Width OR Height Attributes
+Only features from one extent are returned for queries inside its (non overlapping) bounds
+Opacity Slider Value Matches the Extent Opacity after map-extent are unhidden
+Opening another popup with index keys closes already open popup
+Output values are correct during zoom in
+Output values are correct during zoom out
+PCRS feature added + popup content updated 
+PCRS inferring
+Painting tiles are in proper order
+Panned and zoomed initial map's extent
+Paste Invalid link to map using ctrl+v
+Paste Invalid text to map using ctrl+v
+Paste Link to map using ctrl+v
+Paste geojson Layer to map using ctrl+v
+Paste geojson to map
+Paste invalid element to map
+Paste invalid geojson to map
+Paste links with GeoJSON content-type to map using ctrl+v
+Paste links with GeoJSON extension to map using ctrl+v
+Paste links with JSON content-type to map using ctrl+v
+Paste links with JSON extension to map using ctrl+v
+Paste map-feature to map
+Paste valid Layer to map
+Point Geometry
+Point Geometry (string json)
+Polygon Geometry
+Polygon Geometry with holes
+Popup comes up when non overlapping bounds clicked
+Popup displays Zoom link
+Popup test with templated features
+Press spacebar when focus is on map
+Previous feature added + popup content updated 
+Previous feature button focuses previous feature
+Query link closes previous popup when new query made within bounds
+Query link does not show when out of bounds
+Query link shows when within bounds
+Query multiple overlapping extents which return heterogeneous document types (text/mapml, text/html)
+Query on overlapping extents returns features from both extents
+Query remote MapML document
+Query remote MapML document with multiple extents with map-meta[name=cs]
+Querying overlapping extents, user is able to navigate into second set of query results using popup controls
+Re-order checked bug (#955) test
+Re-order queryable extents, verify response order changes accordingly
+Reasonable debug layer extent created
+Remote (map-layer src) styles embedded within loaded tiles should be rendered in the same order as in the tile, in the tile container
+Remote (map-layer src) styles in the remote map-extent should be rendered in the same order as in remote source, in the map-extent._extentLayer._container
+Remote styles (map-layer src) in the map-head rendered in the same source orderas children of map-layer._layer._container
+Remove MAP_ELEMENT from DOM, add it back in
+Removing Static Attribute
+Removing first map-caption removes aria-label
+Removing layer removes layer control
+Removing not-first map-caption doesn't remove aria-label
+Right and Left Arrow keys to navigate the contextmenu
+SVG tiles load in on default map zoom level
+Scrolling the map does not scroll the document
+Setting HTMLLayerElement.label sets the layer name per spec
+Setting New Width and Height Attributes to MAP_ELEMENT
+Setting Opacity Attibute Value to map-extent Element
+Setting Opacity Attibute to map-layer Element
+Setting disabled, attribute reset on update/move
+Shift + Tab to current feature while popup open
+Shift+Tab can be used to move between layer context menu items
+Space bar activates layer context menu item
+Static features with missing <map-meta name='zoom'></map-meta> & <map-meta name='extent'></map-meta>
+Static tiles with missing <map-meta name='zoom'></map-meta>
+Submenu opens on C with focus on first item
+Submenu, copy extent with zoom level = 0
+Submenu, copy extent with zoom level = 1
+Submenu, copy location in tilematrix coordinates, which is not implemented, so faked with gcrs
+Submenu, copy map (MapML)
+Submenu, copy map location in gcrs (default) coordinates
+Synthesized point, valid location 
+TCRS feature added + popup content updated 
+TCRS inferring
+Tab can be used to move between layer context menu items
+Tab to next feature after tabbing out of popup
+Tap/Long press to show layer control
+Templated <map-link rel="features"> renderer cleans up after itself
+Templated features with missing <map-meta name='zoom'></map-meta>
+Templated features zoomTo method test
+Templated image layer - remove previous image on moveend
+Templated image layer position when turn it off then on
+Templated image with missing <map-meta name='zoom'></map-meta>
+Templated tile layer works without <map-input> for zoom level
+Templated tiles with missing <map-meta name='zoom'></map-meta> & extent
+Test for zingers
+Test prefers-lang: en media feature
+Test prefers-lang: fr media feature
+Test rendered data
+Test that ONLY tiles spanning the layer extent are loaded and rendered
+Test that a map-layer with inline content can transition to remote (src-based) content
+Test that a map-layer with src attribute can transition to inline content
+Testing API when the button is used
+Testing Extent layer contextmenu
+Testing Validity of Width and Height Attributes
+Testing layer contextmenu
+Testing locationerror event
+Testing maplocationfound event
+TileMatrix inferring
+Tilematrix feature added + popup content updated 
+Toggle all MAP_ELEMENT controls by adding or removing controls attribute
+Toggle controls context menu disabled when map created with no controls
+Toggle controls, controls aren't re-enabled
+Tooltip appears after pressing enter on close button
+Tooltip appears after pressing esc key
+Turning controls off and on to see if controlslist is preserved
+Turning layer off then on restores query links
+Unnamed layer shows up as Layer in layer control
+User can select/filter features by category
+Using geolocation control to control map
+Using locate API to find myself
+When unchecked, extent bounds removed from debug layer
+White space parsing for map-coordinates
+X button closes dialog
+Zoom link zooms to the maximum zoom level that can show the feature completely when zoom attribute does not present
+Zoom link zooms to the zoom level = zoom attribute
+Zoom to <map-point> with no zoom attribute
+Zoom to <map-point> with zoom attribute = 2
+Zoom to layer applies meta extent
+_parent Linked Feature Change To OSMTILE
+_self Linked Feature Change To OSMTILE
+access static map-feature._featureLayer
+adding map-tile to DOM renders it on map
+baseline rendering - red map-extent over green inline tiles and features
+bidirectional links are properly cleaned up on removal
+blue map-extent renders over all other content when checked
+bounds of map-meta + map-feature extent bounds equal map-layer extent bounds
+changing src attribute updates tile image
+click() method - stopPropagation
+controls disabled for empty custom projection map
+controlslist geolocations test
+controlslist removeAttribute
+controlslist=nolayer removes layer control
+coordinate collision - last tile wins
+extent of map-link established via map-meta vs map-inputs
+feature data maintains correct z-index order when layer is checked
+feature method - ZoomTo()
+hidden DOM order maintained when unhiding
+hidden layer is not queryable, hidden map-extent doesn't matter
+inline link extent bounds set by map-meta, zoom bounds default to projection
+inline map-a-wrapped-map-geometry loaded directly creates a hyperlink
+inline map-a-wrapped-map-geometry loaded via templated map-link creates a hyperlink
+inline map-link bounds should default to projection bounds
+inline map-link extent bounds set by associated map-inputs min/max
+inline map-link zoom bounds set by associated map-inputs min/max
+inline map-link zoom bounds set by map-meta, native zoom bounds by map-input
+inline queryable layer should be disabled when extent is out of bounds in any way
+isVisible property false when zoomed out of bounds (zooming in)
+isVisible property false when zoomed out of bounds (zooming out)
+layer extent bounds include map-feature's
+map-extent access ._extentLayer property
+map-extent getLayerEl() works in shadow root
+map-extent getMapEl() works in shadow root
+map-extent layer control order correct when cycling checked state
+map-extent unchecked state shows underlying green tiles
+map-extent.extent set by map-meta and/or map-inputs
+map-extent.getLayerEl() works
+map-extent.getMapEl() works
+map-extent.getMeta() works
+map-extent.zoomTo() works
+map-feature getLayerEl() works in shadow root
+map-feature getMapEl() works in shadow root
+map-geometrycollection wrapped in map-a
+map-input getLayerEl() works in shadow root
+map-input getMapEl() works in shadow root
+map-layer .extent bounds change with added / removed child map-features
+map-layer.extent bounds from map-inputs
+map-layer.extent bounds update when map-extent changes extent due to map-meta
+map-layer.extent bounds update with addition of map-meta children
+map-layer.extent min/maxZoom from map-inputs
+map-link constructed programmatically works
+map-link getLayerEl() works in shadow root
+map-link getMapEl() works in shadow root
+map-link in local content selects correct stylesheet link from context
+map-link in remote content selects correct stylesheet link from context
+map-link is disabled when media attribute does not match
+map-link rel=features is enabled when non-matching media attribute removed
+map-link styles load correctly from within remote mapml
+map-link.extent changes dynamically with map-input, map-meta changes
+map-link.zoomTo() function works
+map-links that shouldn't have an extent behave accordingly
+map-style disabled due to setting of non-matching media query
+map-style disabled due to update of matching to invalid mq
+map-style enables when non-matching media query is updated to be matching
+matchMedia API detects changes in map-extents
+matchMedia API detects changes in zoom
+matchMedia API shows maps based on projections selected by user
+matchMedia recognizes dark scheme
+matchMedia recognizes light scheme
+modify media attribute works
+mutation observer - style changes when map-style gets updated
+nofullscreen removes controls
+noreload removes controls
+nozoom removes controls
+pmtilesStyles.js module not found console errors
+propertyFunction + bbox test
+rel=features disabled attribute
+rel=image disabled attribute
+rel=query disabled attribute
+rel=stylesheet disabled attribute
+rel=stylesheet type="application/pmtiles+stylesheet" disable attribute
+rel=tile disabled attribute
+remote link extent bounds set by map-meta, zoom bounds default to projection
+remote map-a-wrapped-map-geometry loaded directly creates a hyperlink
+remote map-a-wrapped-map-geometry loaded via templated map-link creates a hyperlink
+remote map-link bounds should default to projection bounds
+remote map-link extent bounds set by associated map-inputs min/max
+remote map-link zoom bounds set by associated map-inputs min/max
+remote map-link zoom bounds set by map-meta, native zoom bounds by map-input
+remote queryable layer should be disabled when extent is out of bounds in any way
+remove media attribute works
+removing a map-feature from DOM removes its rendering
+removing last map-feature in a sequence removes rendering container
+removing map-tile from DOM removes it from map rendering
+removing the last map-tile in a sequence removes MapTileLayer container
+row, col, zoom attributes become immutable after initialization
+set media attribute works
+src attribute can still be changed after initialization
+templated features disabled when panned out of bounds
+test
+transform is false
+using .add(), .replace() and .value() methods of controlsList
+using .contains(), .item(), .remove() and .supports() methods of controlsList
+valid <layer>.extent
+when a map-link disables due to a media query, the styles   should be removed
+when a map-link does not enable due to disabled attribute removed while a non-matching media query is present, ensure that style does not change
+when a map-link enables due to a mq being removed, the  styles should apply
+when a map-link enables due to disabled attribute removed   ensure styles change
+when a map-style enables due to its mq being removed, the  styles should apply
+when a map-style loads with a matching media query, the styles apply
+when a map-style loads with a non-matching media query, its styles do not apply
+when a map-style loads without a media query, the styles apply
+z-index values follow correct hierarchy
+zoom bounds of layer include the zoom bounds of child features and map-meta'
+zoomin link changes projections
+zoomout link changes projections
+
+
+
+
+
+
+
+
+
+
+TESTS MISSING IN STENCIL (Need to Port):
+-----------------------------------------
+
+At zoom level 1, zooming in to 2
+At zoom level 2, zooming in to 3
+At zoom level 3, zooming in to 4
+At zoom level 4, zooming in to 5
+Center feature is always refocused
+Context menu shift + tab goes to previous item
+
+Creating map with the default size hides the fullscreen control and the controls attribute functions properly
+Default projection, when no projection attribute, is OSMTILE
+Fullscreen button makes map element the fullscreen element
+Getting appropriate opacity
+History is empty after map-projectionchange
+MAP_ELEMENT - Map does not overlap with the bounding box
+Main part adds new layer
+Multiple map-extents in different projections adapt to map-projectionchange
+No requests out of native zoom bounds
+On add requests zoom level 0
+Opacity Slider Value Test
+Opacity is maintained on map-layer and map-extent after map-projectionchange
+Overlay to remove does not reset its transform on shift pan when on a scaled layer
+Panning makes new request as needed
+Paste map-feature to MAP_ELEMENT
+Reload button takes you back to initial state
+Remove map from DOM, add it back in
+Scale layer on add
+Setting New Width and Height Attributes to map
+
+Shift zooming from level 1 -> 4 requests and scales level 3
+Shift+F10 on feature does not throw
+Shift+Tab works like ArrowUp to navigate map context menu items
+Simple Custom TCRS, tiles load, mismatched layer disabled
+
+Tab focuses fetched features
+Tab focuses inline features
+Tab forward works like ArrowDown to navigate map context menu items
+
+Viewer defaults to OSMTILE
+When at last feature, arrow down goes to first feature
+layer renders
+layer- .extent bounds change with added / removed child map-features
+
+
+
+
+
+
+
+
+
+NEW TESTS IN STENCIL (Not in MapML):
+-------------------------------------
+Changing layer control opacity slider does not update map-layer opacity attribute
+Changing layer control opacity slider updates map-layer.opacity
+Changing map-layer.opacity value sets the map-layer._layer container style.opacity value
+Changing map-layer.opacity value updates the layer control opacity slider value
+
+Having restored controls, change opacity slider to ensure that its value is reflected in map-layer.opacity property
+Layer control opacity slider reflected to map-layer.opacity property
+Link (a point) nested inside feature geometry (a polygon) adds new layer
+
+
+
+Turn controls off, change opacity via .opacity, turn controls on, opacity changes are reflected in layer control slider
+Using the slider input, change the layer opacity. Validate that the slider's value is reflected to the map-Layer.opacity
