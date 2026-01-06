@@ -27,20 +27,22 @@ const config = {
     defaultName: 'Stories'
   },
 webpackFinal: async (config) => {
-
+  // Ensure TypeScript files are handled
   config.module.rules.push({
     test: /\.(ts|tsx)$/,
+    exclude: /node_modules/,
     use: [
       {
         loader: require.resolve('ts-loader'),
         options: {
           transpileOnly: true,
+          configFile: require.resolve('../tsconfig.json')
         },
       },
     ],
   });
 
-    config.resolve.extensions.push('.ts', '.tsx');
+  config.resolve.extensions.push('.ts', '.tsx');
   return config;
 }
 };

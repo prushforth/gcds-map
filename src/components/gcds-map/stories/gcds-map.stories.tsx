@@ -49,12 +49,12 @@ export default {
       }
     },
     layer: {
-      name: '\<gcds-map-layer\>',
+      name: '\<map-layer\>',
       control: 'select',
       options: Object.keys(layerMap),
       mapping: layerMap,
       table: {
-        type: { summary: 'Layers are specified by one or more \<gcds-map-layer\> elements.' },
+        type: { summary: 'Layers are specified by one or more \<map-layer\> elements.' },
         defaultValue: { summary: '-' }
       }
     },
@@ -111,7 +111,7 @@ const TemplateBasic = (args) => {
 
 //  <map-caption>${args.caption}</map-caption>
 
-  <gcds-map-layer src="${args.layer}" ${`checked`}></gcds-map-layer>
+  <map-layer src="${args.layer}" ${`checked`}></map-layer>
 
 </gcds-map>
 <!-- React code -->`;
@@ -135,9 +135,9 @@ export const HiddenBasemap = (args) => {
   return `<!-- Web component code (HTML, Angular, Vue) -->
 <gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" projection="${args.projection}"${args.controls ? ' controls' : ''}>
 
-  <gcds-map-layer src="${args.layer}" checked hidden></gcds-map-layer>
+  <map-layer src="${args.layer}" checked hidden></map-layer>
 
-  <gcds-map-layer src="./dist/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></gcds-map-layer>
+  <map-layer src="./dist/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></map-layer>
 
 </gcds-map>
 <!-- React code -->`;
@@ -154,9 +154,9 @@ HiddenBasemap.args = {
 
 export const Playground = args => `<gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
-  <gcds-map-layer src="${args.layer}" checked hidden></gcds-map-layer>
+  <map-layer src="${args.layer}" checked hidden></map-layer>
 
-  <gcds-map-layer src="./dist/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></gcds-map-layer>
+  <map-layer src="./dist/gcds-map/assets/mapml/en/osmtile/current_conditions" checked></map-layer>
 
 </gcds-map>`;
 
@@ -175,9 +175,9 @@ Playground.args = {
 
 export const GeoJSON2MapMLExample = args => `<gcds-map id="np" lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
-  <gcds-map-layer src="${args.layer}" checked hidden></gcds-map-layer>
+  <map-layer src="${args.layer}" checked hidden></map-layer>
 
-  <!-- A GeoJSON <gcds-map-layer> is created and styled by a function call here -->
+  <!-- A GeoJSON <map-layer> is created and styled by a function call here -->
 
 </gcds-map>`;
 
@@ -222,10 +222,10 @@ GeoJSON2MapMLExample.parameters = {
 
   <map-caption>${GeoJSON2MapMLExample.args.caption}</map-caption>
 
-  <gcds-map-layer src="${GeoJSON2MapMLExample.args.layer}" checked hidden></gcds-map-layer>
+  <map-layer src="${GeoJSON2MapMLExample.args.layer}" checked hidden></map-layer>
 
   <!-- this layer created via javascript, using M.geojson2mapml API functions -->
-  <gcds-map-layer label="Provinces and territories of Canada" checked media="(0 < map-zoom < 7)" opacity="0.65">
+  <map-layer label="Provinces and territories of Canada" checked media="(0 < map-zoom < 7)" opacity="0.65">
     <map-style>
      .canada { fill-opacity: 0.7; stroke-width: 1; stroke: white; stroke-opacity: 1; stroke-dasharray: 3; } 
      .bc { fill: #ffdeb2; stroke: #e6c8a1; } .ab { fill: #facad6; stroke: #e8708e; } 
@@ -245,7 +245,7 @@ GeoJSON2MapMLExample.parameters = {
       <map-properties>...</map-properties>
     </map-feature>
     ... etc ...
-  </gcds-map-layer>
+  </map-layer>
 
 </gcds-map>
 <!-- React code -->`
@@ -327,7 +327,7 @@ GeoJSON2MapMLExample.play = async ({ canvasElement, loaded }) => {
     // Convert GeoJSON to MapML
     let provs = mapmlGlobal.M.geojson2mapml(geoJsonData, provOptions);
 
-    // post-process the <gcds-map-layer> just created - need to update the geojson2mapml
+    // post-process the <map-layer> just created - need to update the geojson2mapml
     // api to add map-feature and perhaps other callbacks opportunities for 
     // post-facto setting class values and perhaps other stuff tbc
 
@@ -365,7 +365,7 @@ GeoJSON2MapMLExample.play = async ({ canvasElement, loaded }) => {
     console.error('Error in map playground:', error);
   }
 };
-customElements.whenDefined('mapml-viewer').then(() => {
+customElements.whenDefined('gcds-map').then(() => {
   (async () => {
     console.log('starting playground operations...');
 
@@ -382,7 +382,7 @@ customElements.whenDefined('mapml-viewer').then(() => {
         }, 10000);
 
         const interval = setInterval(() => {
-          const viewer = document.querySelector('#np')?.shadowRoot?.firstElementChild;
+          const viewer = document.querySelector('#np');
           if (viewer) {
             clearInterval(interval);
             clearTimeout(maxTimeout);
@@ -426,9 +426,9 @@ story, it's accomplished by the play function).
 export const DarkMode = args => `<!-- Web component code (HTML, Angular, Vue) -->
 <gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
-  <gcds-map-layer media="(prefers-color-scheme: dark)" src="./dist/gcds-map/assets/mapml/en/osmtile/dark.mapml" checked></gcds-map-layer>
+  <map-layer media="(prefers-color-scheme: dark)" src="./dist/gcds-map/assets/mapml/en/osmtile/dark.mapml" checked></map-layer>
 
-  <gcds-map-layer media="(prefers-color-scheme: light)" src="./dist/gcds-map/assets/mapml/en/osmtile/light.mapml" checked></gcds-map-layer>
+  <map-layer media="(prefers-color-scheme: light)" src="./dist/gcds-map/assets/mapml/en/osmtile/light.mapml" checked></map-layer>
 
 </gcds-map>
 <!-- React code -->`; 
