@@ -27,31 +27,6 @@ const config = {
     defaultName: 'Stories'
   },
 webpackFinal: async (config) => {
-    // First, modify existing CSS rules to exclude mapml.css
-  config.module.rules.forEach(rule => {
-    if (rule.test && rule.test.toString().includes('css')) {
-      rule.exclude = /mapml\.css$/;
-    }
-  });
-  config.module.rules.unshift({
-    test: /mapml\.css$/,
-    type: 'asset/resource',
-    generator: {
-        filename: 'mapml.css'  // Ensure it's served as mapml.css
-    }
-  });
-
-  // Tell webpack to not parse dynamic imports in the specific files that contain mapml code
-  config.module.rules.unshift({
-    test: /gcds-map\/.*\.js$/,
-    parser: {
-      import: false,  // Disable dynamic import parsing
-      system: false,
-      commonjs: true,
-      amd: false,
-    },
-    type: 'javascript/auto'
-  });
 
   config.module.rules.push({
     test: /\.(ts|tsx)$/,
