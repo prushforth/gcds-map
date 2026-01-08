@@ -149,21 +149,21 @@ export class MapLink {
   }
 
   getBase(): string {
-    const layer = (this.el.getRootNode() as any).host;
-    const relativeURL =
-      (this.el.getRootNode() as any).querySelector('map-base') &&
-      this.el.getRootNode() instanceof ShadowRoot
-        ? (this.el.getRootNode() as any).querySelector('map-base').getAttribute('href')
-        : !(this.el.getRootNode() instanceof ShadowRoot)
-        ? (this.el.getRootNode() as any).querySelector('map-base')?.getAttribute('href') ||
-          this.el.baseURI
-        : new URL(layer.src, layer.baseURI).href;
-
-    const baseURL =
-      this.el.getRootNode() instanceof ShadowRoot
-        ? new URL(layer.src, layer.baseURI).href
-        : this.el.baseURI;
-    return new URL(relativeURL, baseURL).href;
+    // Look for map-base element in the shadow root (for remote content)
+    const shadowRoot = this.el.getRootNode();
+    if (shadowRoot instanceof ShadowRoot) {
+      const mapBase = shadowRoot.querySelector('map-base[href]');
+      if (mapBase) {
+        return mapBase.getAttribute('href')!;
+      }
+      // Fallback: resolve against the layer's src
+      const layer = (shadowRoot as any).host;
+      return new URL(layer.src, layer.baseURI).href;
+    }
+    
+    // Light DOM: check for map-base or use element's baseURI
+    const mapBase = (this.el.getRootNode() as Document).querySelector('map-base[href]');
+    return mapBase ? mapBase.getAttribute('href')! : this.el.baseURI;
   }
 
   async connectedCallback() {
@@ -327,7 +327,8 @@ export class MapLink {
   _createStylesheetLink() {
     if (this.type === 'application/pmtiles+stylesheet') {
       const pmtilesStyles = new URL(this.href, this.getBase()).href;
-      import(pmtilesStyles)
+      // Use webpackIgnore magic comment to prevent storybook Webpack from analyzing this dynamic import
+      import(/* webpackIgnore: true */ pmtilesStyles)
         .then((module) => module.pmtilesRulesReady)
         .then((initializedRules) => {
           this._pmtilesRules = initializedRules;

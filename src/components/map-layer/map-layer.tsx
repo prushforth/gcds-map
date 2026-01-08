@@ -443,10 +443,12 @@ export class GcdsMapLayer {
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            return response.text();
+            // Save the response URL to use as base for resolving relative URLs
+            const responseUrl = response.url;
+            return response.text().then(text => ({ text, url: responseUrl }));
           })
-          .then((mapml) => {
-            let content = new DOMParser().parseFromString(mapml, 'text/xml');
+          .then(({ text, url: sourceUrl }) => {
+            let content = new DOMParser().parseFromString(text, 'text/xml');
             if (
               content.querySelector('parsererror') ||
               !content.querySelector('mapml-')
@@ -455,13 +457,15 @@ export class GcdsMapLayer {
               this._fetchError = true;
               // Expose _fetchError on DOM element for MapML compatibility
               (this.el as any)._fetchError = this._fetchError;
-              console.log('Error fetching layer content:\n\n' + mapml + '\n');
+              console.log('Error fetching layer content:\n\n' + text + '\n');
               throw new Error('Parser error');
             }
+            // Attach the source URL to the content for later use
+            (content as any)._sourceUrl = sourceUrl;
             return content;
           })
           .then((content) => {
-            this._copyRemoteContentToShadowRoot(content.querySelector('mapml-'));
+            this._copyRemoteContentToShadowRoot(content.querySelector('mapml-'), (content as any)._sourceUrl);            this._copyRemoteContentToShadowRoot(content.querySelector('mapml-'));
             let elements = this.el.shadowRoot.querySelectorAll('*');
             let elementsReady = [];
             for (let i = 0; i < elements.length; i++) {
@@ -597,10 +601,20 @@ export class GcdsMapLayer {
       );
 
     if (selectedAlternate) {
-      const url = new URL(
-        selectedAlternate.getAttribute('href'),
-        selectedAlternate.baseURI || document.baseURI
-      ).href;
+      // Use the same base resolution logic as map-link.getBase()
+      // Check for map-base element first, then fall back to layer src
+      let baseUrl: string;
+      const mapBase = mapml.querySelector('map-base[href]');
+      if (mapBase) {
+        baseUrl = mapBase.getAttribute('href')!;
+      } else if (this.src) {
+        // Fallback to resolving layer's src against document base
+        baseUrl = new URL(this.src, this.el.baseURI || document.baseURI).href;
+      } else {
+        baseUrl = this.el.baseURI || document.baseURI;
+      }
+      
+      const url = new URL(selectedAlternate.getAttribute('href')!, baseUrl).href;
       throw new Error('changeprojection', {
         cause: { href: url }
       });
@@ -617,16 +631,31 @@ export class GcdsMapLayer {
     }
   }
 
-  private _copyRemoteContentToShadowRoot(mapml: any) {
-    // Copy remote MapML content to shadow DOM
+  private _copyRemoteContentToShadowRoot(mapml: any, sourceUrl?: string) {
     const shadowRoot = this.el.shadowRoot;
     if (!shadowRoot || !mapml) return;
     
     const frag = document.createDocumentFragment();
     const elements = mapml.querySelectorAll('map-head > *, map-body > *');
+    
+    // Find or create a map-base element to store the source document's base URL
+    let mapBase = Array.from(elements).find(el => (el as any).nodeName === 'MAP-BASE') as HTMLElement;
+    
+    if (!mapBase && sourceUrl) {
+      // Create a synthetic map-base element if none exists
+      mapBase = document.createElement('map-base');
+      mapBase.setAttribute('href', sourceUrl);
+      frag.appendChild(mapBase);
+    } else if (mapBase && sourceUrl) {
+      // Resolve existing map-base href against the source URL
+      const resolvedHref = new URL(mapBase.getAttribute('href') || '', sourceUrl).href;
+      mapBase.setAttribute('href', resolvedHref);
+    }
+    
     for (let i = 0; i < elements.length; i++) {
       frag.appendChild(elements[i]);
     }
+    
     shadowRoot.appendChild(frag);
   }
   /**

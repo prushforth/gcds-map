@@ -38,6 +38,7 @@ test.describe('<map-span> test', () => {
     // which replaces the requested tile with a tile that is configured to have the (fixed) parsing bug we want to test.
     //https://github.com/Maps4HTML/MapML.js/issues/559#issuecomment-959805896
     await page.goto('/test/map-span/mapSpan.html', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1000);
   });
 
   test('<map-span> hides tile boundaries', async ({ page }) => {

@@ -173,15 +173,91 @@ Playground.args = {
   caption: "Canada's current weather conditions"
 };
 
-export const GeoJSON2MapMLExample = args => `<gcds-map id="np" lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
-
+export const GeoJSON2MapMLExample = {
+  render: (args, { loaded }) => {
+    const container = document.createElement('div');
+    container.innerHTML = `<gcds-map id="np" lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
   <map-layer src="${args.layer}" checked hidden></map-layer>
-
-  <!-- A GeoJSON <map-layer> is created and styled by a function call here -->
-
 </gcds-map>`;
 
-GeoJSON2MapMLExample.args = {
+    const mapEl = container.querySelector('#np');
+    
+    // Add the GeoJSON layer after the map is ready
+    customElements.whenDefined('gcds-map').then(async () => {
+      // Wait for map to be fully initialized
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const { geoJsonData } = loaded;
+      if (!geoJsonData) return;
+
+      const mapmlGlobal = window as any;
+      if (typeof mapmlGlobal.M === 'undefined') {
+        console.log('M not found! Unable to generate GeoJSON example layer.');
+        return;
+      }
+
+      // Configure MapML options for the geojson2mapml api
+      let provOptions = { 
+        projection: "OSMTILE",
+        label: "Provinces and Territories of Canada", 
+        caption: "PRENAME",
+        geometryFunction: function (g, f) {
+          if (g.nodeName === "MAP-MULTIPOLYGON") {
+            let polys = g.querySelectorAll("map-polygon");
+            for (let i=0; i < polys.length; i++) {
+              polys[i].setAttribute("class", "h");
+            }
+          } else {
+            g.setAttribute("class", "h");
+          }
+          switch (f.properties.PRUID) {
+            case '10': g.className = 'canada nl'; break;
+            case '11': g.className = 'canada pei'; break;
+            case '12': g.className = 'canada ns'; break;
+            case '13': g.className = 'canada nb'; break;
+            case '24': g.className = 'canada qc'; break;
+            case '35': g.className = 'canada on'; break;
+            case '46': g.className = 'canada mb'; break;
+            case '47': g.className = 'canada sk'; break;
+            case '48': g.className = 'canada ab'; break;
+            case '59': g.className = 'canada bc'; break;
+            case '60': g.className = 'canada yk'; break;
+            case '61': g.className = 'canada nwt'; break;
+            case '62': g.className = 'canada nt'; break;
+          }
+          return g;
+        }
+      };
+
+      // Convert GeoJSON to MapML
+      let provs = mapmlGlobal.M.geojson2mapml(geoJsonData, provOptions);
+
+      // Post-process the layer
+      const features = provs.querySelectorAll('map-feature');
+      features.forEach(feature => {
+        const taggedGeometry = feature.querySelector('.canada');
+        feature.setAttribute('class', taggedGeometry.getAttribute('class'));
+        taggedGeometry.removeAttribute('class');
+      });
+
+      provs.setAttribute('media','(0 < map-zoom < 7)');
+      provs.setAttribute('opacity', '0.65');
+
+      let mapStyle = document.createElement('map-style');
+      mapStyle.innerHTML = `.canada { fill-opacity: 0.7; stroke-width: 1; stroke: white; stroke-opacity: 1; stroke-dasharray: 3; } 
+            .bc { fill: #ffdeb2; stroke: #e6c8a1; } .ab { fill: #facad6; stroke: #e8708e; } .sk { fill: #b5ffe4; stroke: #9ad9c2;} .mb { fill: #e6e6fa;  stroke: #cdcdde; } 
+            .on { fill: #facad6; stroke: #e8708e; } .qc { fill: #b5ffe4; stroke: #9ad9c2;} .nb { fill: #ffdeb2; } .pei { fill: #e6e6fa; stroke: #cdcdde;} 
+            .ns { fill: #facad6;  stroke: #e8708e; } .nl { fill: #ebc798; stroke: #d0a368; } 
+            .yk { fill: #ebc798; stroke: #d0a368; } .nwt { fill: #e6e6fa; stroke: #cdcdde; } .nt { fill: #ffdeb2; stroke: #e6c8a1; }`;
+
+      provs.insertAdjacentElement('afterbegin', mapStyle);
+      mapEl.appendChild(provs);
+      console.log('Added GeoJSON layer to map');
+    });
+
+    return container.firstElementChild;
+  },
+  args: {
   lat: 53.087426,
   lon: -91.275330,
   zoom: 4,
@@ -192,9 +268,8 @@ GeoJSON2MapMLExample.args = {
   controlslist: ['geolocation'],
   layer: './dist/gcds-map/assets/mapml/en/osmtile/cbmt',
   caption: "Canada's Provinces and Territories in styled GeoJSON"
-};
-
-GeoJSON2MapMLExample.loaders = [
+  },
+  loaders: [
   async () => {
     try {
       const response = await fetch('./dist/gcds-map/assets/canada.json');
@@ -210,19 +285,18 @@ GeoJSON2MapMLExample.loaders = [
       return { geoJsonData: null, error };
     }
   }
-];
+  ],
+  parameters: {
+    docs: {
+      source: {
+        type: 'code',
+        language: 'html',
+        code: `<!-- Web component code (HTML, Angular, Vue) -->
+<gcds-map id="np" lat="53.087426" lon="-91.275330" zoom="4" lang="en" projection="OSMTILE" controls controlslist="geolocation">
 
-GeoJSON2MapMLExample.parameters = {
-  docs: {
-    source: {
-      type: 'code',
-      language: 'html',
-      code: `<!-- Web component code (HTML, Angular, Vue) -->
-<gcds-map id="np" lat="${GeoJSON2MapMLExample.args.lat}" lon="${GeoJSON2MapMLExample.args.lon}" zoom="${GeoJSON2MapMLExample.args.zoom}" lang="${GeoJSON2MapMLExample.args.lang}" projection="${GeoJSON2MapMLExample.args.projection}"${GeoJSON2MapMLExample.args.controls ? ' controls' : ''}${GeoJSON2MapMLExample.args.static ? ' static' : ''}${GeoJSON2MapMLExample.args.controlslist.length > 0  ? ` controlslist="${GeoJSON2MapMLExample.args.controlslist.join(' ')}"` : ''}>
+  <map-caption>Canada's Provinces and Territories in styled GeoJSON</map-caption>
 
-  <map-caption>${GeoJSON2MapMLExample.args.caption}</map-caption>
-
-  <map-layer src="${GeoJSON2MapMLExample.args.layer}" checked hidden></map-layer>
+  <map-layer src="./dist/gcds-map/assets/mapml/en/osmtile/cbmt" checked hidden></map-layer>
 
   <!-- this layer created via javascript, using M.geojson2mapml API functions -->
   <map-layer label="Provinces and territories of Canada" checked media="(0 < map-zoom < 7)" opacity="0.65">
@@ -249,181 +323,13 @@ GeoJSON2MapMLExample.parameters = {
 
 </gcds-map>
 <!-- React code -->`
+      }
     }
   }
 };
 
-GeoJSON2MapMLExample.play = async ({ canvasElement, loaded }) => {
-  console.log('Play function started');
-  try {
-    const { geoJsonData } = loaded;
-
-    // Configure MapML options for the geojson2mapml api
-    let provOptions = { 
-      projection: "OSMTILE",
-      label: "Provinces and Territories of Canada", 
-      caption: "PRENAME",
-      geometryFunction: function (g, f) {
-        if (g.nodeName === "MAP-MULTIPOLYGON") {
-          let polys = g.querySelectorAll("map-polygon");
-          for (let i=0; i < polys.length; i++) {
-            polys[i].setAttribute("class", "h");
-          }
-        } else {
-          g.setAttribute("class", "h");
-        }
-        switch (f.properties.PRUID) {
-          case '10':
-            g.className = 'canada nl'
-            break;
-          case '11':
-            g.className = 'canada pei'
-            break;
-          case '12':
-            g.className = 'canada ns'
-            break;
-          case '13':
-            g.className = 'canada nb'
-            break;
-          case '24':
-            g.className = 'canada qc'
-            break;
-          case '35':
-            g.className = 'canada on'
-            break;
-          case '46':
-            g.className = 'canada mb'
-            break;
-          case '47':
-            g.className = 'canada sk'
-            break;
-          case '48':
-            g.className = 'canada ab'
-            break;
-          case '59':
-            g.className = 'canada bc'
-            break;
-          case '60':
-            g.className = 'canada yk'
-            break;
-          case '61':
-            g.className = 'canada nwt'
-            break;
-          case '62':
-            g.className = 'canada nt'
-            break;
-        }
-        return g;
-      }
-    };
-
-    // Access the MapML global object
-    const mapmlGlobal = window as any;
-    if (typeof mapmlGlobal.M === 'undefined') {
-      console.log('M not found! Unable to generate GeoJSON example layer.');
-      return;
-    }
-
-    // Convert GeoJSON to MapML
-    let provs = mapmlGlobal.M.geojson2mapml(geoJsonData, provOptions);
-
-    // post-process the <map-layer> just created - need to update the geojson2mapml
-    // api to add map-feature and perhaps other callbacks opportunities for 
-    // post-facto setting class values and perhaps other stuff tbc
-
-    const features = provs.querySelectorAll('map-feature');
-    features.forEach(feature => {
-      const taggedGeometry = feature.querySelector('.canada');
-      feature.setAttribute('class', taggedGeometry.getAttribute('class'))
-      taggedGeometry.removeAttribute('class');
-    });
-
-    // this layer should not be rendered at large scales (too generalized)
-    provs.setAttribute('media','(0 < map-zoom < 7)');
-    provs.setAttribute('opacity', '0.65');
-    console.log('provinces geojson layer created');
-
-    // Get the map viewer
-    const mapViewer = canvasElement;
-    if (!mapViewer) {
-      console.log('Map viewer not found!');
-      return;
-    }
-    let mapStyle = document.createElement('map-style');
-    mapStyle.innerHTML = `.canada { fill-opacity: 0.7; stroke-width: 1; stroke: white; stroke-opacity: 1; stroke-dasharray: 3; } 
-            .bc { fill: #ffdeb2; stroke: #e6c8a1; } .ab { fill: #facad6; stroke: #e8708e; } .sk { fill: #b5ffe4; stroke: #9ad9c2;} .mb { fill: #e6e6fa;  stroke: #cdcdde; } 
-            .on { fill: #facad6; stroke: #e8708e; } .qc { fill: #b5ffe4; stroke: #9ad9c2;} .nb { fill: #ffdeb2; } .pei { fill: #e6e6fa; stroke: #cdcdde;} 
-            .ns { fill: #facad6;  stroke: #e8708e; } .nl { fill: #ebc798; stroke: #d0a368; } 
-            .yk { fill: #ebc798; stroke: #d0a368; } .nwt { fill: #e6e6fa; stroke: #cdcdde; } .nt { fill: #ffdeb2; stroke: #e6c8a1; }`
-
-    // scope styles to this layer only
-    provs.insertAdjacentElement('afterbegin',mapStyle);
-    
-    mapViewer.appendChild(provs);
-    console.log('Added GeoJSON layer to map');
-  } catch (error) {
-    console.error('Error in map playground:', error);
-  }
-};
-customElements.whenDefined('gcds-map').then(() => {
-  (async () => {
-    console.log('starting playground operations...');
-
-    // Load data while waiting for the viewer to render
-    const loadDataPromise = GeoJSON2MapMLExample.loaders[0]();
-
-    // Function to find the viewer
-    const findViewer = () => {
-      return new Promise((resolve, reject) => {
-        // Set a maximum timeout (e.g., 10 seconds) to avoid infinite polling
-        const maxTimeout = setTimeout(() => {
-          clearInterval(interval);
-          reject(new Error('Timed out waiting for #np element'));
-        }, 10000);
-
-        const interval = setInterval(() => {
-          const viewer = document.querySelector('#np');
-          if (viewer) {
-            clearInterval(interval);
-            clearTimeout(maxTimeout);
-            resolve(viewer);
-          }
-        }, 100);
-      });
-    };
-
-    const addGeoJSONLayer = async () => {
-      try {
-        const [loadedData, viewer] = await Promise.all([loadDataPromise, findViewer()]);
-
-        console.log('Found viewer and loaded data, running play function');
-        await GeoJSON2MapMLExample.play({ canvasElement: viewer, loaded: loadedData });
-      } catch (error) {
-        console.error('Error during initialization:', error);
-      }
-    };
-    addGeoJSONLayer();
-/*
-
-NOTE: This doesn't work, and I'm not sure why.  It could be that the viewer's load
-event is run just once when it first renders and never again thereafter; I didn't
-dig into it too much.  The issue that I was trying to solve is that the geojson
-layer is added when the overview page loads the first time, and is removed when the user
-navigates away from the overview (the state is lost, because it's not part of the
-story, it's accomplished by the play function).
-
-    document.addEventListener('load', async (event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail && customEvent.detail.target && customEvent.detail.target.id === 'np') {
-        console.log('calling addGeoJSON');
-        addGeoJSONLayer();
-      }
-    }, true);
-*/
-  })();
-});
-
-export const DarkMode = args => `<!-- Web component code (HTML, Angular, Vue) -->
+export const DarkMode = {
+  render: (args) => `<!-- Web component code (HTML, Angular, Vue) -->
 <gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
   <map-layer media="(prefers-color-scheme: dark)" src="./dist/gcds-map/assets/mapml/en/osmtile/dark.mapml" checked></map-layer>
@@ -431,9 +337,8 @@ export const DarkMode = args => `<!-- Web component code (HTML, Angular, Vue) --
   <map-layer media="(prefers-color-scheme: light)" src="./dist/gcds-map/assets/mapml/en/osmtile/light.mapml" checked></map-layer>
 
 </gcds-map>
-<!-- React code -->`; 
-
-DarkMode.args = {
+<!-- React code -->`,
+  args: {
   lat: 53.087426, 
   lon: -91.275330,
   zoom: 4,
@@ -443,5 +348,6 @@ DarkMode.args = {
   lang: 'en',
   controlslist: ['geolocation'],
   caption: "OpenStreetMap in pmtiles archive format, demonstrating light and dark mode maps"
+  }
 };
 
