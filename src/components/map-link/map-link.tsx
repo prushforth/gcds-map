@@ -673,7 +673,10 @@ export class MapLink {
         inputsReady.push((zoomInput as any).whenReady());
         linkedZoomInput = zoomInput;
       }
-      const step = zoomInput ? zoomInput.getAttribute('step') || '1' : '1';
+      const step = zoomInput ? zoomInput.getAttribute('step') : 1;
+      // Validate step: if not set, is '0', or not a number, default to 1
+      let validStep = step;
+      if (!step || step === '0' || isNaN(step as any)) validStep = 1;
 
       this._templateVars = {
         template: decodeURI(new URL(template, this.getBase()).href),
@@ -685,7 +688,7 @@ export class MapLink {
         zoom: linkedZoomInput,
         projection: this.el.parentElement?.getAttribute('units'),
         tms: this.tms,
-        step: step
+        step: validStep
       };
       
       // Publish for MapML compatibility
