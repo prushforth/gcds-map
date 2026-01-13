@@ -997,9 +997,9 @@ label.mapml-layer-item-toggle {
   /* Critical MapML defaults that must be available immediately */
   display: inline-block;
   background-color: white;
-  /* Use CSS custom properties for responsive sizing - fallback to defaults if not set */
-  height: var(--map-height, 150px);        
-  width: var(--map-width, 300px);         
+  /* Default dimensions - will be overridden by JavaScript based on CSS rules or attributes */
+  height: 150px;        
+  width: 300px;         
   contain: layout size;
   border-width: 2px;
   border-style: inset;

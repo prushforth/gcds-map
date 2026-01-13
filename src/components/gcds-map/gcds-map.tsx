@@ -274,21 +274,6 @@ export class GcdsMap {
   }
   // Mirror the connectedCallback logic in componentDidLoad
   async connectedCallback() {
-
-    this._initShadowRoot();
-    
-    // CRITICAL: Apply width/height attributes to custom properties BEFORE CSS computation
-    // This ensures attributes set before appendChild() are respected
-    // DO NOT set inline styles here - that would override CSS domination
-    const widthAttr = this.el.getAttribute('width');
-    const heightAttr = this.el.getAttribute('height');
-    if (widthAttr) {
-      this.el.style.setProperty('--map-width', widthAttr + 'px');
-    }
-    if (heightAttr) {
-      this.el.style.setProperty('--map-height', heightAttr + 'px');
-    }
-    
     try {
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
@@ -315,36 +300,21 @@ export class GcdsMap {
         ]
       );
 
-      // Force layout computation and wait for CSS to be applied
-      window.getComputedStyle(this.el);
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      
-      // Multiple attempts to get dimensions (defensive against CSS timing)
-      let rect = this.el.getBoundingClientRect();
-      let attempts = 0;
-      while ((rect.width === 0 || rect.height === 0) && attempts < 3) {
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        rect = this.el.getBoundingClientRect();
-        attempts++;
-      }
-      
-      // Get computed dimensions after CSS is applied
-      const computedWidth = this.getWidth();
-      const computedHeight = this.getHeight();
-      const w = computedWidth > 0 ? computedWidth : (rect.width || 300);
-      const h = computedHeight > 0 ? computedHeight : (rect.height || 150);
-      
-      // Set CSS custom properties to the border-box dimensions (what getBoundingClientRect returns)
-      // This ensures the custom properties reflect the actual space the element occupies,
-      // including borders, which is important for layout calculations
-      this.el.style.setProperty('--map-width', rect.width + 'px');
-      this.el.style.setProperty('--map-height', rect.height + 'px');
-   
-      // Set container dimensions to match computed values
-      if (this._container) {
-        this._container.style.width = w + 'px';
-        this._container.style.height = h + 'px';
-      }
+      // Match mapml-viewer's dimension logic EXACTLY:
+      // 1. Get computed style (includes CSS rules)
+      // 2. Use width/height attributes if present, else use computed CSS values
+      // 3. Call _changeWidth/_changeHeight to apply
+      var s = window.getComputedStyle(this.el),
+        wpx = s.width,
+        hpx = s.height,
+        w = this.el.hasAttribute('width')
+          ? this.el.getAttribute('width')
+          : parseInt(wpx.replace('px', '')),
+        h = this.el.hasAttribute('height')
+          ? this.el.getAttribute('height')
+          : parseInt(hpx.replace('px', ''));
+      this._changeWidth(w);
+      this._changeHeight(h);
 
       this._createMap();
 
@@ -1012,40 +982,26 @@ export class GcdsMap {
   }
 
   _changeWidth(width: number | string) {
-    const widthValue = typeof width === 'string' ? parseInt(width) : width;
-    
-    // Set CSS custom property that the :host rule uses
-    this.el.style.setProperty('--map-width', widthValue + 'px');
-    
-    // Set inline width style to override external CSS (like <img width="..."> does)
-    // This ensures attribute-based dimensions take precedence over stylesheet max-width etc.
-    this.el.style.width = widthValue + 'px';
-    
+    // Match mapml-viewer behavior: update container and host element dimensions
+    // In Stencil, we set inline style on host element instead of modifying stylesheet
     if (this._container) {
-      this._container.style.width = widthValue + 'px';
+      this._container.style.width = width + 'px';
+      // Set inline style on host element to override CSS (matches mapml-viewer's stylesheet modification)
+      this.el.style.width = width + 'px';
     }
-    
-    // Invalidate map size if map exists
     if (this._map) {
       this._map.invalidateSize(false);
     }
   }
 
   _changeHeight(height: number | string) {
-    const heightValue = typeof height === 'string' ? parseInt(height) : height;
-    
-    // Set CSS custom property that the :host rule uses
-    this.el.style.setProperty('--map-height', heightValue + 'px');
-    
-    // Set inline height style to override external CSS (like <img height="..."> does)
-    // This ensures attribute-based dimensions take precedence over stylesheet constraints
-    this.el.style.height = heightValue + 'px';
-    
+    // Match mapml-viewer behavior: update container and host element dimensions
+    // In Stencil, we set inline style on host element instead of modifying stylesheet
     if (this._container) {
-      this._container.style.height = heightValue + 'px';
+      this._container.style.height = height + 'px';
+      // Set inline style on host element to override CSS (matches mapml-viewer's stylesheet modification)
+      this.el.style.height = height + 'px';
     }
-    
-    // Invalidate map size if map exists
     if (this._map) {
       this._map.invalidateSize(false);
     }

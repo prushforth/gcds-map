@@ -3,11 +3,24 @@ import { test, expect } from '@playwright/test';
 test.describe('Playwright Map Element Tests', () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/test/gcds-map/debugMode.html', { waitUntil: 'networkidle' });
-    await page.waitForTimeout(2000);
+    await page.goto('/test/gcds-map/debugMode.html', { waitUntil: 'load' });
+    
+    // Wait for custom element to be defined and upgraded
+    await page.waitForFunction(() => {
+      const map = document.querySelector('[data-testid="viewer"]') as any;
+      return map && typeof map.whenReady === 'function';
+    });
+    
     const map = page.getByTestId('viewer');
-    await map.evaluate(async (map: any) => { await map.whenReady(); map.toggleDebug(); });
+    // Wait for map to be ready, then toggle debug
+    await map.evaluate(async (map: any) => { 
+      await map.whenReady();
+    });
+    
+    // Give a moment for layers to load, then toggle debug
     await page.waitForTimeout(2000);
+    await map.evaluate((map: any) => map.toggleDebug());
+    await page.waitForTimeout(1000);
   });
 
   test('Debug elements added to map', async ({ page }) => {
