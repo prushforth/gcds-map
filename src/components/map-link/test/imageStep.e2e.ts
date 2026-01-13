@@ -22,7 +22,7 @@ test.describe('Templated image layer with step', () => {
       await page.goto('/test/map-link/templatedImageLayerStep.html', { waitUntil: 'networkidle' });
     });
 
-    const urlBase = 'toporama_fr';
+    const urlBase = 'toporama';
     const u1 = '-5537023.0124460235,-2392385.4881043136,5972375.006350018,3362313.521293707&m4h=t';
     const panU = '-968982.6263652518,257421.89484378695,1412272.136144273,1448049.2760985494&m4h=t';
 
@@ -92,7 +92,6 @@ test.describe('Templated image layer with step', () => {
 
       console.log('Actual URL:', u);
       console.log('Expected substring:', panU);
-      await page.pause();
       expect(u).toContain(panU);
     });
   });
