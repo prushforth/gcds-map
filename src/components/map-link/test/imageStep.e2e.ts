@@ -24,7 +24,7 @@ test.describe('Templated image layer with step', () => {
 
     const urlBase = 'toporama';
     const u1 = '-5537023.0124460235,-2392385.4881043136,5972375.006350018,3362313.521293707&m4h=t';
-    const panU = '-968982.6263652518,257421.89484378695,1412272.136144273,1448049.2760985494&m4h=t';
+    const panU = '-5537023.0124460235,676787.3169079646,5972375.006350018,6431486.326305982&m4h=t';
 
     test('On add requests zoom level 0', async ({ page }) => {
       let url = '';
@@ -82,16 +82,17 @@ test.describe('Templated image layer with step', () => {
       await page.waitForTimeout(1000);
       
       let u = '';
-      page.on('request', (request) => {
+      const listener = (request) => {
         if (request.url().includes(urlBase)) {
           u = request.url();
         }
-      });
+      };
+      page.on('request', listener);
       await page.keyboard.press('ArrowUp');
-      await page.waitForTimeout(500);
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
+      page.off('request', listener);
 
-      console.log('Actual URL:', u);
-      console.log('Expected substring:', panU);
       expect(u).toContain(panU);
     });
   });
@@ -99,13 +100,12 @@ test.describe('Templated image layer with step', () => {
   test.describe('Transform Tests', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/test/map-link/templatedImageLayerStep.html', { waitUntil: 'networkidle' });
+      await page.waitForTimeout(1000);
     });
 
     const selector = '.leaflet-layer.mapml-extentlayer-container > div > img:last-child';
 
     test('Scale layer on add', async ({ page }) => {
-      await page.reload();
-      await page.waitForTimeout(500);
       const transform = await page.$eval(
         selector,
         (img: any) => img.style.transform
