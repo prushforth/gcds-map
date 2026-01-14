@@ -72,6 +72,27 @@ test.describe('Playwright gcds-map Basic Tests', () => {
     expect(extent.topLeft.tcrs[0]).toEqual(expectedFirstTCRS[1]);
   });
 
+  test('Reload button takes you back to initial state', async () => {
+    await page.pause();
+    await page.click(
+      'div > div.leaflet-control-container > div.leaflet-top.leaflet-left > div.mapml-reload-button.leaflet-bar.leaflet-control > button'
+    );
+    await page.waitForTimeout(1000);
+    const extent = await page.$eval('body > gcds-map', (map) => map.extent);
+
+    const history = await page.$eval('body > gcds-map', (map) => map._history);
+
+    await expect(history.length).toEqual(1);
+    await expect(extent.projection).toEqual('CBMTILE');
+    await expect(extent.zoom).toEqual({ minZoom: 0, maxZoom: 25 });
+    await expect(extent.topLeft.pcrs).toEqual(expectedPCRS[0]);
+    await expect(extent.topLeft.gcrs).toEqual(expectedGCRS[0]);
+    await expect(extent.topLeft.tilematrix[0]).toEqual(
+      expectedFirstTileMatrix[0]
+    );
+    await expect(extent.topLeft.tcrs[0]).toEqual(expectedFirstTCRS[0]);
+  });
+
   test('Press spacebar when focus is on map', async () => {
     // Note: This test is flaky due to page scroll state being unpredictable
     // The intended behavior is that spacebar should not scroll the page when map has focus
