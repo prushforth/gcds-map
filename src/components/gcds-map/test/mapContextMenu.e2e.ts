@@ -115,6 +115,30 @@ test.describe('Playwright Map Context Menu Tests', () => {
     expect(name).toEqual('Copy (C)');
   });
 
+  test('Context menu shift + tab goes to previous item', async () => {
+    await page.keyboard.press('Shift+Tab');
+    const aHandle = await page.evaluateHandle(() =>
+      document.querySelector('gcds-map')
+    );
+    const nextHandle = await page.evaluateHandle(
+      (doc) => doc.shadowRoot,
+      aHandle
+    );
+    const resultHandle = await page.evaluateHandle(
+      (root) => root.activeElement,
+      nextHandle
+    );
+    const nameHandle = await page.evaluateHandle(
+      (name) => name.outerText,
+      resultHandle
+    );
+    let name = await nameHandle.jsonValue();
+    await nameHandle.dispose();
+    expect(name).toEqual('View fullscreen (F)');
+
+    await page.keyboard.press('Tab'); // Move focus back to Copy for next test
+  });
+
   test('Submenu opens on C with focus on first item', async () => {
     await page.keyboard.press('c');
     const aHandle = await page.evaluateHandle(() =>
