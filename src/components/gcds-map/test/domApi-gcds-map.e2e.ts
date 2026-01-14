@@ -126,7 +126,7 @@ test.describe('gcds-map DOM API Tests', () => {
     expect(layerOnMap).toBe(true);
   });
 
-  // reconnecting a map is not supported by thencil lifecycle
+  // reconnecting a map is not supported by stencil lifecycle
   test.skip('Remove gcds-map from DOM, add it back in', async () => {
     // check for error messages in console
     let errorLogs: string[] = [];
@@ -1079,8 +1079,7 @@ test.describe('gcds-map DOM API Tests', () => {
         );
       });
     });
-    // TODO enable when custom projections are working
-    test.skip('controls disabled for empty custom projection map', async () => {
+    test('controls disabled for empty custom projection map', async () => {
       // Adding custom projection map
       const viewerHandle = await page.evaluateHandle(() =>
         document.createElement('gcds-map')
@@ -1107,10 +1106,10 @@ test.describe('gcds-map DOM API Tests', () => {
       );
 
       // Adding custom projection
-      const custProj = await page.evaluate((viewer: any) => {
+      const custProj = await page.evaluate(() => {
         let template = '{"projection":"basic","proj4string":"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs","resolutions":[8192, 4096, 2048, 1024, 512, 256, 128],"origin":[0,0],"bounds":[[-34655800, -39000000], [10000000, 39310000]],"tilesize":265}';
-        return viewer.defineCustomProjection?.(template);
-      }, viewerHandle);
+        return (window.M as any).defineCustomProjection?.(template);
+      });
       expect(custProj).toEqual('basic');
 
       await page.evaluateHandle(

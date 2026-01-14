@@ -278,6 +278,33 @@ export class GcdsMap {
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
       (this.el as any)._historyIndex = this._historyIndex;
+      
+      // Publish width/height getters/setters to match mapml-viewer API
+      // These return computed style (CSS wins over attributes)
+      Object.defineProperty(this.el, 'width', {
+        get: () => {
+          return +window.getComputedStyle(this.el).width.replace('px', '');
+        },
+        set: (val) => {
+          // Set attribute only, don't override CSS with inline styles
+          this.el.setAttribute('width', val);
+        },
+        enumerable: true,
+        configurable: true
+      });
+      
+      Object.defineProperty(this.el, 'height', {
+        get: () => {
+          return +window.getComputedStyle(this.el).height.replace('px', '');
+        },
+        set: (val) => {
+          // Set attribute only, don't override CSS with inline styles  
+          this.el.setAttribute('height', val);
+        },
+        enumerable: true,
+        configurable: true
+      });
+      
       // Ensure MapML controls are loaded and their init hooks are registered
       // BEFORE creating any maps. This is critical for proper attribution control.
       await this._ensureControlsLoaded();
@@ -300,10 +327,6 @@ export class GcdsMap {
         ]
       );
 
-      // Match mapml-viewer's dimension logic EXACTLY:
-      // 1. Get computed style (includes CSS rules)
-      // 2. Use width/height attributes if present, else use computed CSS values
-      // 3. Call _changeWidth/_changeHeight to apply
       var s = window.getComputedStyle(this.el),
         wpx = s.width,
         hpx = s.height,
@@ -411,6 +434,34 @@ export class GcdsMap {
 
     let shadowRoot = this.el.shadowRoot;
     if (shadowRoot.querySelector('[aria-label="Interactive map"]')) return;
+    
+    // Add default :host styles AFTER Stencil's gcds-map.css loads
+    // This ensures proper cascade order and allows _changeWidth/_changeHeight to modify it
+    const ensureHostStyle = () => {
+      // Wait for Stencil's stylesheet to load first
+      if (shadowRoot.styleSheets.length === 0) {
+        requestAnimationFrame(ensureHostStyle);
+        return;
+      }
+      
+      // Now append our :host defaults AFTER the main gcds-map.css
+      let mapDefaultCSS = document.createElement('style');
+      mapDefaultCSS.innerHTML =
+        `:host {` +
+        `all: initial;` +
+        `display: inline-block;` +
+        `background-color: white;` +
+        `height: 150px;` +
+        `width: 300px;` +
+        `contain: layout size;` +
+        `border-width: 2px;` +
+        `border-style: inset;` +
+        `}`;
+      shadowRoot.appendChild(mapDefaultCSS);
+    };
+    
+    ensureHostStyle();
+    
     this._container = document.createElement('div');
 
     let output =
@@ -982,12 +1033,15 @@ export class GcdsMap {
   }
 
   _changeWidth(width: number | string) {
-    // Match mapml-viewer behavior: update container and host element dimensions
-    // In Stencil, we set inline style on host element instead of modifying stylesheet
+    // Match mapml-viewer: modify the :host CSS rule, not inline styles
+    // This allows light DOM CSS to override the shadow DOM default
     if (this._container) {
       this._container.style.width = width + 'px';
-      // Set inline style on host element to override CSS (matches mapml-viewer's stylesheet modification)
-      this.el.style.width = width + 'px';
+      // Modify the :host rule (always LAST stylesheet, first rule)
+      const sheets = this.el.shadowRoot.styleSheets;
+      if (sheets.length > 0) {
+        (sheets[sheets.length - 1].cssRules[0] as CSSStyleRule).style.width = width + 'px';
+      }
     }
     if (this._map) {
       this._map.invalidateSize(false);
@@ -995,12 +1049,15 @@ export class GcdsMap {
   }
 
   _changeHeight(height: number | string) {
-    // Match mapml-viewer behavior: update container and host element dimensions
-    // In Stencil, we set inline style on host element instead of modifying stylesheet
+    // Match mapml-viewer: modify the :host CSS rule, not inline styles
+    // This allows light DOM CSS to override the shadow DOM default
     if (this._container) {
       this._container.style.height = height + 'px';
-      // Set inline style on host element to override CSS (matches mapml-viewer's stylesheet modification)
-      this.el.style.height = height + 'px';
+      // Modify the :host rule (always LAST stylesheet, first rule)
+      const sheets = this.el.shadowRoot.styleSheets;
+      if (sheets.length > 0) {
+        (sheets[sheets.length - 1].cssRules[0] as CSSStyleRule).style.height = height + 'px';
+      }
     }
     if (this._map) {
       this._map.invalidateSize(false);

@@ -389,7 +389,7 @@ test.describe('Playwright Map Context Menu Tests', () => {
     );
     // Remove class="hydrated" which Stencil adds at unpredictable positions
     copyValue = copyValue.replace(/\s*class="hydrated"/g, '');
-    const expected = `<gcds-map data-testid="firstmap" style="height: 600px; width: 500px; --map-width: 504px; --map-height: 604px;" projection="CBMTILE" zoom="0" lat="47" lon="-92" controls="" role="application">
+    const expected = `<gcds-map data-testid="firstmap" style="height: 600px;width:500px;" projection="CBMTILE" zoom="0" lat="47" lon="-92" controls="" role="application">
     <map-layer label="CBMT - INLINE" checked="">
       <map-extent units="CBMTILE" checked="" hidden="">
         <map-input name="zoomLevel" type="zoom" value="3" min="0" max="3"></map-input>

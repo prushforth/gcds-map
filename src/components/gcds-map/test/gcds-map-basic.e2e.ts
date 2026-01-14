@@ -72,7 +72,7 @@ test.describe('Playwright gcds-map Basic Tests', () => {
     expect(extent.topLeft.tcrs[0]).toEqual(expectedFirstTCRS[1]);
   });
 
-  test.skip('Press spacebar when focus is on map', async () => {
+  test('Press spacebar when focus is on map', async () => {
     // Note: This test is flaky due to page scroll state being unpredictable
     // The intended behavior is that spacebar should not scroll the page when map has focus
     // scroll to the top first to ensure consistent starting position

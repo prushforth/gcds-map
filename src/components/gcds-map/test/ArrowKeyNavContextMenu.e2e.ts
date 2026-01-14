@@ -69,8 +69,7 @@ test.describe('Using arrow keys to navigate context menu', () => {
       .evaluate((viewer) => viewer._map.contextMenu._layerMenu.hidden);
     expect(hidden).toEqual(true);
   });
-  // TODO unskip when map-extent implemented
-  test.skip('Testing Extent layer contextmenu', async () => {
+  test('Testing Extent layer contextmenu', async () => {
     await page.waitForTimeout(500);
     await page.locator('gcds-map').click();
     await page.waitForTimeout(500);

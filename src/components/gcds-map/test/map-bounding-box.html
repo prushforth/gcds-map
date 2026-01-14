@@ -21,6 +21,9 @@
 
             // Wait for map to be ready before accessing extent
             await map.whenReady();
+            
+            // this is a difference from mapml-viewer, in that announceMovement is by default true
+            map._map.announceMovement?.disable()
 
             // Retrieve the map extent
             const extent = map.extent;

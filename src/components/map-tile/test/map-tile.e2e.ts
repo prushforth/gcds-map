@@ -254,8 +254,8 @@ test.describe('Map Tile Dynamic Updates Tests', () => {
 
     // Change the src attribute to a different color tile
     const newSrc = initialState.src.includes('green')
-      ? 'tiles/red-tile.png'
-      : 'tiles/green-tile.png';
+      ? '/test/data/tiles/red-tile.png'
+      : '/test/data/tiles/green-tile.png';
 
     await page.evaluate(
       (params) => {

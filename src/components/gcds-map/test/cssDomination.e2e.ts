@@ -9,6 +9,7 @@ test.describe('Adding Width and Height Attribute to gcds-map', () => {
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
     await page.goto('/test/gcds-map/cssDomination.html', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1000);
   });
   test.afterAll(async function () {
     await context.close();
