@@ -1,6 +1,6 @@
 {
   "name": "gcds-map",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Stencil Component Starter",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stenciljs/component-starter.git"
+    "url": "https://github.com/NRCan/gcds-map.git"
   },
   "files": [
     "dist/",
@@ -33,7 +33,7 @@
     "start": "concurrently \"npm run start:stencil\" \"npm run start:express\"",
     "start:stencil": "stencil build --dev --watch --serve",
     "start:express": "node test-server.js",
-    "test": "playwright test",
+    "test": "playwright test --workers=1 --retries=2",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build -o ./docs",
     "test:e2e": "playwright test",

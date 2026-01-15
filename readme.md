@@ -1,6 +1,6 @@
-# gcds-map
+# `<gcds-map>`
 
-A Government of Canada Design System (GCDS) plugin component that provides an accessible, standards-based web map viewer using [MapML](https://maps4html.org/web-map-doc/).
+A Government of Canada Design System (GCDS) plugin component that provides an accessible, standards-based web map viewer using [MapML](https://maps4html.org/web-map-doc/).  The main (only?) difference between this component and that documentation is the name of the root map viewer element: `<gcds-map>`
 
 ## Installation
 
@@ -24,7 +24,7 @@ This component requires the following peer dependencies:
 
 ```html
 <gcds-map projection="OSMTILE" lat="45.4215" lon="-75.6972" zoom="10">
-  <gcds-map-layer checked src="https://geogratis.gc.ca/mapml/en/osmtile/osm/"></gcds-map-layer>
+  <map-layer checked src="https://geogratis.gc.ca/mapml/en/osmtile/osm/"></map-layer>
 </gcds-map>
 ```
 
@@ -32,8 +32,8 @@ This component requires the following peer dependencies:
 
 ```html
 <gcds-map projection="CBMTILE" lat="60.0" lon="-95.0" zoom="3" controls="true">
-  <gcds-map-layer checked src="https://geogratis.gc.ca/mapml/en/cbmtile/cbmt/"></gcds-map-layer>
-  <gcds-map-layer src="https://example.com/overlay.mapml" opacity="0.7"></gcds-map-layer>
+  <map-layer checked src="https://geogratis.gc.ca/mapml/en/cbmtile/cbmt/"></map-layer>
+  <map-layer src="https://example.com/overlay.mapml" opacity="0.7"></map-layer>
 </gcds-map>
 ```
 
@@ -41,9 +41,9 @@ This component requires the following peer dependencies:
 
 ### gcds-map
 
-The <gcds-map> component wraps the [MapML viewer](https://maps4html.org/web-map-doc/).
+The <gcds-map> component replaces the [MapML viewer](https://maps4html.org/web-map-doc/) for use in the GC Design System.
 
-#### Properties
+#### Attributes
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -53,37 +53,28 @@ The <gcds-map> component wraps the [MapML viewer](https://maps4html.org/web-map-
 | `zoom` | `number` | - | Initial zoom level |
 | `controls` | `boolean` | `true` | Show/hide map controls |
 | `controlslist` | `string` | - | Space-separated list of controls to show/hide |
-| `extent` | `string` | - | Initial extent of the map view |
-| `width` | `string` | `'100%'` | Width of the map |
-| `height` | `string` | `'400px'` | Height of the map |
+| `width` | `string` | `'300px'` | Width of the map |
+| `height` | `string` | `'150px'` | Height of the map |
+| `static` | `boolean` | `false` | If `true` disables keyboard and pointer interaction with the map | 
 
-### gcds-map-layer
+### map-layer
 
-Represents a map layer to be displayed on the map.
+Represents a map layer to be displayed on the map.  See [detailed documentation](https://maps4html.org/web-map-doc/docs/elements/layer/) for information about how to use this and other MapML elements.
 
-#### Properties
+#### Attributes
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `checked` | `boolean` | `false` | Whether the layer is visible |
 | `src` | `string` | - | URL to the MapML document |
-| `label` | `string` | - | Label for the layer in the layer control |
-| `opacity` | `string` | - | Opacity of the layer (0-1) |
+| `label` | `string` | - | Label for the layer in the layer control, if not specified by a remote MapML document |
+| `hidden` | `string` | `false` | Whether the layer is included in the layer control |
+| `media` | `string` | - | A map media query that controls [the presence](https://maps4html.org/web-map-doc/docs/elements/layer/#media) of the layer on the map |
+| `opacity` | `string` | - | Opacity of the layer (0-1 in .1 increments) |
 
 ## Architecture
 
-The `gcds-map` component creates a shadow DOM that contains a `<mapml-viewer>` element. Light DOM `<gcds-map-layer>` children are transformed into `<map-layer>` elements within the shadow DOM, maintaining the declarative API while leveraging the MapML custom elements.
-
-### Important Design Decision
-
-The component follows a "set once" pattern for map properties. Initial attributes (projection, lat, lon, zoom, etc.) are passed to the `<mapml-viewer>` during render, but are never updated afterward. This approach:
-
-- Respects the `mapml-viewer`'s internal state management and Leaflet integration
-- (Hopefully)avoids timing conflicts between Stencil's lifecycle and custom element lifecycle
-- Allows the MapML viewer to manage its own coordinate system and pixel relationships
-- Lets browser rendering and CSS rules handle layout after initial creation
-
-Only the layer list is dynamically updated when `<gcds-map-layer>` children change.
+The `<gcds-map>` component replaces the usage of the `<mapml-viewer>` element. See the [documentation](https://maps4html.org/web-map-doc/) for how to use the `<mapml-viewer>`; in GCDS, you can **only** use `<gcds-map>` in its place. Light DOM `<map-layer>` children may create their own shadow roots with remote content, if the layer has a `src` attribute. Otherwise, light DOM MapML (custom element) children of `<map-layer>` are rendered according to the documentation.
 
 ## Development
 
@@ -91,7 +82,7 @@ Only the layer list is dynamically updated when `<gcds-map-layer>` children chan
 
 ```bash
 npm install
-npm run build
+npm run build && npm run start
 ```
 
 ### Testing
@@ -103,16 +94,18 @@ npm test
 ### Storybook
 
 ```bash
-npm run storybook
+npm run build && npm run build-storybook && npm run storybook
 ```
 
 ## Accessibility
 
-The component leverages the built-in accessibility features of the MapML viewer, including:
+The `<gcds-map>` component includes several accessibility features:
 - Keyboard navigation
 - Screen reader support
 - ARIA labels and descriptions
 - Focus management
+
+If you notice things that could be improved, please [open an issue](./issues/new).
 
 ## Browser Support
 
