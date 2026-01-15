@@ -49,7 +49,7 @@ export class GcdsMap {
   @Prop({ mutable: true }) lat?: number = 0;
   @Prop({ mutable: true }) lon?: number = 0;
   @Prop({ mutable: true }) zoom?: number = 0;
-  @Prop({ reflect: true, mutable: true }) projection?: string = 'OSMTILE';
+  @Prop({ reflect: false, mutable: true }) projection?: string = 'OSMTILE';
   // Note: width/height are NOT Stencil props - they're managed via custom properties and MutationObserver
   // @Prop() width?: string;
   // @Prop() height?: string;

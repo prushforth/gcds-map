@@ -63,13 +63,13 @@ export class MapFeature {
         ? meta['value']
         : meta['max']
         ? meta['max']
-        : this._initialZoom);
+        : this._initialZoom ?? this.getMapEl()?.zoom ?? 0);
     } else {
       // for "static" features
       // nativeZoom zoom attribute || this._initialZoom
       return +(this.el.hasAttribute('zoom')
         ? this.el.getAttribute('zoom')
-        : this._initialZoom);
+        : this._initialZoom ?? this.getMapEl()?.zoom ?? 0);
     }
   }
 
