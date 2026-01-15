@@ -1,0 +1,212 @@
+// @ts-nocheck
+import { test, expect, chromium, Page, BrowserContext } from '@playwright/test';
+
+// This test file uses extensive DOM manipulation and custom element APIs
+// that are not typed in the TypeScript definitions
+
+declare global {
+  interface Window {
+    L: any;
+    M: any;
+  }
+}
+
+test.describe('map-link api tests', () => {
+  let page: Page;
+  let context: BrowserContext;
+  test.beforeAll(async function () {
+    context = await chromium.launchPersistentContext('', {
+      ignoreHTTPSErrors: true,
+      slowMo: 500
+    });
+    page =
+      context.pages().find((page) => page.url() === 'about:blank') ||
+      (await context.newPage());
+    await page.goto('/test/map-link/map-link-api.html', { waitUntil: 'networkidle' });
+  });
+  test(`extent of map-link established via map-meta vs map-inputs`, async () => {
+    // create map-extent with map-link whose min,maxZoom and min/maxNativeZoom
+    // established via map-input min/max attributes
+    // get extent of map-link established via map-input
+    const layer = page.getByTestId('initially-empty');
+    let linkExtentViaMapInputs = await layer.evaluate(async (l) => {
+      let extent = document
+        .querySelector('template')
+        .content.querySelector('#extent-via-map-input')
+        .cloneNode(true);
+      l.appendChild(extent);
+      let link = (extent as any).querySelector('map-link');
+      await extent.whenReady();
+      let linkExt = link.extent;
+      return {
+        xmin: linkExt.topLeft.tilematrix[3].horizontal,
+        ymin: linkExt.topLeft.tilematrix[3].vertical,
+        xmax: linkExt.bottomRight.tilematrix[3].horizontal,
+        ymax: linkExt.bottomRight.tilematrix[3].vertical,
+        zmin: linkExt.zoom.minZoom,
+        zmax: linkExt.zoom.maxZoom,
+        zNativeMax: linkExt.zoom.maxNativeZoom,
+        zNativeMin: linkExt.zoom.minNativeZoom
+      };
+    });
+
+    // create map-extent with map-link whose min,maxZoom are established via
+    // map-meta name=zoom, but whose min/maxNativeZoom are established via
+    // a map-input bound into the map-link's tref
+    // get extent of map-link established via map-meta zoom/extent
+    let linkExtentViaMapMeta = await layer.evaluate(async (l) => {
+      let extent = document
+        .querySelector('template')
+        .content.querySelector('#extent-via-map-meta')
+        .cloneNode(true);
+      l.appendChild(extent);
+      await extent.whenReady();
+      let linkExt = (extent as Element).querySelector('map-link').extent;
+      return {
+        xmin: linkExt.topLeft.tilematrix[3].horizontal,
+        ymin: linkExt.topLeft.tilematrix[3].vertical,
+        xmax: linkExt.bottomRight.tilematrix[3].horizontal,
+        ymax: linkExt.bottomRight.tilematrix[3].vertical,
+        zmin: linkExt.zoom.minZoom,
+        zmax: linkExt.zoom.maxZoom,
+        zNativeMax: linkExt.zoom.maxNativeZoom,
+        zNativeMin: linkExt.zoom.minNativeZoom
+      };
+    });
+    // bounds should be the same, but note that the tilematrix coordinate system has
+    // some difficulty coercing very very small real numbers to 0
+    // so I used a non-zero upper left corner to avoid that issue
+    expect(linkExtentViaMapInputs.xmin).toEqual(linkExtentViaMapMeta.xmin);
+    expect(linkExtentViaMapInputs.ymin).toEqual(linkExtentViaMapMeta.ymin);
+    expect(linkExtentViaMapInputs.xmax).toEqual(linkExtentViaMapMeta.xmax);
+    expect(linkExtentViaMapInputs.ymax).toEqual(linkExtentViaMapMeta.ymax);
+    // expect that min/maxZoom will be the same, but min/maxNativeZoom will correspond
+    // to the min/max attribute values of the map-input type=zoom
+    expect(linkExtentViaMapInputs.zmin).toEqual(linkExtentViaMapMeta.zmin);
+    expect(linkExtentViaMapInputs.zmax).toEqual(linkExtentViaMapMeta.zmax);
+
+    // was 0 via map-input, still 0, (and still established via map-input)
+    expect(linkExtentViaMapInputs.zNativeMin).toEqual(
+      linkExtentViaMapMeta.zNativeMin
+    );
+    expect(linkExtentViaMapInputs.zNativeMax).not.toEqual(
+      linkExtentViaMapMeta.zNativeMax
+    );
+  });
+  test("map-links that shouldn't have an extent behave accordingly", async () => {
+    await page.waitForTimeout(500);
+    // create a layer containing a <map-link rel=license
+    const viewer = page.getByTestId('viewer');
+    await viewer.evaluate((map) => {
+      let layerWithLicenseLink = document
+        .querySelector('template')
+        .content.querySelector('[data-testid=inline-tiles]')
+        .cloneNode(true);
+      map.appendChild(layerWithLicenseLink);
+      let licenseLink = (layerWithLicenseLink as any).querySelector(
+        'map-link[rel=license]'
+      );
+      licenseLink.setAttribute('data-testid', 'license-link');
+    });
+    const licenseLink = page.getByTestId('license-link');
+    const licenseExtent = await licenseLink.evaluate((l) => {
+      return l.extent;
+    });
+    expect(licenseExtent).toBeFalsy(); 
+  });
+  test('map-link.zoomTo() function works', async () => {
+    const viewer = page.getByTestId('viewer');
+    // get initial extent
+    let initialExtent = await viewer.evaluate((map) => {
+      return {
+        xmin: map.extent.topLeft.pcrs.horizontal,
+        ymin: map.extent.topLeft.pcrs.vertical,
+        xmax: map.extent.bottomRight.pcrs.horizontal,
+        ymax: map.extent.bottomRight.pcrs.vertical
+      };
+    });
+
+    // get an extentful map-link
+    await viewer.evaluate((map) => {
+      let layer = document
+        .querySelector('template')
+        .content.querySelector('[data-testid=inline-image]')
+        .cloneNode(true);
+      map.appendChild(layer);
+    });
+    // the source template has the same data-testid
+    const imageLink = viewer.getByTestId('inline-link1');
+    // but there should only be one in the DOM of the viewer
+    expect(imageLink).toHaveCount(1);
+await page.pause();
+    await imageLink.evaluate((link) => link.zoomTo());
+    await page.pause();
+
+    await page.waitForFunction(
+      (initial) => {
+        const map = document.querySelector('[data-testid=viewer]');
+        return map.extent.topLeft.pcrs.horizontal !== initial.xmin;
+      },
+      initialExtent,
+      { timeout: 5000 }
+    );
+
+    let finalExtent = await viewer.evaluate((map) => {
+      return {
+        xmin: map.extent.topLeft.pcrs.horizontal,
+        ymin: map.extent.topLeft.pcrs.vertical,
+        xmax: map.extent.bottomRight.pcrs.horizontal,
+        ymax: map.extent.bottomRight.pcrs.vertical
+      };
+    });
+    // the map should have moved...
+    expect(finalExtent.xmin).not.toEqual(initialExtent.xmin);
+    expect(finalExtent.ymin).not.toEqual(initialExtent.ymin);
+    expect(finalExtent.xmax).not.toEqual(initialExtent.xmax);
+    expect(finalExtent.ymax).not.toEqual(initialExtent.ymax);
+
+    // get the centre of the map-link's extent, in pcrs, unproject to lat/lng
+    let linkExtentCentre = await imageLink.evaluate(async (link) => {
+      // Re-import Leaflet in this context to ensure we have the right object
+      const leafletModule = await import('/leaflet-src.esm.js');
+      const L = leafletModule.default || leafletModule;
+      
+      let map = document.querySelector('[data-testid=viewer]'),
+        x =
+          link.extent.topLeft.pcrs.horizontal +
+          (link.extent.bottomRight.pcrs.horizontal -
+            link.extent.topLeft.pcrs.horizontal) /
+            2,
+        y =
+          link.extent.bottomRight.pcrs.vertical +
+          (link.extent.topLeft.pcrs.vertical -
+            link.extent.bottomRight.pcrs.vertical) /
+            2,
+        linkExtentCentre = M['OSMTILE'].unproject(L.point([x, y])),
+        centreLat = linkExtentCentre.lat,
+        centreLon = linkExtentCentre.lng;
+
+      return {
+        centreLat: centreLat,
+        centreLon: centreLon,
+        mapLon: map.lon,
+        mapLat: map.lat
+      };
+    });
+    // map should have zoomed to be centred on the map-link when map-link.zoomTo()
+    // was run.  The zoom is calculated as the largest allowable zoom that will fit the
+    // bounds into the map viewport, but the value is not tested here.
+    expect(linkExtentCentre.centreLat).toBeCloseTo(linkExtentCentre.mapLat, 5);
+    expect(linkExtentCentre.centreLon).toBeCloseTo(linkExtentCentre.mapLon, 6);
+  });
+  test.skip('map-link.extent changes dynamically with map-input, map-meta changes', async () => {
+    // future work. Requires behaviour to be programmed into map-input, map-meta
+    // custom elements
+    test.fail();
+  });
+
+  test.skip('map-link constructed programmatically works', async () => {
+    // future work.
+    test.fail();
+  });
+});

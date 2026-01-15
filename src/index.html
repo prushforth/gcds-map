@@ -1,0 +1,66 @@
+<!doctype html>
+<html dir="ltr" lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+    <title>&lt;gcds-map&gt; component</title>
+
+    <script type="module" src="/build/gcds-map.esm.js"></script>
+    <script nomodule src="/build/gcds-map.js"></script>
+
+    <!-- GC Design System -->
+    <link rel="stylesheet" href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@latest/dist/gcds/gcds.css" />
+    <script type="module" src="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-components@latest/dist/gcds/gcds.esm.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet" />
+
+    <!-- GC Design System Utility -->
+    <link rel="stylesheet" href="https://cdn.design-system.alpha.canada.ca/@cdssnc/gcds-utility@latest/dist/gcds-utility.min.css" />
+    <style>gcds-map { display: block; width: 100%; height: 400px;}</style>
+  </head>
+  <body>
+
+
+      <gcds-container size="xl" main-container centered tag="main">
+
+      <gcds-text>This demo uses gcds components as an npm "peer dependency"</gcds-text>
+
+      <gcds-heading tag="h2">&lt;gcds-map&gt; composant « plugin »</gcds-heading>
+
+      <gcds-map width="640" height="480" lat="45.4215" lon="-75.6972" zoom="10" projection="CBMTILE" controls>
+        <map-layer label="Test Layer"  src="/build/assets/mapml/fr/cbmtile/cbmt"  checked opacity="0.8">
+
+        </map-layer>
+      </gcds-map>
+
+      <gcds-heading tag="h2">Button</gcds-heading>
+
+        <gcds-button button-role="danger">Primary</gcds-button>
+
+      <gcds-heading tag="h2">Input</gcds-heading>
+
+        <gcds-input input-id="form-name" label="Name" hint="Please enter your full name."></gcds-input>
+
+      <gcds-heading tag="h2">Header</gcds-heading>
+
+        <gcds-header>
+          <gcds-search slot="search"></gcds-search>
+          <gcds-topic-menu slot="menu"></gcds-topic-menu>
+          <gcds-breadcrumbs slot="breadcrumb">
+            <gcds-breadcrumbs-item href="#">Design System</gcds-breadcrumbs-item>
+            <gcds-breadcrumbs-item href="#">Components</gcds-breadcrumbs-item>
+          </gcds-breadcrumbs>
+        </gcds-header>
+
+    </gcds-container>
+  </body>
+</html>
