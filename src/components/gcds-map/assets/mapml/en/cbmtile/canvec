@@ -3,7 +3,7 @@
     <map-title>Canvec</map-title>
     <map-meta http-equiv="Content-Type" content="application/xml;charset=UTF-8"></map-meta>
     <map-meta charset="utf-8"></map-meta>
-    <map-link rel="license" href="https://www.nrcan.gc.ca/earth-sciences/geography/atlas-canada/read-about-topographic-maps/16840#topolicensing" title="Canvec &#xa9; Natural Resources Canada"></map-link>
+    <map-link rel="license" href="https://open.canada.ca/en/open-government-licence-canada" title="Open Government Licence - Canada"></map-link>
   </map-head>
   <map-body>
     <map-extent units="CBMTILE" checked="checked">

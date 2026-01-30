@@ -4,7 +4,7 @@
     <map-meta http-equiv="Content-Type" content="application/xml;charset=UTF-8"></map-meta>
     <map-meta charset="utf-8"></map-meta>
 
-    <map-link rel="license" href="https://www.nrcan.gc.ca/earth-sciences/geography/topographic-information/free-data-geogratis/licence/17285" title="La Carte de Base du Canada &#xa9; Ressources naturelles Canada"></map-link>
+    <map-link rel="license" href="https://ouvert.canada.ca/fr/licence-du-gouvernement-ouvert-canada" title="Licence du gouvernement ouvert – Canada"></map-link>
     <map-link rel="alternate" projection="CBMTILE" href="../cbmtile/cbmt"></map-link>
   </map-head>
   <map-body>

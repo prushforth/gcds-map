@@ -109,7 +109,7 @@ const TemplateBasic = (args) => {
   return `<!-- Web component code (HTML, Angular, Vue) -->
 <gcds-map lat="${args.lat}" lon="${args.lon}" zoom="${args.zoom}" lang="${args.lang}" projection="${args.projection}"${args.controls ? ' controls' : ''}${args.static ? ' static' : ''}${args.controlslist.length > 0  ? ` controlslist="${args.controlslist.join(' ')}"` : ''}>
 
-//  <map-caption>${args.caption}</map-caption>
+  <map-caption>${args.caption}</map-caption>
 
   <map-layer src="${args.layer}" ${`checked`}></map-layer>
 
