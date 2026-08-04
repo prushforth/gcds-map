@@ -1,7 +1,11 @@
 {
-  "name": "@gcds-extensions/map",
-  "version": "1.0.0-rc",
+  "name": "@prushforth/map",
+  "version": "1.0.0-preview.3",
   "description": "Government of Canada Design System extension - Map component (MapML) suite",
+  "publishConfig": {
+    "access": "public",
+    "tag": "preview"
+  },
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
@@ -23,6 +27,7 @@
     "!dist/**/*.map"
   ],
   "scripts": {
+    "prepublishOnly": "npm run build",
     "prebuild": "node scripts/generate-locale.js",
     "build": "stencil build",
     "prestart": "node scripts/generate-locale.js",

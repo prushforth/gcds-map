@@ -7,7 +7,7 @@ A Government of Canada Design System (GCDS) extension map component that provide
 Install and use locally:
 
 ```bash
-npm install @gcds-extensions/map
+npm install @prushforth/map@preview
 ```
 
 ## Verify your installation
@@ -15,7 +15,7 @@ npm install @gcds-extensions/map
 Run:
 
 ```bash
-npx http-server node_modules/@gcds-extensions/map -p 8080 -c-1
+npx http-server node_modules/@prushforth/map -p 8080 -c-1
 ```
 
 Open http://localhost:8080/demo/ — you should see an interactive map.
