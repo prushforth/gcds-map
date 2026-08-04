@@ -5,6 +5,32 @@ import { bounds, latLngBounds, point, latLng } from 'leaflet';
 import proj4 from 'proj4';
 
 export const Util = {
+  /**
+   * Sanitize an author-supplied URL that will be used as an `href`
+   * attribute on an anchor rendered into the DOM.
+   *
+   * Returns the resolved URL string if the scheme is `http:` or
+   * `https:` (or if the input is a relative reference that resolves
+   * to one of those). Returns `''` for every other scheme
+   * (`javascript:`, `data:`, `blob:`, `file:`, `mailto:`, unknown
+   * vendor schemes, …) and for malformed URLs.
+   *
+   * MapML documents fetched via `<map-layer src>` are treated as
+   * untrusted: a malicious feed can otherwise smuggle a
+   * `javascript:` URL into a `<map-link rel="legend|license">` and
+   * turn a click on the layer control or attribution control into
+   * arbitrary script execution in the embedding page's origin.
+   */
+  sanitizeUrl: function (raw) {
+    if (typeof raw !== 'string' || raw === '') return '';
+    try {
+      var u = new URL(raw, document.baseURI);
+      if (u.protocol === 'http:' || u.protocol === 'https:') return u.href;
+    } catch (e) {
+      // malformed URL — fall through to empty return
+    }
+    return '';
+  },
   // _convertAndFormatPCRS returns the converted CRS and formatted pcrsBounds in gcrs, pcrs, tcrs, and tilematrix. Used for setting extent for the map and layer (map.extent, layer.extent).
   // _convertAndFormatPCRS: Bounds, _map, projection -> {...}
   _convertAndFormatPCRS: function (pcrsBounds, crs, projection) {
@@ -363,6 +389,26 @@ export const Util = {
 
   // _handleLink handles map-a links, when clicked on a map-a link
   _handleLink: function (link, leafletLayer) {
+    // A <map-a href> is author-untrusted content (it can arrive via a
+    // pasted/loaded <map-feature>, which is inserted verbatim). Every
+    // branch below eventually navigates with link.url —
+    // window.location.href, window.open, or a <map-layer src> — so a
+    // href like "javascript:alert(1)" would execute on click. Resolve
+    // the href against the document base (relative and #hash links
+    // resolve to http(s) and pass) and reject anything that isn't
+    // http/https before doing any navigation.
+    let resolvedProtocol;
+    try {
+      resolvedProtocol = new URL(link.url, document.baseURI).protocol;
+    } catch (e) {
+      resolvedProtocol = null;
+    }
+    if (resolvedProtocol !== 'http:' && resolvedProtocol !== 'https:') {
+      console.warn(
+        'MapML: ignoring map-a link with unsupported/unsafe URL: ' + link.url
+      );
+      return;
+    }
     let zoomTo,
       justPan = false,
       layer,
@@ -696,18 +742,27 @@ export const Util = {
         }
       } else {
         // try to process as a mapml file
-        // create a new <map-layer> child of the <mapml-viewer> element
-        let l =
-          '<map-layer src="' +
-          text +
-          '" label="' +
-          mapEl.locale.dfLayer +
-          '" checked=""></map-layer>';
-        mapEl.insertAdjacentHTML('beforeend', l);
-        mapEl.lastElementChild.whenReady().catch(() => {
-          if (mapEl) {
+        // create a new <map-layer> child of the <mapml-viewer> element.
+        // The pasted `text` is author-untrusted: even though it parsed
+        // as a URL above, string-concatenating it into an HTML `src="…"`
+        // attribute lets a payload such as
+        // `http://x/"><img src=y onerror=…>` break out of the attribute
+        // and inject markup. Scheme-allowlist the URL and build the
+        // element with DOM APIs (which escape attribute values) instead.
+        const safeSrc = Util.sanitizeUrl(text);
+        if (!safeSrc) {
+          console.log('Ignoring paste of URL with disallowed scheme: ' + text);
+          return;
+        }
+        const layerEl = document.createElement('map-layer');
+        layerEl.setAttribute('src', safeSrc);
+        layerEl.setAttribute('label', mapEl.locale.dfLayer);
+        layerEl.setAttribute('checked', '');
+        mapEl.appendChild(layerEl);
+        layerEl.whenReady().catch(() => {
+          if (mapEl && layerEl.parentNode === mapEl) {
             // should invoke lifecyle callbacks automatically by removing it from DOM
-            mapEl.removeChild(mapEl.lastChild);
+            mapEl.removeChild(layerEl);
           }
         });
       }
@@ -970,7 +1025,11 @@ export const Util = {
         // when no caption option available try setting id as featurecaption
         featureCaption = json.id;
       }
-      curr_feature.querySelector('map-featurecaption').innerHTML =
+      // textContent (not innerHTML) so that an author-untrusted
+      // featurecaption — e.g. a pasted GeoJSON feature whose `id` or
+      // caption property is `<img src=x onerror=…>` — cannot inject
+      // markup into the feature/popup.
+      curr_feature.querySelector('map-featurecaption').textContent =
         featureCaption;
 
       // Setting Properties

@@ -60,7 +60,9 @@ export class MapSelect {
       for (let j = 0; j < optionAttrNames.length; j++) {
         option.setAttribute(optionAttrNames[j], options[i].getAttribute(optionAttrNames[j])!);
       }
-      option.innerHTML = options[i].innerHTML;
+      // textContent (not innerHTML) so that a malicious option body
+      // cannot inject markup into the layer control.
+      option.textContent = options[i].textContent;
       select.appendChild(option);
     }
     return select;
