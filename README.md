@@ -4,21 +4,27 @@ A Government of Canada Design System (GCDS) extension map component that provide
 
 ## Installation
 
-Install and use locally:
+Install the map component and its GCDS peer dependency locally:
 
 ```bash
-npm install @prushforth/map@preview
+npm install @prushforth/map@preview @gcds-core/components
 ```
+
+The `@gcds-core/components` package is a peer dependency. Without it, the GCDS
+elements in the demo (e.g. `<gcds-button>`, `<gcds-input>`, `<gcds-header>`)
+will not render.
 
 ## Verify your installation
 
-Run:
+Serve `node_modules` so the demo can resolve both this package and its sibling
+`@gcds-core/components`:
 
 ```bash
-npx http-server node_modules/@prushforth/map -p 8080 -c-1
+npx http-server node_modules -p 8080 -c-1
 ```
 
-Open http://localhost:8080/demo/ — you should see an interactive map.
+Open http://localhost:8080/@prushforth/map/demo/ — you should see an
+interactive map along with rendered GCDS components.
 
 ## Usage
 
@@ -40,7 +46,7 @@ Open http://localhost:8080/demo/ — you should see an interactive map.
 -->
 
 <!-- important: use CSS to define the width and height of the map (default size is quite small!) -->
-<gcds-ext-map projection="CBMTILE" lat="45.4215" lon="-75.6972" zoom="10" style="width: 60%&height: 400px">
+<gcds-ext-map projection="CBMTILE" lat="45.4215" lon="-75.6972" zoom="10" style="width: 60%; height: 400px">
   <map-layer checked>
     <map-title>Canada Base Map - Transportation (CBMT)</map-title>
     <map-link rel="license" href="https://open.canada.ca/en/open-government-licence-canada" title="Open Government Licence - Canada"></map-link>

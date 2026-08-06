@@ -1,6 +1,6 @@
 {
   "name": "@prushforth/map",
-  "version": "1.0.0-preview.3",
+  "version": "1.0.0-preview.4",
   "description": "Government of Canada Design System extension - Map component (MapML) suite",
   "publishConfig": {
     "access": "public",
@@ -16,7 +16,7 @@
     "url": "git+https://github.com/gcds-extensions/map.git"
   },
   "bugs": {
-     "url": "https://github.com/gcds-extensions/map/issues"
+    "url": "https://github.com/gcds-extensions/map/issues"
   },
   "homepage": "https://gcds-extensions.github.io/map/en/",
   "files": [
