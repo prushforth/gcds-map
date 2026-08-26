@@ -278,6 +278,11 @@ export class GcdsExtMap {
   // Mirror the connectedCallback logic in componentDidLoad
   async connectedCallback() {
     try {
+      // Set the host role up front so a map-caption-reflected aria-label is
+      // always valid, even for maps whose layout/creation is deferred or never
+      // completes (e.g. hidden in a tab). https://github.com/Maps4HTML/MapML.js/issues/274
+      this.el.setAttribute('role', 'application');
+
       // Sync initial history state to element for MapML controls
       (this.el as any)._history = this._history;
       (this.el as any)._historyIndex = this._historyIndex;
@@ -381,8 +386,6 @@ export class GcdsExtMap {
         // Store observer for cleanup
         (this.el as any)._attributeObserver = attributeObserver;
 
-        // https://github.com/Maps4HTML/MapML.js/issues/274
-        this.el.setAttribute('role', 'application');
         this._toggleStatic();
 
         /*
