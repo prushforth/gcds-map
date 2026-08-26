@@ -375,21 +375,27 @@ export class GcdsMapExtent {
     });
   }
   _runMutationObserver(elementsGroup) {
+    // A map placed in a container that is not yet laid out (e.g. a collapsed
+    // <details>, an inactive tab) may never become ready, causing whenReady()
+    // to time out and reject. Swallow those rejections so they don't surface
+    // as unhandled promise rejections that break host pages and tests.
+    const onNotReady = (error) =>
+      console.warn('map-extent: element not ready, skipping update: ' + error);
     const _addMetaElement = (_mapMeta) => {
       this.whenReady().then(() => {
         this._calculateBounds();
         this._validateDisabled();
-      });
+      }).catch(onNotReady);
     };
     const _addStylesheetLink = (mapLink) => {
       this.whenReady().then(() => {
         this._extentLayer.renderStyles(mapLink);
-      });
+      }).catch(onNotReady);
     };
     const _addStyleElement = (mapStyle) => {
       this.whenReady().then(() => {
         this._extentLayer.renderStyles(mapStyle);
-      });
+      }).catch(onNotReady);
     };
     for (let i = 0; i < elementsGroup.length; ++i) {
       let element = elementsGroup[i];

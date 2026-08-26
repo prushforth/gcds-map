@@ -417,7 +417,11 @@ export class GcdsMapLayer {
         }
       })
       .catch((error) => {
-        throw new Error('Map never became ready: ' + error);
+        // A map placed in a container that is not yet laid out (e.g. a
+        // collapsed <details>, an inactive tab) may not become ready within
+        // the timeout. Warn instead of throwing so the host page does not
+        // crash with an unhandled promise rejection.
+        console.warn('map-layer: map did not become ready: ' + error);
       });
   }
 
@@ -513,8 +517,12 @@ export class GcdsMapLayer {
         let elements = this.el.querySelectorAll('*');
         let elementsReady = [];
         for (let i = 0; i < elements.length; i++) {
-          if ((elements[i] as any).whenReady)
-            elementsReady.push((elements[i] as any).whenReady());
+          if ((elements[i] as any).whenReady) {
+            elementsReady.push((elements[i] as any).whenReady().catch(error => {
+              console.warn(`Element ${elements[i].tagName} failed to become ready:`, error);
+              return null; // Convert rejection to resolution so layer can still proceed
+            }));
+          }
         }
         Promise.allSettled(elementsReady)
           .then(() => {
@@ -767,15 +775,21 @@ export class GcdsMapLayer {
   }
   
   private _runMutationObserver(elementsGroup: NodeList | HTMLCollection) {
+    // A map placed in a container that is not yet laid out (e.g. a collapsed
+    // <details>, an inactive tab) may never become ready, causing whenReady()
+    // to time out and reject. Swallow those rejections so they don't surface
+    // as unhandled promise rejections that break host pages and tests.
+    const onNotReady = (error: any) =>
+      console.warn('map-layer: element not ready, skipping update: ' + error);
     const _addStylesheetLink = (mapLink: any) => {
       this.whenReady().then(() => {
         this._layer.renderStyles(mapLink);
-      });
+      }).catch(onNotReady);
     };
     const _addStyleElement = (mapStyle: any) => {
       this.whenReady().then(() => {
         this._layer.renderStyles(mapStyle);
-      });
+      }).catch(onNotReady);
     };
     const _addExtentElement = (mapExtent: any) => {
       this.whenReady().then(() => {
@@ -786,13 +800,13 @@ export class GcdsMapLayer {
             delete this._layer.bounds;
             this._layer._calculateBounds();
             this._validateDisabled();
-          });
+          }).catch(onNotReady);
         } else {
           delete this._layer.bounds;
           this._layer._calculateBounds();
           this._validateDisabled();
         }
-      });
+      }).catch(onNotReady);
     };
     
     const root = this.src ? this.el.shadowRoot : this.el;
@@ -802,7 +816,7 @@ export class GcdsMapLayer {
       this.whenReady().then(() => {
         this._layer._calculateBounds();
         this._validateDisabled();
-      });
+      }).catch(onNotReady);
     };
     
     for (let i = 0; i < elementsGroup.length; ++i) {
