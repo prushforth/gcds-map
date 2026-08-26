@@ -143,7 +143,7 @@ check_stencil_alignment || warn "Proceeding despite Stencil mismatch."
 # ---------------------------------------------------------------------------
 info "Deploying gcds-ext-map dist/ to gcds-docs..."
 
-DEST="$GCDS_DOCS_DIR/node_modules/@gcds-extensions/gcds-ext-map/dist"
+DEST="$GCDS_DOCS_DIR/node_modules/@gcds-extensions/map/dist"
 PKG_DIR="$(dirname "$DEST")"
 
 # Ensure the package folder exists in gcds-docs/node_modules (fresh installs
@@ -155,7 +155,7 @@ fi
 
 # Clean the target (removes stale chunks from prior builds)
 if [ -d "$DEST" ]; then
-  info "Removing old dist/ in gcds-docs/node_modules/@gcds-extensions/gcds-ext-map/..."
+  info "Removing old dist/ in gcds-docs/node_modules/@gcds-extensions/map/..."
   rm -rf "$DEST"
 fi
 
