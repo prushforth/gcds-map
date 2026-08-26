@@ -450,7 +450,7 @@ export class GcdsExtMap {
   _initShadowRoot() {
 
     let shadowRoot = this.el.shadowRoot;
-    if (shadowRoot.querySelector('[aria-label="Interactive map"]')) return;
+    if (shadowRoot.querySelector('[role="region"]')) return;
     
     // Add default :host styles AFTER Stencil's gcds-ext-map.css loads
     // This ensures proper cascade order and allows _changeWidth/_changeHeight to modify it
@@ -487,8 +487,15 @@ export class GcdsExtMap {
 
     // Make the Leaflet container element programmatically identifiable
     // (https://github.com/Leaflet/Leaflet/issues/7193).
+    // Use the map-caption text when present so multiple maps on a page have
+    // unique landmark names (fixes axe landmark-unique).
+    const mapCaption = this.el.querySelector('map-caption');
+    const regionLabel =
+      mapCaption && mapCaption.textContent.trim()
+        ? mapCaption.textContent.trim()
+        : 'Interactive map';
     this._container.setAttribute('role', 'region');
-    this._container.setAttribute('aria-label', 'Interactive map');
+    this._container.setAttribute('aria-label', regionLabel);
     shadowRoot.appendChild(this._container);
     
     // Expose _container on DOM element for test access and MapML compatibility
