@@ -48,6 +48,17 @@ test.describe('Playwright gcds-ext-map Basic Tests', () => {
     expect(arialabel).toEqual('Map data attribution');
   });
 
+  test('Ensure attribution summary has a localized title tooltip', async () => {
+    let title = await page.evaluate(
+      `document.querySelector('gcds-ext-map')._map.attributionControl._container.querySelector('summary').getAttribute('title')`
+    );
+    expect(title).toEqual('Map data attribution');
+    let arialabel = await page.evaluate(
+      `document.querySelector('gcds-ext-map')._map.attributionControl._container.querySelector('summary').getAttribute('aria-label')`
+    );
+    expect(arialabel).toEqual('Map data attribution');
+  });
+
   test('Initial map element extent', async () => {
     await page.waitForTimeout(500);
     const extent = await page.$eval('body > gcds-ext-map', (map) => map.extent);
