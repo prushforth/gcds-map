@@ -1,5 +1,24 @@
 import { test, expect, chromium } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
 let browserLocale, enLocale, frLocale, locales;
+
+// Load a mapml-extension locale straight from node_modules and flatten it the
+// same way generate-locale.js does for en/fr, so the test never drifts from the
+// extension's message catalogue.
+function loadLocale(lang) {
+  const file = path.resolve(
+    __dirname,
+    `../../../../node_modules/mapml-extension/src/_locales/${lang}/messages.json`
+  );
+  const messages = JSON.parse(fs.readFileSync(file, 'utf-8'));
+  return Object.keys(messages).reduce((acc, key) => {
+    if (key !== 'extName' && key !== 'extDescription') {
+      acc[key] = messages[key].message;
+    }
+    return acc;
+  }, {});
+}
 
 test.use({
   geolocation: { longitude: -73.56766530667056, latitude: 45.5027789304487 },
@@ -16,6 +35,15 @@ test.describe('<gcds-ext-map> localization tests', () => {
     page =
       context.pages().find((page) => page.url() === 'about:blank') ||
       (await context.newPage());
+
+    // The Ukrainian viewer (lang="browser-language") has no bundled locale, so
+    // inject uk/messages.json before navigation; localization.html reads
+    // window.__browserLocale to build its <map-options> before the viewer
+    // connects. Must run before goto() so it lands at document_start.
+    browserLocale = loadLocale('uk');
+    await page.addInitScript((locale) => {
+      (window as any).__browserLocale = locale;
+    }, browserLocale);
     await page.goto('/test/gcds-ext-map/localization.html', { waitUntil: 'networkidle' });
 
     // wait for maps to be visible and ready
@@ -24,9 +52,6 @@ test.describe('<gcds-ext-map> localization tests', () => {
     await page.getByTestId('ukrainian').waitFor({ state: 'visible' });
 
     // fetch locales and check that they are not undefined
-    browserLocale = await page.getByTestId('map-options').evaluate((t) => {
-      return JSON.parse(t.content.firstChild.textContent).locale;
-    });
     expect(browserLocale.cmBack).toBeTruthy();
     enLocale = await page.evaluate(() => (window as any).M.options.localeEn);
     expect(enLocale.cmBack).toBeTruthy();
@@ -49,13 +74,16 @@ test.describe('<gcds-ext-map> localization tests', () => {
     // for every property in enLocale, check that the corresponding
     // exist in frLocale and browserLocale
     for (const l in enLocale) {
-      expect(frLocale[l]).toBeTruthy();
-      expect(browserLocale[l]).toBeTruthy();
+      expect(frLocale[l], `french locale is missing key "${l}"`).toBeTruthy();
+      expect(
+        browserLocale[l],
+        `ukrainian (browser) locale is missing key "${l}"`
+      ).toBeTruthy();
     }
 
     // for every property in frLocale, check that the corresponding is in enLocale
     for (const l in frLocale) {
-      expect(enLocale[l]).toBeTruthy();
+      expect(enLocale[l], `english locale is missing key "${l}"`).toBeTruthy();
     }
   });
 
@@ -196,6 +224,12 @@ test.describe('<gcds-ext-map> localization tests', () => {
       const reloadText = await reload.getAttribute('title');
       expect(reloadText).toBeTruthy();
       expect(reloadText).toBe(locale.cmReload);
+
+      // static
+      const staticButton = await map.locator('.mapml-static-button');
+      const staticText = await staticButton.getAttribute('title');
+      expect(staticText).toBeTruthy();
+      expect(staticText).toBe(locale.btnStatic);
 
       // fullscreen text
       const fullscreen = await map.locator(

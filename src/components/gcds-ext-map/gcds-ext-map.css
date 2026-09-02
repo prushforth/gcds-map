@@ -475,6 +475,9 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 .leaflet-control-layers fieldset {
   margin: 0;
   padding: 0;
+  /* Invisible (white) default fieldset border adds ~1.6px, shifting controls
+     below when a single-layer control expands on hover; remove it. */
+  border: 0;
   min-height: 44px;
 }
 
@@ -1360,4 +1363,26 @@ label.mapml-layer-item-toggle {
 }
 .mapml-search-panel-open .mapml-search-close {
   visibility: visible;
+}
+
+/* Static control */
+.mapml-static-control.leaflet-control {
+  margin-inline-end: var(--gcds-spacing-50, 5px);
+}
+button.mapml-static-button {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--gcds-bg-white, #fff);
+  border: none;
+  border-radius: var(--gcds-border-radius-md, 4px);
+  padding: 0;
+  color: var(--gcds-text-primary, #000);
+}
+button.mapml-static-button:hover {
+  background: var(--gcds-bg-light, #f4f4f4);
 }

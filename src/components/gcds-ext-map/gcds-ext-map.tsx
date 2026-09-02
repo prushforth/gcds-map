@@ -35,6 +35,7 @@ import { scaleBar } from '../utils/mapml/control/ScaleBar.js';
 import { geolocationButton } from '../utils/mapml/control/GeolocationButton.js';
 import { fullscreenButton } from '../utils/mapml/control/FullscreenButton.js';
 import { searchButton } from '../utils/mapml/control/SearchButton.js';
+import { staticButton } from '../utils/mapml/control/StaticButton.js';
 import { debugOverlay } from '../utils/mapml/layers/DebugOverlay.js';
 import { crosshair } from '../utils/mapml/layers/Crosshair.js';
 import { featureIndexOverlay } from '../utils/mapml/layers/FeatureIndexOverlay.js';
@@ -81,6 +82,8 @@ export class GcdsExtMap {
   private _geolocationButton: any;
   private _scaleBar: any;
   private _searchButton: any;
+  private _staticButton: any;
+  private _sizeStyleSheet: CSSStyleSheet;
   private _isInitialized: boolean = false;
   private _debug: any;
   // @ts-ignore 
@@ -332,7 +335,8 @@ export class GcdsExtMap {
           'nolayer',
           'noscale',
           'geolocation',
-          'search'
+          'search',
+          'static'
         ]
       );
 
@@ -454,34 +458,21 @@ export class GcdsExtMap {
 
     let shadowRoot = this.el.shadowRoot;
     if (shadowRoot.querySelector('[role="region"]')) return;
-    
-    // Add default :host styles AFTER Stencil's gcds-ext-map.css loads
-    // This ensures proper cascade order and allows _changeWidth/_changeHeight to modify it
-    const ensureHostStyle = () => {
-      // Wait for Stencil's stylesheet to load first
-      if (shadowRoot.styleSheets.length === 0) {
-        requestAnimationFrame(ensureHostStyle);
-        return;
-      }
-      
-      // Now append our :host defaults AFTER the main gcds-ext-map.css
-      let mapDefaultCSS = document.createElement('style');
-      mapDefaultCSS.innerHTML =
-        `:host {` +
-        `all: initial;` +
-        `display: inline-block;` +
-        `background-color: white;` +
-        `height: 150px;` +
-        `width: 300px;` +
-        `contain: layout size;` +
-        `border-width: 2px;` +
-        `border-style: inset;` +
-        `}`;
-      shadowRoot.appendChild(mapDefaultCSS);
-    };
-    
-    ensureHostStyle();
-    
+
+    // Width/height attributes are applied via a dedicated constructable stylesheet
+    // appended LAST to adoptedStyleSheets. Stencil applies gcds-ext-map.css (which
+    // carries the :host default 300x150 size) via adoptedStyleSheets, and adopted
+    // sheets cascade AFTER (win over) tree <style> elements, so a <style> cannot
+    // override the default size. Appending our own adopted sheet last lets it win
+    // over the default while still yielding to author light-DOM CSS. _changeWidth /
+    // _changeHeight mutate this sheet's :host rule.
+    this._sizeStyleSheet = new CSSStyleSheet();
+    this._sizeStyleSheet.replaceSync(':host {}');
+    shadowRoot.adoptedStyleSheets = [
+      ...shadowRoot.adoptedStyleSheets,
+      this._sizeStyleSheet
+    ];
+
     this._container = document.createElement('div');
 
     let output =
@@ -779,6 +770,12 @@ export class GcdsExtMap {
       // Expose on element for MapML compatibility
       (this.el as any)._geolocationButton = this._geolocationButton;
     }
+
+    if (!this._staticButton) {
+      this._staticButton = staticButton().addTo(this._map);
+      // Expose on element for MapML compatibility
+      (this.el as any)._staticButton = this._staticButton;
+    }
     
     // Expose locate method on element for MapML compatibility
     (this.el as any).locate = this.locate.bind(this);
@@ -802,6 +799,7 @@ export class GcdsExtMap {
     this._setControlsVisibility('zoom', true);
     this._setControlsVisibility('geolocation', true);
     this._setControlsVisibility('scale', true);
+    this._setControlsVisibility('static', true);
   }
   _showControls() {
     this._setControlsVisibility('search', true);
@@ -811,6 +809,7 @@ export class GcdsExtMap {
     this._setControlsVisibility('zoom', false);
     this._setControlsVisibility('geolocation', true);
     this._setControlsVisibility('scale', false);
+    this._setControlsVisibility('static', true);
 
     // prune the controls shown if necessary
     // this logic could be embedded in _showControls
@@ -840,6 +839,9 @@ export class GcdsExtMap {
           case 'noscale':
             this._setControlsVisibility('scale', true);
             break;
+          case 'static':
+            this._setControlsVisibility('static', false);
+            break;
         }
       });
     }
@@ -857,6 +859,7 @@ export class GcdsExtMap {
     delete this._fullScreenControl;
     delete this._geolocationButton;
     delete this._scaleBar;
+    delete this._staticButton;
   }
     // Sets the control's visibility AND all its childrens visibility,
   // for the control element based on the Boolean hide parameter
@@ -896,6 +899,11 @@ export class GcdsExtMap {
       case 'scale':
         if (this._scaleBar) {
           container = this._scaleBar._container;
+        }
+        break;
+      case 'static':
+        if (this._staticButton) {
+          container = this._staticButton._container;
         }
         break;
     }
@@ -1085,15 +1093,15 @@ export class GcdsExtMap {
   }
 
   _changeWidth(width: number | string) {
-    // Match mapml-viewer: modify the :host CSS rule, not inline styles
-    // This allows light DOM CSS to override the shadow DOM default
+    // Modify the :host rule in our dedicated adopted stylesheet so it overrides
+    // the component's default size while still allowing author light-DOM CSS to win.
+    if (this._sizeStyleSheet) {
+      (this._sizeStyleSheet.cssRules[0] as CSSStyleRule).style.width = width + 'px';
+    }
+    // Also record it on the container inline style (visually overridden by
+    // .leaflet-container width:100%, but read back by tests/consumers).
     if (this._container) {
       this._container.style.width = width + 'px';
-      // Modify the :host rule (always LAST stylesheet, first rule)
-      const sheets = this.el.shadowRoot.styleSheets;
-      if (sheets.length > 0) {
-        (sheets[sheets.length - 1].cssRules[0] as CSSStyleRule).style.width = width + 'px';
-      }
     }
     if (this._map) {
       this._map.invalidateSize(false);
@@ -1101,15 +1109,15 @@ export class GcdsExtMap {
   }
 
   _changeHeight(height: number | string) {
-    // Match mapml-viewer: modify the :host CSS rule, not inline styles
-    // This allows light DOM CSS to override the shadow DOM default
+    // Modify the :host rule in our dedicated adopted stylesheet so it overrides
+    // the component's default size while still allowing author light-DOM CSS to win.
+    if (this._sizeStyleSheet) {
+      (this._sizeStyleSheet.cssRules[0] as CSSStyleRule).style.height = height + 'px';
+    }
+    // Also record it on the container inline style (visually overridden by
+    // .leaflet-container height:100%, but read back by tests/consumers).
     if (this._container) {
       this._container.style.height = height + 'px';
-      // Modify the :host rule (always LAST stylesheet, first rule)
-      const sheets = this.el.shadowRoot.styleSheets;
-      if (sheets.length > 0) {
-        (sheets[sheets.length - 1].cssRules[0] as CSSStyleRule).style.height = height + 'px';
-      }
     }
     if (this._map) {
       this._map.invalidateSize(false);
