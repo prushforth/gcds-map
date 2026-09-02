@@ -15,10 +15,14 @@
      "url": "https://github.com/gcds-extensions/map/issues"
   },
   "homepage": "https://gcds-extensions.github.io/map/en/",
+  "bin": {
+    "gcds-ext-map-skills": "bin/copy-skills.js"
+  },
   "files": [
     "dist/",
     "loader/",
     "demo/",
+    "skills/",
     "!dist/**/test/**",
     "!dist/**/*.map"
   ],
@@ -33,7 +37,9 @@
     "test": "playwright test --workers=1 --retries=2",
     "storybook": "STORYBOOK_DISABLE_TELEMETRY=1 storybook dev -p 6006",
     "build-storybook": "STORYBOOK_DISABLE_TELEMETRY=1 storybook build -o ./docs",
-    "deploy": "bash scripts/deploy-gh-pages.sh"
+    "deploy": "bash scripts/deploy-gh-pages.sh",
+    "sync-skills": "node scripts/sync-skills.js",
+    "prepack": "node scripts/sync-skills.js"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

@@ -3,6 +3,7 @@ docs/
 www/
 loader/
 src/generated/
+/skills/
 
 *~
 *.sw[mnpcod]
