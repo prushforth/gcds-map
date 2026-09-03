@@ -80,7 +80,7 @@ The default projection is `OSMTILE`.
 
 ### `controlslist`
 
-`controlslist` - an enumerated attribute, possible values are: "`nofullscreen`", "`nolayer`", "`noreload`", "`noscale`", "`nozoom`", "`geolocation`" and "`search`".  The `no*` tokens let you prune the set of controls automatically presented (when you have used the `controls` boolean attribute), while unlike the `no*` tokens (which hide default controls), the `geolocation` and `search` tokens are **opt-in**. `geolocation` and `search` add location and search controls to the map, respectively. The search control is `disabled` by default, and becomes enabled only when at least one `checked` [`<map-layer>`](../layer/) contains a [`<map-link rel="search">`](../link/) element.
+`controlslist` - an enumerated attribute, possible values are: "`nofullscreen`", "`nolayer`", "`noreload`", "`noscale`", "`nozoom`", "`geolocation`", "`search`" and "`static`".  The `no*` tokens let you prune the set of controls automatically presented (when you have used the `controls` boolean attribute), while unlike the `no*` tokens (which hide default controls), the `geolocation`, `search` and `static` tokens are **opt-in**. `geolocation`, `search` and `static` add location, search and static controls to the map, respectively. The search control is `disabled` by default, and becomes enabled only when at least one `checked` [`<map-layer>`](../layer/) contains a [`<map-link rel="search">`](../link/) element.
 
 ---
 
@@ -99,4 +99,6 @@ The default projection is `OSMTILE`.
 ### `static`
 
 `static` - a "boolean" attribute. It disables the keyboard interaction, and the zooming and dragging features with the map when it is 
-present. When it is not present or removed, these features are enabled again.
+present. When it is not present or removed, these features are enabled again.  A lock control button can be added to the top-right controls area (just below the layer control) 
+by specifying the `static` token value for the `controlslist` attribute or `controlsList` 
+DOMTokenList property.
