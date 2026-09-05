@@ -206,9 +206,11 @@
 
 /* Use legible font-sizes (Leaflet upstream PR: https://github.com/Leaflet/Leaflet/pull/7346). */
 .leaflet-control-scale-line,
-.leaflet-container .leaflet-control-scale,
+.leaflet-container .leaflet-control-scale {
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match other control text */
+}
 .leaflet-container .leaflet-control-attribution {
-  font-size: 12px;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* smallest GCDS body text; 12px fallback matches upstream */
 }
 
 /*
@@ -224,7 +226,7 @@
 }
 @container leafletmap (max-height: 250px) {
     .mapml-control-scale {
-        inset-inline-start: 45px;
+        inset-inline-start: 45px; /* clear the ~44px zoom control; no GCDS token */
     }
 }
 
@@ -264,7 +266,7 @@ the browser)' */
 .leaflet-control-container a,
 .leaflet-container a.leaflet-popup-close-button,
 .leaflet-container a.leaflet-popup-close-button:hover {
-  color: var(--gcds-color-black, #000);
+  color: var(--gcds-color-grayscale-1000, #000);
 }
 /* Revert above `color: #000` for legendlinks. */
 .mapml-layer-item-name a {
@@ -272,21 +274,22 @@ the browser)' */
 }
 
  .leaflet-top .leaflet-control {
-   margin-top: 5px;
+   margin-top: var(--gcds-spacing-50, 5px);
  }
  
  .leaflet-left .leaflet-control {
-   margin-left: 5px;
+   margin-left: var(--gcds-spacing-50, 5px);
  }
 
 .leaflet-bar a,
 .mapml-reload-button {
-  background-color: var(--gcds-color-white, #fff);
+  background-color: var(--gcds-color-grayscale-0, #fff);
   box-sizing: border-box;
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   width: 44px !important;
   height: 44px !important;
   line-height: 44px !important;
-  font-size: 34px !important;
+  font-size: var(--gcds-icon-font-size-h2-mobile, 34px) !important; /* zoom/reload control glyphs */
   font-weight: var(--gcds-font-weights-bold, bold);
   text-align: center;
 }
@@ -310,6 +313,7 @@ button.mapml-contextmenu-item:disabled {
 }
 
 .leaflet-control-layers-toggle {
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   width: 44px !important;
   height: 44px !important;
 }
@@ -348,7 +352,7 @@ button.mapml-contextmenu-item:disabled {
 .leaflet-touch .leaflet-bar,
 .leaflet-popup-tip,
 .leaflet-container .leaflet-control-attribution {
-  box-shadow: rgb(0 0 0 / 30%) 0px 1px 4px -1px;
+  box-shadow: rgb(0 0 0 / 30%) 0px 1px 4px -1px; /* no GCDS shadow token matches */
 }
 
 /* GCDS link styles for attribution links. */
@@ -386,30 +390,31 @@ button.mapml-contextmenu-item:disabled {
 
 .leaflet-container .leaflet-control-attribution {
   background-color: var(--gcds-bg-white, #fff);
-  border-radius: 1.5em;
+  border-radius: 1.5em; /* pill shape; no GCDS radius token */
   color: currentColor;
   margin: var(--gcds-spacing-50, 5px);
+  /* 30px is the attribution toggle-circle min size; no GCDS token */
   min-height: 30px;
   min-width: 30px;
   padding: 0;
 }
 
 .leaflet-control-attribution summary {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   list-style: none;
   border-radius: 100%;
   position: absolute;
   bottom: 0;
   left: calc(100% - 30px);
-  line-height: 0;
+  /* 30px is the attribution toggle-circle diameter; no GCDS token */
   width: 30px;
   height: 30px;
 }
 
-.leaflet-control-attribution summary svg {
-  border-radius: 100%;
-  width: inherit;
-  height: inherit;
+.leaflet-control-attribution summary .gcds-icon-info-circle {
+  font-size: var(--gcds-icon-font-size-h2-mobile, 35px); /* fill the 30px attribution toggle */
 }
 
 .mapml-attribution-container {
@@ -433,15 +438,15 @@ button.mapml-contextmenu-item:disabled {
 .leaflet-control-fullscreen a {  
   background-image: url("data:image/svg+xml,%0A%3Csvg width='26' height='52' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'%3E%3Cg transform='translate(0 -1000.4)'%3E%3Cuse transform='translate(0 26)' width='100%25' height='100%25' xlink:href='%23a'/%3E%3Cuse transform='translate(0 26)' width='100%25' height='100%25' xlink:href='%23b'/%3E%3Cuse transform='translate(0 26)' width='100%25' height='100%25' xlink:href='%23c'/%3E%3Cuse transform='translate(0 26)' width='100%25' height='100%25' xlink:href='%23d'/%3E%3Cpath id='a' transform='translate(0 1000.4)' d='M5 15v6h6v-2H7v-4z' color='%23000' fill='%23000'/%3E%3Cpath id='b' transform='translate(0 1000.4)' d='M21 15v6h-6v-2h4v-4z' color='%23000' fill='%23000'/%3E%3Cpath d='M10 1037.4v4l1 1h4l1-1v-4l-1-1h-4z' color='%23000' fill='%23000'/%3E%3Cpath id='d' d='M5 1011.4v-6h6v2H7v4z' color='%23000' fill='%23000'/%3E%3Cpath id='c' d='M21 1011.4v-6h-6v2h4v4z' color='%23000' fill='%23000'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-size: 38px 76px;
-  background-position: 3px 3px;
+  background-size: 38px 76px; /* sprite sheet dimensions; no GCDS token */
+  background-position: 3px 3px; /* sprite offset for fullscreen-off icon; no GCDS token */
 }
 
 /*
 * See: https://developer.mozilla.org/en-US/docs/Web/CSS/:host_function
 and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 :host(:fullscreen) .leaflet-control-fullscreen a {
-  background-position: 3px -35px;
+  background-position: 3px -35px; /* sprite offset for fullscreen-on icon; no GCDS token */
 }
 
 :host(:-webkit-full-screen) {
@@ -466,6 +471,7 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
   margin-inline-end: 5px;
   margin-inline-start: 5px;
   padding: 0;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* smallest GCDS body text; trial for layer control */
 }
 
 .leaflet-control-layers-list {
@@ -502,7 +508,7 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 
 .leaflet-control .leaflet-control-layers-toggle {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' width='24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='m11.99 18.54-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16zm0-11.47L17.74 9 12 13.47 6.26 9 12 4.53z'/%3E%3C/svg%3E");
-  background-size: 34px;
+  background-size: 34px; /* control icon size; no GCDS token */
 }
 
 /* Revert Leaflet styles that are causing misalignment. */
@@ -527,9 +533,9 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 }
 
 .mapml-contextmenu button.mapml-contextmenu-item {
-  color: var(--gcds-text-primary, #222);
-  font-size: 12px;
-  line-height: 20px;
+  color: var(--gcds-text-primary, #333);
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* smallest GCDS body text; 12px fallback matches upstream */
+  line-height: 20px; /* fixed control line-height; no GCDS token */
   text-decoration: none;
   padding: 0 var(--gcds-spacing-150, 12px);
   border-block-start: var(--gcds-border-width-sm, 1px) solid transparent;
@@ -540,19 +546,19 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 }
 
 .mapml-contextmenu button.mapml-contextmenu-item.over {
-  background-color: var(--gcds-bg-light, #f4f4f4);
-  border-block-start: var(--gcds-border-width-sm, 1px) solid var(--gcds-bg-light, #f0f0f0);
-  border-block-end: var(--gcds-border-width-sm, 1px) solid var(--gcds-bg-light, #f0f0f0);
+  background-color: var(--gcds-bg-light, #f1f2f3);
+  border-block-start: var(--gcds-border-width-sm, 1px) solid var(--gcds-bg-light, #f1f2f3);
+  border-block-end: var(--gcds-border-width-sm, 1px) solid var(--gcds-bg-light, #f1f2f3);
 }
       
 .mapml-contextmenu-separator {
   border-block-end: var(--gcds-border-width-sm, 1px) solid var(--gcds-color-grayscale-100, #e3e3e3);
-  margin: var(--gcds-spacing-50, 5px) 0;
+  margin: var(--gcds-spacing-50, 0.25rem) 0;
 }
 
 .mapml-contextmenu.mapml-submenu {
-  width: 80px;
-  margin-block-end: -2rem;
+  width: 80px; /* fallback for browsers without fit-content; no GCDS width token */
+  margin-block-end: calc(-1 * var(--gcds-spacing-400, 2rem));
   width: fit-content;
 }
 
@@ -576,7 +582,7 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
     content:"";
     display: list-item;
     list-style-type: disclosure-closed;
-    margin-inline-start: 20px;
+    margin-inline-start: var(--gcds-spacing-250, 20px);
   }
 }
 
@@ -619,7 +625,7 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 }
 
 .mapml-debug-tile {
-  text-indent: 6px;
+  text-indent: var(--gcds-spacing-75, 6px);
   line-height: 1.8;
 }
 
@@ -643,8 +649,9 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 }
 
 :host(.mapml-fullscreen-on) .mapml-debug-grid {
-  color: var(--gcds-color-white, #fff);
-  text-shadow: 1px 1px 1px var(--gcds-color-black, #000), 1px 1px 1px var(--gcds-color-black, #000);
+  color: var(--gcds-color-grayscale-0, #fff);
+  /* 1px shadow offsets/blur are graphic dims; no GCDS shadow token */
+  text-shadow: 1px 1px 1px var(--gcds-color-grayscale-1000, #000), 1px 1px 1px var(--gcds-color-grayscale-1000, #000);
 }
 
 /*
@@ -732,7 +739,7 @@ and: https://developer.mozilla.org/en-US/docs/Web/CSS/:fullscreen */
 /* Less opinionated styles for the zoom box than inherited from leaflet.css. */
 .leaflet-zoom-box {
   border: thin dotted;
-  background-color: rgba(255,255,255,0.33);
+  background-color: rgba(255,255,255,0.33); /* 33% white overlay; no GCDS alpha token */
 }
 
 label,
@@ -767,8 +774,7 @@ summary {
 }
 
 .mapml-crosshair {
-  /* `left: 50%` + negative inline margin is an LTR centering technique;
-     kept physical so RTL behaviour matches the upstream original. */
+  /* centre the 72px crosshair overlay; 72/36px are graphic dims, no GCDS token */
   margin: -36px 0 0 -36px;
   width: 72px;
   height: 72px;
@@ -782,14 +788,15 @@ summary {
 	padding: 0 var(--gcds-spacing-50, 4px) 0 var(--gcds-spacing-50, 4px);
 	border: none;
 	text-align: center;
-	font-size: 16px;
-	line-height: 14px;
+	font-size: var(--gcds-icon-font-size-text-small-mobile, 16px); /* popup nav control glyphs */
+	line-height: 14px; /* control glyph leading; no GCDS token */
 	color: inherit;
 	text-decoration: none;
 	font-weight: var(--gcds-font-weights-bold, bold);
   background: transparent;
   white-space: nowrap;
   box-sizing: border-box;
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   width: 44px;
   height: 44px;
   line-height: 44px;
@@ -798,6 +805,7 @@ summary {
 .mapml-zoom-link {
   display: block;
   text-align: center;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match layer control / context menu */
 }
 
 .mapml-focus-buttons {
@@ -809,10 +817,12 @@ summary {
   white-space: nowrap;
   text-align: center;
   padding: var(--gcds-spacing-25, 2px);
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match layer control / context menu */
 }
 
 .mapml-focus-buttons button,
 .leaflet-container a.leaflet-popup-close-button {
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   width: 44px;
   height: 44px;
   min-width: 44px;
@@ -823,9 +833,10 @@ summary {
   margin: 0;
   min-width: min-content;
   scrollbar-width: thin;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match layer control / context menu */
 }
 .mapml-popup-content {
-  padding-block-start: 44px;
+  padding-block-start: 44px; /* clears the 44px focus-button row; no GCDS token WCAG 2.5.5 minimum touch-target size */
 }
 .mapml-focus-buttons {
   display: block;
@@ -837,12 +848,16 @@ summary {
 }
 .leaflet-container a.leaflet-popup-close-button {
   padding: 0;
-  font-size: 20px;
+  font-size: 0; /* hide Leaflet's thin × (U+00D7); replaced by ::before ✕ below */
+}
+.leaflet-container a.leaflet-popup-close-button::before {
+  content: '\2715'; /* heavy ✕ to match layer/shortcuts close glyphs */
+  font-size: var(--gcds-icon-font-size-text-small, 1.125rem); /* shared ✕ glyph size */
 }
 .leaflet-popup-content .mapml-feature-count {
   margin: 0;
   padding: 0 var(--gcds-spacing-50, 5px);
-  line-height: 44px;
+  line-height: 44px; /* matches 44px touch-target height; no GCDS token */
 }
 .mapml-popup-content hr:last-of-type {
   margin-block-end: 0;
@@ -891,16 +906,16 @@ svg.leaflet-image-layer.leaflet-interactive g {
   inset-inline-start: 0;
   inset-block-end: 0;
   background-color: var(--gcds-color-grayscale-100, rgb(222, 225, 230));
-  border-start-end-radius: var(--gcds-spacing-50, 5px);
+  border-start-end-radius: 5px; /* no 5px GCDS border-radius token (sm=2px, md=6px) */
   z-index: 1050;  
   max-width: 60%;
 }
 
 .mapml-link-preview > p {
-  margin-block-start: 3px;
+  margin-block-start: 3px; /* no 3px GCDS spacing token (25=2px, 50=4px) */
   margin-inline-end: var(--gcds-spacing-50, 5px);
   margin-block-end: var(--gcds-spacing-25, 2px);
-  margin-inline-start: 3px;
+  margin-inline-start: 3px; /* no 3px GCDS spacing token (25=2px, 50=4px) */
   color: var(--gcds-text-secondary, rgb(60, 64, 67));
   text-overflow: ellipsis;
   overflow-x: hidden;
@@ -956,7 +971,7 @@ svg.leaflet-image-layer.leaflet-interactive g {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  padding-inline-start: .5rem;
+  padding-inline-start: var(--gcds-spacing-100, 0.5rem);
 }
 .mapml-layer-item-controls {
   margin-inline-start: auto;
@@ -964,7 +979,7 @@ svg.leaflet-image-layer.leaflet-interactive g {
 
 
 .mapml-layer-item-controls button span {
-  font-size: large;
+  font-size: var(--gcds-icon-font-size-text-small, 1.125rem); /* shared ✕ glyph size */
   /* upstream value is 900, but GCDS tops out at bold (700) */
   font-weight: var(--gcds-font-weights-bold, 900);
   vertical-align: middle;
@@ -985,6 +1000,7 @@ svg.leaflet-image-layer.leaflet-interactive g {
 
 .mapml-layer-item-remove-control,
 .mapml-layer-item-settings-control {
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   min-height: 44px;
   min-width: 44px;
   height: 44px;
@@ -995,23 +1011,23 @@ label.mapml-layer-item-toggle {
   display: inline-flex;
   align-items: center;
   width: 100%; /* have the clickable area take up all available width */
-  min-height: 44px;
+  min-height: 44px; /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
 }
 
 .mapml-layer-item-name {
   word-break: break-word;
-  padding-block-start: .25rem;
-  padding-block-end: .25rem;
-  padding-inline-start: .25rem;
-  padding-inline-end: 1rem;
+  padding-block-start: var(--gcds-spacing-50, 0.25rem);
+  padding-block-end: var(--gcds-spacing-50, 0.25rem);
+  padding-inline-start: var(--gcds-spacing-50, 0.25rem);
+  padding-inline-end: var(--gcds-spacing-200, 1rem);
 }
 
 .mapml-layer-item-settings > * {
   display: block;
-  padding-block-start: .25rem;
-  padding-block-end: .25rem;
-  padding-inline-start: 2rem;
-  padding-inline-end: 1rem;
+  padding-block-start: var(--gcds-spacing-50, 0.25rem);
+  padding-block-end: var(--gcds-spacing-50, 0.25rem);
+  padding-inline-start: var(--gcds-spacing-400, 2rem);
+  padding-inline-end: var(--gcds-spacing-200, 1rem);
 }
 
 .mapml-screen-reader-output {
@@ -1109,7 +1125,7 @@ label.mapml-layer-item-toggle {
 }
 
 .mapml-feature-index {
-  outline: var(--gcds-border-width-sm, 1px) solid var(--gcds-color-black, #000000);
+  outline: var(--gcds-border-width-sm, 1px) solid var(--gcds-color-grayscale-1000, #000);
   contain: content;
   border-radius: var(--gcds-border-radius-md, 4px);
   background-color: var(--gcds-bg-white, #fff);
@@ -1126,7 +1142,7 @@ label.mapml-layer-item-toggle {
   padding-block-start: var(--gcds-spacing-50, 5px);
   height: 92px;
   width: 450px;
-  font-size: 16px;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match other control text */
 }
 @container leafletmap (max-width: 650px ) {
     .mapml-feature-index {
@@ -1173,13 +1189,14 @@ label.mapml-layer-item-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.125rem;
+  font-size: var(--gcds-icon-font-size-text-small, 1.125rem); /* shared ✕ glyph size */
   padding: var(--gcds-spacing-50, 4px);
   line-height: 1;
 }
 
 .shortcuts-dialog {
   position: relative;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* smallest GCDS body text; trial for shortcuts dialog */
 }
 
 .shortcuts-dialog > ul {
@@ -1197,18 +1214,18 @@ label.mapml-layer-item-toggle {
   
   /* Critical MapML defaults that must be available immediately */
   display: inline-block;
-  background-color: white;
+  background-color: var(--gcds-bg-white, white);
   /* Default dimensions - will be overridden by JavaScript based on CSS rules or attributes */
   height: 150px;        
   width: 300px;         
   contain: layout size;
-  border-width: 2px;
-  border-style: inset;
+  border-width: var(--gcds-border-width-md, 2px);
+  border-style: inset; /* no GCDS border-style token */
 }
 
 /* Ensure white background persists in fullscreen */
 :host(.mapml-fullscreen-on) {
-  background-color: white;
+  background-color: var(--gcds-bg-white, white);
 }
 /* Ensure container fills the host element */
 .mapml-map-container {
@@ -1233,9 +1250,9 @@ label.mapml-layer-item-toggle {
 @layer default {
   :host {
     /* Visual styling */
-    border: 2px inset;
+    border: var(--gcds-border-width-md, 2px) inset;
     cursor: pointer;
-    transition: all 0.35s;
+    transition: all 0.35s; /* no GCDS motion/duration token */
   }
   
   /* Attribute-based styling */
@@ -1255,6 +1272,7 @@ label.mapml-layer-item-toggle {
   z-index: 1000;
 }
 .mapml-search-button {
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   width: 44px;
   height: 44px;
   line-height: 44px;
@@ -1283,32 +1301,32 @@ label.mapml-layer-item-toggle {
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  width: 250px;
+  width: 250px; /* search panel width; no GCDS token */
   height: 100%;
   background: var(--gcds-bg-white, #fff);
-  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* no GCDS shadow token matches */
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out; /* no GCDS motion/duration token */
   z-index: 10000;
 }
 .mapml-search-panel-open {
   transform: translateX(0);
 }
 .mapml-search-input {
-  width: calc(100% - 16px);
+  width: calc(100% - 2 * var(--gcds-spacing-100, 8px)); /* subtract the two horizontal margins */
   margin: var(--gcds-spacing-100, 8px);
-  padding-block: 6px;
+  padding-block: var(--gcds-spacing-75, 6px);
   padding-inline: var(--gcds-spacing-100, 8px);
   border: var(--gcds-border-width-sm, 1px) solid var(--gcds-color-grayscale-200, #ccc);
   border-radius: var(--gcds-border-radius-md, 4px);
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match layer control / context menu */
   box-sizing: border-box;
 }
 .mapml-search-input:focus {
-  outline: 2px solid var(--gcds-input-focus-border, #4A90D9);
+  outline: var(--gcds-border-width-md, 2px) solid var(--gcds-input-focus-border, #4A90D9);
   border-color: var(--gcds-input-focus-border, #4A90D9);
 }
 .mapml-search-results {
@@ -1327,7 +1345,7 @@ label.mapml-layer-item-toggle {
   background: var(--gcds-bg-white, #fff);
   text-align: start;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--gcds-font-sizes-text-small-mobile, 0.75rem); /* match layer control / context menu */
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
@@ -1337,16 +1355,16 @@ label.mapml-layer-item-toggle {
   background: var(--gcds-bg-light, #f0f0f0);
 }
 .mapml-search-result:focus {
-  outline: 2px solid var(--gcds-focus-border, #4A90D9);
-  outline-offset: -2px;
+  outline: var(--gcds-border-width-md, 2px) solid var(--gcds-focus-border, #4A90D9);
+  outline-offset: calc(-1 * var(--gcds-border-width-md, 2px));
 }
 .mapml-search-close {
   position: absolute;
-  inset-inline-end: -24px;
+  inset-inline-end: -24px; /* pull the tab out by its own width; no GCDS token */
   inset-block-start: 50%;
   transform: translateY(-50%);
-  width: 24px;
-  height: 36px;
+  width: 24px; /* close-tab width; no GCDS token */
+  height: 36px; /* close-tab height; no GCDS token */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1358,7 +1376,7 @@ label.mapml-layer-item-toggle {
   border-start-end-radius: var(--gcds-border-radius-md, 4px);
   border-end-end-radius: var(--gcds-border-radius-md, 4px);
   border-end-start-radius: 0;
-  box-shadow: 2px 0 3px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 3px rgba(0,0,0,0.1); /* no GCDS shadow token matches */
   visibility: hidden;
 }
 .mapml-search-panel-open .mapml-search-close {
@@ -1370,6 +1388,7 @@ label.mapml-layer-item-toggle {
   margin-inline-end: var(--gcds-spacing-50, 5px);
 }
 button.mapml-static-button {
+  /* WCAG 2.5.5 min touch target; no GCDS token, keep hardcoded */
   width: 44px;
   height: 44px;
   line-height: 44px;

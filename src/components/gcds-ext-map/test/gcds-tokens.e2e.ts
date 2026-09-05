@@ -267,8 +267,8 @@ test.describe('Fallback values work without GCDS CSS', () => {
       return getComputedStyle(item).color;
     });
 
-    // Fallback: #222 = rgb(34, 34, 34), not the GCDS #333
-    expect(color).toBe('rgb(34, 34, 34)');
+    // Fallback: #333 = rgb(51, 51, 51), matches the GCDS --gcds-text-primary token value
+    expect(color).toBe('rgb(51, 51, 51)');
   });
 
   test('Context menu uses fallback font without GCDS CSS', async () => {

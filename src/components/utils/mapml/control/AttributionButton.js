@@ -29,7 +29,7 @@ export var AttributionButton = Control.Attribution.extend({
     };
     let locale = this._getLocale();
     dialog.innerHTML =
-      `<b>${locale.kbdShortcuts} </b><button aria-label="Close" onclick='this.parentElement.close()'><span class="gcds-icon-close" aria-hidden="true"></span></button>` +
+      `<b>${locale.kbdShortcuts} </b><button aria-label="Close" onclick='this.parentElement.close()'><span aria-hidden="true">&#10005;</span></button>` +
       `<ul><b>${locale.kbdMovement}</b><li><kbd>&#8593</kbd> ${locale.kbdPanUp}</li><li><kbd>&#8595</kbd> ${locale.kbdPanDown}</li><li><kbd>&#8592</kbd> ${locale.kbdPanLeft}</li><li><kbd>&#8594</kbd> ${locale.kbdPanRight}</li><li><kbd>+</kbd> ${locale.btnZoomIn}</li><li><kbd>-</kbd> ${locale.btnZoomOut}</li><li><kbd>shift</kbd> + <kbd>&#8592/&#8593/&#8594/&#8595</kbd> 3x ${locale.kbdPanIncrement}</li><li><kbd>ctrl</kbd> + <kbd>&#8592/&#8593/&#8594/&#8595</kbd> 0.2x ${locale.kbdPanIncrement}</li><li><kbd>shift</kbd> + <kbd>+/-</kbd> ${locale.kbdZoom}</li></ul>` +
       `<ul><b>${locale.kbdFeature}</b><li><kbd>&#8592/&#8593</kbd> ${locale.kbdPrevFeature}</li><li><kbd>&#8594/&#8595</kbd> ${locale.kbdNextFeature}</li></ul>`;
     map._container.appendChild(dialog);
@@ -60,7 +60,7 @@ export var AttributionButton = Control.Attribution.extend({
     }
     let locale = this._getLocale();
     this._container.innerHTML =
-      `<summary title="${locale.btnAttribution}" aria-label="${locale.btnAttribution}"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 0 24 24" width="30px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg></summary>` +
+      `<summary title="${locale.btnAttribution}" aria-label="${locale.btnAttribution}"><span class="gcds-icon-info-circle" aria-hidden="true"></span></summary>` +
       '<div class="mapml-attribution-container">' +
       `<button onclick="this.closest(\'.leaflet-container\').querySelector(\'.shortcuts-dialog\').showModal()" class="shortcuts-button mapml-button">${locale.kbdShortcuts}</button> | ` +
       prefixAndAttribs.join(' <span aria-hidden="true">|</span> ') +

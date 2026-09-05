@@ -8,6 +8,7 @@ import {
 } from 'leaflet';
 import { MapFeatureLayer } from '../layers/MapFeatureLayer.js';
 import { featureRenderer } from '../features/featureRenderer.js';
+import { Util } from '../Util.js';
 
 // Determine if a GeoJSON object has projected (non-CRS:84) coordinates.
 // Returns true if a "crs" member is present and non-null, or if coordinate
@@ -455,9 +456,9 @@ export var QueryHandler = Handler.extend({
       let div = DomUtil.create('div', 'mapml-popup-content'),
         c = DomUtil.create('iframe');
       c.style = 'border: none';
-      c.srcdoc = features[0].querySelector(
-        'map-feature map-properties'
-      ).innerHTML;
+      c.srcdoc =
+        Util.queryPopupIframeStyle(map.options.mapEl) +
+        features[0].querySelector('map-feature map-properties').innerHTML;
       c.setAttribute('sandbox', 'allow-same-origin allow-forms');
       div.appendChild(c);
       // passing a latlng to the popup is necessary for when there is no

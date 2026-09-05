@@ -6,6 +6,35 @@ import proj4 from 'proj4';
 
 export const Util = {
   /**
+   * Build a `<style>` string for the query-result popup `<iframe srcdoc>`.
+   *
+   * The iframe is a separate document, so the component's shadow-DOM CSS
+   * and the GCDS `:root` custom properties do not reach it. Resolve the
+   * relevant GCDS token values off the map element (they inherit across
+   * the shadow boundary onto the host) and inject them as literal values
+   * so the property table matches the map controls. Falls back to the
+   * same defaults used elsewhere in the component when a token is absent.
+   */
+  queryPopupIframeStyle: function (mapEl) {
+    var cs = mapEl ? getComputedStyle(mapEl) : null;
+    var read = function (name, fallback) {
+      var v = cs ? cs.getPropertyValue(name).trim() : '';
+      return v || fallback;
+    };
+    var fontFamily = read('--gcds-font-families-body', "'Noto Sans', sans-serif");
+    var fontSize = read('--gcds-font-sizes-text-small-mobile', '0.75rem');
+    var color = read('--gcds-text-primary', '#333');
+    return (
+      '<style>html{font-family:' +
+      fontFamily +
+      ';font-size:' +
+      fontSize +
+      ';color:' +
+      color +
+      ';}</style>'
+    );
+  },
+  /**
    * Sanitize an author-supplied URL that will be used as an `href`
    * attribute on an anchor rendered into the DOM.
    *
